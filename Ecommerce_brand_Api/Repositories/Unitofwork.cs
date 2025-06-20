@@ -1,4 +1,7 @@
-﻿namespace Ecommerce_brand_Api.Repositories
+﻿
+using Microsoft.EntityFrameworkCore;
+
+namespace Ecommerce_brand_Api.Repositories
 {
     public class Unitofwork : IUnitofwork
     {
@@ -32,6 +35,11 @@
                 throw new InvalidOperationException("No Service Resistered for IOrderRepository");
             }
             return service;
+        }
+
+        public Task<int> SaveChangesAsync()
+        {
+            return _Context.SaveChangesAsync();
         }
 
         public void Dispose()

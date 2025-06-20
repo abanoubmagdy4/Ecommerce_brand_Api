@@ -4,6 +4,7 @@
     {
         public IBaseRepository<T> GetBaseRepository<T>() where T :class;
         public IOrderRepository GetOrderRepository();
+        Task<int> SaveChangesAsync();
 
     }
 }

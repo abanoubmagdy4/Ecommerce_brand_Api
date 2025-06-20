@@ -3,6 +3,9 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
 
+using Ecommerce_brand_Api.Services;
+using Ecommerce_brand_Api.Services.Interfaces;
+
 namespace Ecommerce_brand_Api
 {
     public class Program
@@ -54,6 +57,11 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<ITokenService, TokenService>();
 
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddScoped<IUnitofwork, Unitofwork>();
+            builder.Services.AddScoped<IOrderService, OrderServices>();
+
+
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
