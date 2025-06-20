@@ -20,5 +20,7 @@ namespace Ecommerce_brand_Api.Models.Entities
         public ICollection<OrderItem> OrderItems { get; set; }
         public Payment Payment { get; set; }
         public Cancelation? Cancelation { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
     }
 }

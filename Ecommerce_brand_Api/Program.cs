@@ -1,4 +1,7 @@
 
+using Ecommerce_brand_Api.Services;
+using Ecommerce_brand_Api.Services.Interfaces;
+
 namespace Ecommerce_brand_Api
 {
     public class Program
@@ -11,8 +14,12 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-            
             builder.Services.AddScoped<IOrderRepository , OrderRepository>();
+            builder.Services.AddScoped<IUnitofwork, Unitofwork>();
+            builder.Services.AddScoped<IOrderService, OrderServices>();
+
+
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

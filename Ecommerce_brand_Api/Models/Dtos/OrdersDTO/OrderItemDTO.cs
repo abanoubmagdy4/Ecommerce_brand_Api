@@ -1,7 +1,12 @@
-﻿namespace Ecommerce_brand_Api.Models.Dtos
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 {
     public class OrderItemDTO
     {
+        [BindNever]
+        public int OrderItemId { get; set; }
+
         [Required]
         public int ProductId { get; set; }
 

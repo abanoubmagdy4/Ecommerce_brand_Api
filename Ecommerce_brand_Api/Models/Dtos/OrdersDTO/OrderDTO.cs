@@ -1,12 +1,17 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Ecommerce_brand_Api.Models.Dtos
+namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 {
     public class OrderDTO
     {
+        [BindNever]
+        public int OrderId { get; set; }
+
         [StringLength(20, ErrorMessage = "OrderNumber can't exceed 20 characters")]
         public string OrderNumber { get; set; }
 
+        [BindNever]
         [Required]
         public DateTime CreatedAt { get; set; }
 
