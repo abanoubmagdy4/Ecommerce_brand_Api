@@ -1,14 +1,18 @@
-﻿namespace Ecommerce_brand_Api.Repositories
+﻿
+using Microsoft.EntityFrameworkCore;
+
+namespace Ecommerce_brand_Api.Repositories
 {
-    public class Unitofwork :IUnitofwork
+    public class Unitofwork : IUnitofwork
     {
         private readonly AppDbContext _Context;
         private readonly IServiceProvider _ServiceProvider;
-        public Unitofwork(AppDbCntext context ,IServiceProvider serviceProvider)
+
+        public Unitofwork(AppDbContext context, IServiceProvider serviceProvider)
         {
 
-            _ServiceProvider = serviceProvider; 
-            _Context = context;  
+            _ServiceProvider = serviceProvider;
+            _Context = context;
         }
 
         public IBaseRepository<T> GetBaseRepository<T>() where T : class
@@ -33,6 +37,10 @@
             }
             return service;
         }
+
+        public ICategoryRepository Categories => _ServiceProvider.GetService<ICategoryRepository>()?? throw new InvalidOperationException("CategoryRepository not found");
+
+        public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()
         {
