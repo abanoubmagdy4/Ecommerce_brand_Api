@@ -63,23 +63,20 @@ namespace Ecommerce_brand_Api
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Ecommerce Brand API",
-                    Version = "v1"
+                    Version = "1.0.0"
                 });
-
-                c.EnableAnnotations();
-                c.ExampleFilters();
             });
-
-            builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+            //  builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
-            });
+            
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
 
+                });
+            
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
