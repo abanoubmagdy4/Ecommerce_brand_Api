@@ -64,6 +64,7 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<IUnitofwork, Unitofwork>();
             builder.Services.AddScoped<IOrderService, OrderServices>();
             builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddMemoryCache();
 
 
 
@@ -80,11 +81,10 @@ namespace Ecommerce_brand_Api
                 });
             });
              builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+
+
             var app = builder.Build();
-            builder.Services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = builder.Configuration.GetConnectionString("Redis");
-            });
+       
 
 
             app.UseSwagger(options => options.OpenApiVersion =

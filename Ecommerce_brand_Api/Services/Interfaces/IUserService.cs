@@ -8,11 +8,11 @@
         bool ResetPassword(string token, string newPassword);
         Task<bool> ValidateCodeAsync(string email, string code);
         Task DeleteCodeAsync(string email);
-        Task SaveCodeAsync(string email, string code);
         Task SendEmailAsync(string toEmail, string subject, string body);
-        Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user);
         Task<bool> ResetPasswordAsync(ApplicationUser user, string token, string newPassword);
         Task<ApplicationUser> FindByEmailAsync(string email);
+        Task<string?> GetStoredResetTokenAsync(string email);
+        Task SaveCodeAndTokenAsync(string email, string code, string token);
         //Task<bool> CheckEmailExistAsync(string email);
     }
 }

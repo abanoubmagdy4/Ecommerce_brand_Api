@@ -2,6 +2,7 @@
 using Ecommerce_brand_Api.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
@@ -19,7 +20,7 @@ namespace Ecommerce_brand_Api.Services
         private readonly IConfiguration config;
         private readonly EmailSettings _emailSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IDistributedCache _cache;
+        private readonly IMemoryCache _cache;
 
         public UserService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
@@ -28,7 +29,8 @@ namespace Ecommerce_brand_Api.Services
                            IConfiguration config,
                            IOptions<EmailSettings> options,
                            RoleManager<IdentityRole> roleManager,
-                           IDistributedCache cache )
+                           IMemoryCache cache
+                           )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -182,7 +184,7 @@ namespace Ecommerce_brand_Api.Services
 
             smtpClient.Send(message);
         }
-        public async Task SaveCodeAndTokenAsync(string email, string code, string token)
+        public Task SaveCodeAndTokenAsync(string email, string code, string token)
         {
             var data = new ResetData
             {
@@ -190,40 +192,42 @@ namespace Ecommerce_brand_Api.Services
                 Token = token
             };
 
-            var json = JsonSerializer.Serialize(data);
-
-            var options = new DistributedCacheEntryOptions
+            var options = new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
             };
 
-            await _cache.SetStringAsync($"reset_{email}", json, options);
-        }
-        public async Task<bool> ValidateCodeAsync(string email, string code)
-        {
-            var json = await _cache.GetStringAsync($"reset_{email}");
-            if (string.IsNullOrEmpty(json))
-                return false;
+            _cache.Set($"reset_{email}", data, options);
 
-            var data = JsonSerializer.Deserialize<ResetData>(json);
-            return data?.Code == code;
+            return Task.CompletedTask;
         }
 
-        public async Task<string?> GetStoredResetTokenAsync(string email)
+        public Task<bool> ValidateCodeAsync(string email, string code)
         {
-            var json = await _cache.GetStringAsync($"reset_{email}");
-            if (string.IsNullOrEmpty(json))
-                return null;
+            if (_cache.TryGetValue($"reset_{email}", out ResetData data))
+            {
+                return Task.FromResult(data.Code == code);
+            }
 
-            var data = JsonSerializer.Deserialize<ResetData>(json);
-            return data?.Token;
+            return Task.FromResult(false);
         }
 
 
-
-        public async Task DeleteCodeAsync(string email)
+        public Task<string?> GetStoredResetTokenAsync(string email)
         {
-            await _cache.RemoveAsync($"reset_{email}");
+            if (_cache.TryGetValue($"reset_{email}", out ResetData data))
+            {
+                return Task.FromResult<string?>(data.Token);
+            }
+
+            return Task.FromResult<string?>(null);
+        }
+
+
+        public Task DeleteCodeAsync(string email)
+        {
+            _cache.Remove($"reset_{email}");
+            return Task.CompletedTask;
         }
 
 
