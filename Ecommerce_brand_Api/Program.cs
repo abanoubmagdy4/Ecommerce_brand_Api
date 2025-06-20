@@ -1,4 +1,7 @@
 using Ecommerce_brand_Api.Helpers;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
+using Microsoft.OpenApi.Models;
 
 namespace Ecommerce_brand_Api
 {
@@ -7,6 +10,14 @@ namespace Ecommerce_brand_Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 
             builder.Services.AddAuthentication(options =>
             {
@@ -46,16 +57,28 @@ namespace Ecommerce_brand_Api
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Ecommerce Brand API",
+                    Version = "v1"
+                });
+
+                c.EnableAnnotations();
+                c.ExampleFilters();
+            });
+
+            builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
+            });
 
             app.UseHttpsRedirection();
 

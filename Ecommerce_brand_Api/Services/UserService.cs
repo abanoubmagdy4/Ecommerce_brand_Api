@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Models.Entities;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
@@ -57,6 +58,23 @@ namespace Ecommerce_brand_Api.Services
             if (existingUser != null)
                 return ServiceResult.Fail("Email ALready Exists !");
 
+             List<Address> addresses = new List<Address>(); 
+         
+            foreach(var address in registerDTO.Addresses) {
+                Address add = new Address()
+                {
+                    Apartment = address.Apartment,
+                    Building = address.Building,
+                    City = address.City,
+                    Country = address.Country,
+                    Floor = address.Floor,
+                    State = address.State,
+                    Street = address.Street,
+                    IsDeleted = address.IsDeleted,
+                };
+                addresses.Add(add);
+
+            }
             var user = new ApplicationUser()
             {
                 Email = registerDTO.Email.Split("@")[0],
@@ -65,7 +83,7 @@ namespace Ecommerce_brand_Api.Services
                 Gender = registerDTO.Gender,
                 PhoneNumber = registerDTO.PhoneNumber,
                 DateOfBirth = registerDTO.DateOfBirth,
-                Addresses = registerDTO.Addresses
+                Addresses = addresses
             };
 
             IdentityResult userResult = await _userManager.CreateAsync(user, registerDTO.Password);

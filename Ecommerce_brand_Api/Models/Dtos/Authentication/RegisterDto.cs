@@ -23,7 +23,7 @@
         [Required]
         public DateTime DateOfBirth { get; set; }
         [Required]
-        public IList<Address> Addresses { get; set; }
+        public IList<AddressDto> Addresses { get; set; }
     }
 
 }

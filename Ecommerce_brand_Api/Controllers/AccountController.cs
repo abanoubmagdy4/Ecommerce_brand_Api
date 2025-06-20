@@ -7,17 +7,19 @@
 
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IMapper _mapper;
+       // private readonly IMapper _mapper;
 
-        public AccountController(IUserService userService, UserManager<ApplicationUser> userManager, IMapper mapper)
+        public AccountController(IUserService userService, UserManager<ApplicationUser> userManager)
         {
             _userService = userService;
             _userManager = userManager;
-            _mapper = mapper;
+         //   _mapper = mapper;
         }
 
-        [HttpPost]
-        public async Task<ActionResult> Login(LoginDto loginDto)
+        [HttpPost("Login")]
+        [Consumes("multipart/form-data")]
+
+        public async Task<ActionResult> Login([FromBody] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -31,8 +33,9 @@
         }
 
 
-        [HttpPost]
-        public async Task<ActionResult> Register(RegisterDto registerDTO)
+        [HttpPost("Register")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> Register([FromBody] RegisterDto registerDTO)
         {
             if (ModelState.IsValid)
             {
@@ -44,8 +47,10 @@
             return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        public async Task<ActionResult> AdminRegister(RegisterDto registerDTO)
+        [HttpPost("AdminRegister")]
+        [Consumes("multipart/form-data")]
+
+        public async Task<ActionResult> AdminRegister([FromBody] RegisterDto registerDTO)
         {
             if (ModelState.IsValid)
             {
@@ -58,6 +63,7 @@
         }
 
         [HttpPost("request-reset-code")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> RequestResetCode([FromBody] PasswordResetRequestDTO dto)
         {
             var user = await _userService.FindByEmailAsync(dto.Email);
@@ -73,6 +79,7 @@
         }
 
         [HttpPost("reset-password-with-code")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeDto dto)
         {
             var isValid = await _userService.ValidateCodeAsync(dto.Email, dto.Code);
