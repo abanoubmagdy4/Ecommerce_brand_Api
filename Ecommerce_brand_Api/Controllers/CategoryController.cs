@@ -14,6 +14,7 @@ namespace Ecommerce_brand_Api.Controllers
             _categoryService = categoryService;
         }
 
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _categoryService.GetAllAsync();
@@ -25,7 +26,7 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("GetById/{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _categoryService.GetByIdAsync(id);
@@ -37,6 +38,7 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result);
         }
 
+        [HttpPost("Add")]
         public async Task<IActionResult> Add([FromBody] CategoryDto dto)
         {
             if (!ModelState.IsValid)
@@ -47,6 +49,7 @@ namespace Ecommerce_brand_Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
 
+        [HttpPut]
         public async Task<IActionResult> Update(int id, [FromBody] CategoryDto dto)
         {
             if (!ModelState.IsValid)
@@ -61,6 +64,7 @@ namespace Ecommerce_brand_Api.Controllers
             return NoContent();
         }
 
+        [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _categoryService.DeleteAsync(id);
