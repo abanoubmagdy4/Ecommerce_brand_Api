@@ -2,7 +2,7 @@
 {
     public class Discount
     {
-        public int DicountId { get; set; }
+        public int Id { get; set; }
         public decimal DicountValue { get; set; }
 
         public int orderId { get; set; }

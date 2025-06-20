@@ -1,8 +1,12 @@
 ﻿using Ecommerce_brand_Api.Helpers;
 using Ecommerce_brand_Api.Models.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
+using System.Text.Json;
+
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -14,13 +18,17 @@ namespace Ecommerce_brand_Api.Services
         private readonly AppDbContext _context;
         private readonly IConfiguration config;
         private readonly EmailSettings _emailSettings;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IDistributedCache _cache;
 
         public UserService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
                            ITokenService tokenService,
                            AppDbContext context,
                            IConfiguration config,
-                           IOptions<EmailSettings> options)
+                           IOptions<EmailSettings> options,
+                           RoleManager<IdentityRole> roleManager,
+                           IDistributedCache cache )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -28,6 +36,8 @@ namespace Ecommerce_brand_Api.Services
             _context = context;
             this.config = config;
             _emailSettings = options.Value;
+            _roleManager = roleManager;
+            _cache = cache;
         }
 
 
@@ -77,18 +87,25 @@ namespace Ecommerce_brand_Api.Services
             }
             var user = new ApplicationUser()
             {
-                Email = registerDTO.Email.Split("@")[0],
+                Email = registerDTO.Email,
                 FirstName = registerDTO.FirstName,
                 LastName = registerDTO.LastName,
                 Gender = registerDTO.Gender,
                 PhoneNumber = registerDTO.PhoneNumber,
                 DateOfBirth = registerDTO.DateOfBirth,
-                Addresses = addresses
+                Addresses = addresses,
+                UserName = registerDTO.Email
             };
 
             IdentityResult userResult = await _userManager.CreateAsync(user, registerDTO.Password);
             if (userResult.Succeeded)
             {
+                var roleExists = await _roleManager.RoleExistsAsync(userRole);
+                if (!roleExists)
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(userRole));
+                }
+
                 IdentityResult roleResult = await _userManager.AddToRoleAsync(user, userRole);
                 if (roleResult.Succeeded)
                 {
@@ -165,53 +182,53 @@ namespace Ecommerce_brand_Api.Services
 
             smtpClient.Send(message);
         }
-
-        public async Task SaveCodeAsync(string email, string code)
+        public async Task SaveCodeAndTokenAsync(string email, string code, string token)
         {
-            // امسح الأكواد القديمة الغير مستخدمة للإيميل ده (اختياري، للتنضيف)
-            var oldCodes = _context.PasswordResetCodes
-                .Where(p => p.Email == email && !p.IsUsed);
-            _context.PasswordResetCodes.RemoveRange(oldCodes);
-
-            var resetCode = new PasswordResetCode
+            var data = new ResetData
             {
-                Email = email,
                 Code = code,
-                ExpirationTime = DateTime.UtcNow.AddMinutes(10),
-                IsUsed = false
+                Token = token
             };
 
-            await _context.PasswordResetCodes.AddAsync(resetCode);
-            await _context.SaveChangesAsync();
+            var json = JsonSerializer.Serialize(data);
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
+            };
+
+            await _cache.SetStringAsync($"reset_{email}", json, options);
         }
-
-
         public async Task<bool> ValidateCodeAsync(string email, string code)
         {
-            var match = await _context.PasswordResetCodes
-                .Where(p => p.Email == email &&
-                            p.Code == code &&
-                            !p.IsUsed &&
-                            p.ExpirationTime > DateTime.UtcNow)
-                .FirstOrDefaultAsync();
-
-            if (match == null)
+            var json = await _cache.GetStringAsync($"reset_{email}");
+            if (string.IsNullOrEmpty(json))
                 return false;
 
-            match.IsUsed = true; // علم الكود إنه اتستخدم
-            await _context.SaveChangesAsync();
-            return true;
+            var data = JsonSerializer.Deserialize<ResetData>(json);
+            return data?.Code == code;
         }
+
+        public async Task<string?> GetStoredResetTokenAsync(string email)
+        {
+            var json = await _cache.GetStringAsync($"reset_{email}");
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var data = JsonSerializer.Deserialize<ResetData>(json);
+            return data?.Token;
+        }
+
+
 
         public async Task DeleteCodeAsync(string email)
         {
-            var codes = await _context.PasswordResetCodes
-                .Where(p => p.Email == email)
-                .ToListAsync();
-
-            _context.PasswordResetCodes.RemoveRange(codes);
-            await _context.SaveChangesAsync();
+            await _cache.RemoveAsync($"reset_{email}");
         }
+
+
+
+
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             if (string.IsNullOrWhiteSpace(toEmail))
@@ -237,22 +254,7 @@ namespace Ecommerce_brand_Api.Services
             await smtpClient.SendMailAsync(mailMessage);
         }
 
-        public async Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user)
-        {
-            var code = new Random().Next(100000, 999999).ToString();
-
-            var resetCode = new PasswordResetCode
-            {
-                Email = user.Email,
-                Code = code,
-                ExpirationTime = DateTime.UtcNow.AddMinutes(10)
-            };
-
-            _context.PasswordResetCodes.Add(resetCode);
-            await _context.SaveChangesAsync();
-
-            return code;
-        }
+       
         public async Task<bool> ResetPasswordAsync(ApplicationUser user, string token, string newPassword)
         {
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
@@ -265,5 +267,11 @@ namespace Ecommerce_brand_Api.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
+        public Task SaveCodeAsync(string email, string code)
+        {
+            throw new NotImplementedException();
+        }
+
+     
     }
 }

@@ -81,6 +81,10 @@ namespace Ecommerce_brand_Api
             });
              builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetConnectionString("Redis");
+            });
 
 
             app.UseSwagger(options => options.OpenApiVersion =

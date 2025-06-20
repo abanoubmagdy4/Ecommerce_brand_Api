@@ -8,7 +8,7 @@ namespace Ecommerce_brand_Api.Models.Entities
         public string OrderNumber { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? DeliveredAt { get; set; }
-        public int CustomerId { get; set; }
+        public string CustomerId { get; set; }
         public int ShippingAddressId { get; set; }
         public decimal? ShippingCost { get; set; }
         public int? DiscountId { get; set; }

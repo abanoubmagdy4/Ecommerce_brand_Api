@@ -64,25 +64,25 @@
 
         [HttpPost("request-reset-code")]
         [Consumes("multipart/form-data")]
-
-        public async Task<IActionResult> RequestResetCode( [FromForm] PasswordResetRequestDTO dto)
+        public async Task<IActionResult> RequestResetCode([FromForm] PasswordResetRequestDTO dto)
         {
             var user = await _userService.FindByEmailAsync(dto.Email);
             if (user == null)
                 return Ok("If this email exists, a code will be sent.");
 
             var code = new Random().Next(100000, 999999).ToString();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            await _userService.SaveCodeAsync(dto.Email, code);
+            await _userService.SaveCodeAndTokenAsync(dto.Email, code, token);
             await _userService.SendEmailAsync(dto.Email, "Password Reset Code", $"Your reset code is: {code}");
 
             return Ok("A reset code has been sent to your email.");
         }
 
+
         [HttpPost("reset-password-with-code")]
         [Consumes("multipart/form-data")]
-
-        public async Task<IActionResult> ResetPasswordWithCode( [FromForm] ResetPasswordWithCodeDto dto)
+        public async Task<IActionResult> ResetPasswordWithCode([FromForm] ResetPasswordWithCodeDto dto)
         {
             var isValid = await _userService.ValidateCodeAsync(dto.Email, dto.Code);
             if (!isValid)
@@ -92,14 +92,17 @@
             if (user == null)
                 return BadRequest("User not found.");
 
-            var token = await _userService.GeneratePasswordResetTokenAsync(user);
+            var token = await _userService.GetStoredResetTokenAsync(dto.Email);
+
+            if (string.IsNullOrEmpty(token))
+                return BadRequest("Reset token not found or expired.");
+
             var result = await _userService.ResetPasswordAsync(user, token, dto.NewPassword);
-
-
 
             await _userService.DeleteCodeAsync(dto.Email);
 
             return Ok("Password has been reset successfully.");
         }
+
     }
 }
