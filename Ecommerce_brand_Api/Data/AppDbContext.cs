@@ -1,4 +1,6 @@
-﻿namespace Ecommerce_brand_Api.Data
+﻿using Ecommerce_brand_Api.Data.configurations;
+
+namespace Ecommerce_brand_Api.Data
 {
     public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -23,7 +25,8 @@
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
+            base.OnModelCreating(modelBuilder);
         }
 
 

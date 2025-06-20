@@ -20,8 +20,8 @@ namespace Ecommerce_brand_Api.Data.configurations
                .OnDelete(DeleteBehavior.Restrict);
 
             //Order-> Customer 
-            builder
-                .HasOne(o => o.Customer)
+          builder
+               .HasOne(o => o.Customer)
                 .WithMany(o => o.Orders)
                 .HasForeignKey(o => o.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
