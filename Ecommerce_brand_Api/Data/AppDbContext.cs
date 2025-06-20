@@ -20,7 +20,6 @@
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

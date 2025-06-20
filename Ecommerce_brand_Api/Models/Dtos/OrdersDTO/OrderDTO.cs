@@ -29,7 +29,7 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         public int? DiscountId { get; set; }
 
         [Range(0, 100, ErrorMessage = "Discount Percentage must be between 0% and 100%")]
-        public decimal DiscountValue { get; set; }
+        public decimal DiscountValue { get; set; } 
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

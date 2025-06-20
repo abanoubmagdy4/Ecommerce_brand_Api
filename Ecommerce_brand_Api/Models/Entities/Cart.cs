@@ -5,7 +5,6 @@
         public int Id { get; set; }
 
         public int UserId { get; set; }  // FK
-        public IdentityUser User { get; set; } = null!;  // Navigation property
 
         public bool IsCheckedOut { get; set; }
 
@@ -18,5 +17,9 @@
 
         public bool IsDeleted { get; set; } = false;
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+
+
+        public IdentityUser User { get; set; } = null!;  // Navigation property
+
     }
 }

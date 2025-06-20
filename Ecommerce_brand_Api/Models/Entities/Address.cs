@@ -36,6 +36,7 @@
         [Required]
         [MaxLength(50)]
         public string Floor { get; set; } = string.Empty;
+        public bool IsDeleted { get; set; } = false;
 
         public int orderId { get; set; }    
 

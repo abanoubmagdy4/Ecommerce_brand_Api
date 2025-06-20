@@ -1,6 +1,5 @@
 {
   "version": 2,
-
   "dgSpecHash": "KPPwYrlGnps=",
   "success": true,
   "projectFilePath": "F:\\BACKEND TRACK\\Projects 2025\\June\\Ecommerce_local_brand_Api\\Ecommerce_brand_Api\\Ecommerce_brand_Api\\Ecommerce_brand_Api.csproj",
@@ -98,7 +97,6 @@
     "C:\\Users\\dell\\.nuget\\packages\\system.threading.channels\\6.0.0\\system.threading.channels.6.0.0.nupkg.sha512",
     "C:\\Users\\dell\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "C:\\Users\\dell\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
-
   ],
   "logs": []
 }
