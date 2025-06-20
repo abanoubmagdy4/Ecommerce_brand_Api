@@ -1,0 +1,28 @@
+﻿// GlobalUsings.cs
+
+global using AutoMapper;
+global using Ecommerce_brand_Api.Data;
+global using Ecommerce_brand_Api.Helpers.Enums;
+global using Ecommerce_brand_Api.Helpers.ErrorHandling;
+global using Ecommerce_brand_Api.Models.Dtos.Authentication;
+global using Ecommerce_brand_Api.Models.Entities;
+global using Ecommerce_brand_Api.Repositories;
+global using Ecommerce_brand_Api.Repositories.Interfaces;
+global using Ecommerce_brand_Api.Services;
+global using Ecommerce_brand_Api.Services.Interfaces;
+global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.IdentityModel.Tokens;
+global using System;
+global using System.Collections.Generic;
+global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;
+global using System.Data;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Linq;
+global using System.Security.Claims;
+global using System.Text;

@@ -1,0 +1,70 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+[Dd]ebug/
+[Rr]elease/
+*.cache
+*.dbmdl
+*.bak
+*.tmp
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider / JetBrains
+.idea/
+
+# VS Code
+.vscode/
+.history/
+
+# Node.js
+node_modules/
+
+# Secrets and config
+appsettings.*.json
+secrets.json
+
+# Entity Framework generated files
+Migrations/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish
+*.publishsettings
+.publish/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Others
+*.orig
+*.pid
+*.sdf
+*.suo
+*.sln.ide
+*.tlog
+*.pdb
+*.cache/
+*.DS_Store
+Thumbs.db
