@@ -61,14 +61,13 @@
 
             return BadRequest(ModelState);
         }
-
         [HttpPost("request-reset-code")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> RequestResetCode([FromForm] PasswordResetRequestDTO dto)
         {
             var user = await _userService.FindByEmailAsync(dto.Email);
             if (user == null)
-                return Ok("If this email exists, a code will be sent.");
+                return Ok("If this email exists, a code will be sent."); // ما تقولش للمستخدم إن الإيميل مش موجود
 
             var code = new Random().Next(100000, 999999).ToString();
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -78,7 +77,6 @@
 
             return Ok("A reset code has been sent to your email.");
         }
-
 
         [HttpPost("reset-password-with-code")]
         [Consumes("multipart/form-data")]
@@ -93,13 +91,14 @@
                 return BadRequest("User not found.");
 
             var token = await _userService.GetStoredResetTokenAsync(dto.Email);
-
             if (string.IsNullOrEmpty(token))
                 return BadRequest("Reset token not found or expired.");
 
             var result = await _userService.ResetPasswordAsync(user, token, dto.NewPassword);
+            if (!result)
+                return BadRequest("Reset failed. Please try again.");
 
-            await _userService.DeleteCodeAsync(dto.Email);
+            await _userService.DeleteCodeAsync(dto.Email); // نمسح السطر بعد نجاح العملية
 
             return Ok("Password has been reset successfully.");
         }

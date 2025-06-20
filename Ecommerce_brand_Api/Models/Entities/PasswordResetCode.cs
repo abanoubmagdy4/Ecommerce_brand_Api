@@ -13,6 +13,9 @@
         [MaxLength(6)]
         public string Code { get; set; }
 
+        [MaxLength(512)]
+        public string? Token { get; set; }
+
         public DateTime ExpirationTime { get; set; }
 
         public bool IsUsed { get; set; } = false;

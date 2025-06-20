@@ -19,7 +19,6 @@ namespace Ecommerce_brand_Api.Services
         private readonly IConfiguration config;
         private readonly EmailSettings _emailSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IDistributedCache _cache;
 
         public UserService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
@@ -27,8 +26,8 @@ namespace Ecommerce_brand_Api.Services
                            AppDbContext context,
                            IConfiguration config,
                            IOptions<EmailSettings> options,
-                           RoleManager<IdentityRole> roleManager,
-                           IDistributedCache cache )
+                           RoleManager<IdentityRole> roleManager
+                          )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -37,7 +36,6 @@ namespace Ecommerce_brand_Api.Services
             this.config = config;
             _emailSettings = options.Value;
             _roleManager = roleManager;
-            _cache = cache;
         }
 
 
@@ -184,49 +182,47 @@ namespace Ecommerce_brand_Api.Services
         }
         public async Task SaveCodeAndTokenAsync(string email, string code, string token)
         {
-            var data = new ResetData
+            var old = await _context.PasswordResetCodes.FirstOrDefaultAsync(x => x.Email == email);
+            if (old != null)
+                _context.PasswordResetCodes.Remove(old);
+
+            var record = new PasswordResetCode
             {
+                Email = email,
                 Code = code,
-                Token = token
+                Token = token,
+                ExpirationTime = DateTime.Now.AddMinutes(15),
+                IsUsed = false
             };
 
-            var json = JsonSerializer.Serialize(data);
-
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
-            };
-
-            await _cache.SetStringAsync($"reset_{email}", json, options);
+            _context.PasswordResetCodes.Add(record);
+            await _context.SaveChangesAsync();
         }
+
         public async Task<bool> ValidateCodeAsync(string email, string code)
         {
-            var json = await _cache.GetStringAsync($"reset_{email}");
-            if (string.IsNullOrEmpty(json))
-                return false;
+            var record = await _context.PasswordResetCodes
+                .FirstOrDefaultAsync(x => x.Email == email && x.Code == code && x.ExpirationTime > DateTime.Now && !x.IsUsed);
 
-            var data = JsonSerializer.Deserialize<ResetData>(json);
-            return data?.Code == code;
+            return record != null;
         }
-
         public async Task<string?> GetStoredResetTokenAsync(string email)
         {
-            var json = await _cache.GetStringAsync($"reset_{email}");
-            if (string.IsNullOrEmpty(json))
-                return null;
+            var record = await _context.PasswordResetCodes
+                .FirstOrDefaultAsync(x => x.Email == email && x.ExpirationTime > DateTime.Now && !x.IsUsed);
 
-            var data = JsonSerializer.Deserialize<ResetData>(json);
-            return data?.Token;
+            return record?.Token;
         }
-
-
 
         public async Task DeleteCodeAsync(string email)
         {
-            await _cache.RemoveAsync($"reset_{email}");
+            var record = await _context.PasswordResetCodes.FirstOrDefaultAsync(x => x.Email == email);
+            if (record != null)
+            {
+                _context.PasswordResetCodes.Remove(record);
+                await _context.SaveChangesAsync();
+            }
         }
-
-
 
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
@@ -267,11 +263,8 @@ namespace Ecommerce_brand_Api.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public Task SaveCodeAsync(string email, string code)
-        {
-            throw new NotImplementedException();
-        }
+      
 
-     
+      
     }
 }
