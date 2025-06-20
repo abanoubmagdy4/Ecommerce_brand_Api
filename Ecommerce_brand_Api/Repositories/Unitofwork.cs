@@ -7,6 +7,7 @@ namespace Ecommerce_brand_Api.Repositories
     {
         private readonly AppDbContext _Context;
         private readonly IServiceProvider _ServiceProvider;
+
         public Unitofwork(AppDbContext context, IServiceProvider serviceProvider)
         {
 
@@ -37,10 +38,9 @@ namespace Ecommerce_brand_Api.Repositories
             return service;
         }
 
-        public Task<int> SaveChangesAsync()
-        {
-            return _Context.SaveChangesAsync();
-        }
+        public ICategoryRepository Categories => _ServiceProvider.GetService<ICategoryRepository>()?? throw new InvalidOperationException("CategoryRepository not found");
+
+        public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()
         {

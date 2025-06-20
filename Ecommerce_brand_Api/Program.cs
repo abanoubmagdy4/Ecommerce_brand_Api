@@ -2,6 +2,8 @@ using Ecommerce_brand_Api.Helpers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
+using Ecommerce_brand_Api.Repositories.Interfaces;
+using Ecommerce_brand_Api.Repositories;
 
 using Ecommerce_brand_Api.Services;
 using Ecommerce_brand_Api.Services.Interfaces;
@@ -51,8 +53,10 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-
+            builder.Services.AddScoped<IUnitofwork,Unitofwork>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
 

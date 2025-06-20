@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+.vs/
+obj/
+=======
 ## Ignore Visual Studio files
 .vs/
 *.user
@@ -21,3 +25,4 @@ node_modules/
 ## Ignore IDE settings
 .idea/
 .vscode/
+>>>>>>> cb6c4fd8db6b61c96e17048649ea0d191f6172b1
