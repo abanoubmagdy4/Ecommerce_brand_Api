@@ -4,10 +4,10 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<CategoryDTO>>GetAllAsync();
-        Task<CategoryDTO?> GetByIdAsync(int id);
-        Task AddAsync(CategoryDTO dto);
-        Task<bool> UpdateAsync(int id, CategoryDTO dto);
+        Task<IEnumerable<CategoryDto>>GetAllAsync();
+        Task<CategoryDto?> GetByIdAsync(int id);
+        Task AddAsync(CategoryDto dto);
+        Task<bool> UpdateAsync(int id, CategoryDto dto);
         Task<bool> DeleteAsync(int id);
     }
 }

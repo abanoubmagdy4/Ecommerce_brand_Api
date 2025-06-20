@@ -17,8 +17,6 @@
         public decimal UnitPrice { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Discount cannot be negative")]
-        public decimal Discount { get; set; }
-        public bool IsDeleted { get; set; } = false;
         public decimal TotalPrice { get; set; }
     }
 }

@@ -12,15 +12,9 @@
 
         public decimal UnitPrice { get; set; }
 
-
-
-        public decimal Discount { get; set; }
-        public bool IsDeleted { get; set; } = false;
-        public decimal TotalPrice { get; set; }  // = (UnitPrice * Quantity) - Discount
+        public decimal TotalPriceForOneItemType { get; set; }
 
         public Cart Cart { get; set; } = null!;
         public Product Product { get; set; } = null!;
-
-
     }
 }
