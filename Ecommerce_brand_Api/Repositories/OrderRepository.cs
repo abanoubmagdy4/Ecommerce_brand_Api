@@ -1,10 +1,11 @@
-﻿using Ecommerce_brand_Api.Models.Entities;
-
+﻿
 namespace Ecommerce_brand_Api.Repositories
 {
-    public class OrderRepository : BaseRepository<Order>, IOrderRepository    
+    public class OrderRepository : BaseRepository<Order>, IOrderRepository
     {
-
+        public OrderRepository(AppDbContext context) : base(context)
+        {
+        }
     }
-    
+
 }

@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Ecommerce_brand_Api.Data.Configurations
 {
     public class CategoryConfiguration : IEntityTypeConfiguration<Category>

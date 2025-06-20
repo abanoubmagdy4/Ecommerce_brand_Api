@@ -52,6 +52,16 @@ namespace Ecommerce_brand_Api.Repositories
             _context.Set<T>().Attach(entity);
         }
 
+        public virtual void SoftDelete(T entity)
+        {
+            var property = _context.Entry(entity).Property("IsDeleted");
+            if (property != null)
+            {
+                property.CurrentValue = true;
+                _dbSet.Update(entity);
+            }
+        }
+
     }
 
 }

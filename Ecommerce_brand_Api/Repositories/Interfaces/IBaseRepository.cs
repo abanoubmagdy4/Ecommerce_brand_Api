@@ -9,5 +9,6 @@
         Task DeleteAsync(int id);
         Task AddRangeAsync(IEnumerable<T> entities);
         void Attach(T entity);
+        void SoftDelete(T entity);
     }
 }

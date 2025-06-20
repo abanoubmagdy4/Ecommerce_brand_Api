@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Ecommerce_brand_Api.Data.Configurations
 {
     public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
@@ -17,5 +19,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
 
             builder.HasQueryFilter(ci => !ci.IsDeleted);
         }
+
+     
     }
 }

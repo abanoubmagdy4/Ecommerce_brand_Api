@@ -1,2 +1,28 @@
+<<<<<<< HEAD
 .vs/
 obj/
+=======
+## Ignore Visual Studio files
+.vs/
+*.user
+*.suo
+
+## Ignore build output
+bin/
+obj/
+
+## Ignore other temp files
+*.log
+*.tmp
+
+## Ignore secrets
+appsettings.Development.json
+secrets.json
+
+## Ignore Node.js (لو بتستخدمه في frontend)
+node_modules/
+
+## Ignore IDE settings
+.idea/
+.vscode/
+>>>>>>> cb6c4fd8db6b61c96e17048649ea0d191f6172b1

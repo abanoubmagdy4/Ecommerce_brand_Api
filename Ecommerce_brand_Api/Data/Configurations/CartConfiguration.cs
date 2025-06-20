@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Ecommerce_brand_Api.Data.Configurations
 {
     public class CartConfiguration : IEntityTypeConfiguration<Cart>
@@ -16,6 +18,8 @@ namespace Ecommerce_brand_Api.Data.Configurations
             builder.HasMany(c => c.CartItems)
                 .WithOne(ci => ci.Cart)
                 .HasForeignKey(ci => ci.CartId);
+        }
+
         }
     }
 }
