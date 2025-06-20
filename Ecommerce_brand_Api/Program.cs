@@ -1,12 +1,6 @@
 using Ecommerce_brand_Api.Helpers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-using Microsoft.OpenApi.Models;
-using Ecommerce_brand_Api.Repositories.Interfaces;
-using Ecommerce_brand_Api.Repositories;
-
-using Ecommerce_brand_Api.Services;
-using Ecommerce_brand_Api.Services.Interfaces;
 
 namespace Ecommerce_brand_Api
 {
@@ -53,7 +47,7 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-            builder.Services.AddScoped<IUnitofwork,Unitofwork>();
+            builder.Services.AddScoped<IUnitofwork, Unitofwork>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -79,7 +73,7 @@ namespace Ecommerce_brand_Api
                     Version = "1.0.0"
                 });
             });
-             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+            builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
 
 
@@ -90,7 +84,7 @@ namespace Ecommerce_brand_Api
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
 
                 });
-            
+
             app.UseHttpsRedirection();
 
             app.UseAuthentication();

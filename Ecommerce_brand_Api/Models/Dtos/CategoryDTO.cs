@@ -1,6 +1,6 @@
 ﻿namespace Ecommerce_brand_Api.Models.Dtos
 {
-    public class CategoryDTO
+    public class CategoryDto
     {
         public int Id { get; set; }
 

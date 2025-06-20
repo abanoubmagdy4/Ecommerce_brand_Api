@@ -20,10 +20,17 @@
 
         [Required(ErrorMessage = "Image file name is required")]
         [MaxLength(255)]
-        public string ImageFileName { get; set; } = string.Empty;  
+        public string ImageFileName { get; set; } = string.Empty;
 
         [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
         public decimal DiscountPercentage { get; set; }
+        public decimal PriceAfterDiscount
+        {
+            get
+            {
+                return Price - (Price * DiscountPercentage / 100);
+            }
+        }
         public bool IsDeleted { get; set; } = false;
 
         [Required]
