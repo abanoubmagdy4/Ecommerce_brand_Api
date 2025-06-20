@@ -3,6 +3,7 @@ using Ecommerce_brand_Api.Helpers.Enums;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Ecommerce_brand_Api.Controllers

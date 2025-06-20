@@ -63,6 +63,7 @@ namespace Ecommerce_brand_Api
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IUnitofwork, Unitofwork>();
             builder.Services.AddScoped<IOrderService, OrderServices>();
+            builder.Services.AddAutoMapper(typeof(Program));
 
 
 

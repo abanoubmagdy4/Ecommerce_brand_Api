@@ -1,4 +1,6 @@
-﻿namespace Ecommerce_brand_Api.Data.configurations
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Ecommerce_brand_Api.Data.configurations
 {
     public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
     {
