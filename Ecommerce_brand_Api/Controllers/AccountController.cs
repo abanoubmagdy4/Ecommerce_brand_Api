@@ -17,8 +17,9 @@
         }
 
         [HttpPost("Login")]
+        [Consumes("multipart/form-data")]
 
-        public async Task<ActionResult> Login(LoginDto loginDto)
+        public async Task<ActionResult> Login([FromForm]LoginDto loginDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -33,7 +34,8 @@
 
 
         [HttpPost("Register")]
-        public async Task<ActionResult> Register( RegisterDto registerDTO)
+
+        public async Task<ActionResult> Register( [FromBody]RegisterDto registerDTO)
         {
             if (ModelState.IsValid)
             {
@@ -46,8 +48,9 @@
         }
 
         [HttpPost("AdminRegister")]
+        [Consumes("multipart/form-data")]
 
-        public async Task<ActionResult> AdminRegister( RegisterDto registerDTO)
+        public async Task<ActionResult> AdminRegister([FromForm] RegisterDto registerDTO)
         {
             if (ModelState.IsValid)
             {
@@ -60,7 +63,9 @@
         }
 
         [HttpPost("request-reset-code")]
-        public async Task<IActionResult> RequestResetCode( PasswordResetRequestDTO dto)
+        [Consumes("multipart/form-data")]
+
+        public async Task<IActionResult> RequestResetCode( [FromForm] PasswordResetRequestDTO dto)
         {
             var user = await _userService.FindByEmailAsync(dto.Email);
             if (user == null)
@@ -75,7 +80,9 @@
         }
 
         [HttpPost("reset-password-with-code")]
-        public async Task<IActionResult> ResetPasswordWithCode( ResetPasswordWithCodeDto dto)
+        [Consumes("multipart/form-data")]
+
+        public async Task<IActionResult> ResetPasswordWithCode( [FromForm] ResetPasswordWithCodeDto dto)
         {
             var isValid = await _userService.ValidateCodeAsync(dto.Email, dto.Code);
             if (!isValid)

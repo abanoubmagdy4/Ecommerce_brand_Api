@@ -66,12 +66,13 @@ namespace Ecommerce_brand_Api
                     Version = "1.0.0"
                 });
             });
-            //  builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
 
-            
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
+
+            app.UseSwagger(options => options.OpenApiVersion =
+            Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
+            app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
 
