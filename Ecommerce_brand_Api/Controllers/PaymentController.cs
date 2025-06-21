@@ -78,7 +78,7 @@ namespace Ecommerce_brand_Api.Controllers
         //        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         //        httpClient.DefaultRequestHeaders.Authorization =
-        //            new AuthenticationHeaderValue("Token", "egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
+        //            new AuthenticationHeaderValue("", "");
 
         //        var response = await httpClient.PostAsync(url, content);
 
