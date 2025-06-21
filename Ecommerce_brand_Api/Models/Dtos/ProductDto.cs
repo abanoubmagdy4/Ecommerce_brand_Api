@@ -22,7 +22,7 @@
         public int StockQuantity { get; set; }
 
         [Required(ErrorMessage = "Image file name is required")]
-        public List<ProductImagesPathsDto> ProductImagesPaths { get; set; } = new();
+        public List<IFormFile> Images { get; set; } = new();
 
         [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
         public decimal DiscountPercentage { get; set; }

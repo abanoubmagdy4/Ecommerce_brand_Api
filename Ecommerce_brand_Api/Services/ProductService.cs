@@ -25,23 +25,20 @@ namespace Ecommerce_brand_Api.Services
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
-            foreach (var imageDto in dto.ProductImagesPaths)
+            foreach (var file in dto.Images)
             {
-                if (imageDto.File != null && imageDto.File.Length > 0)
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                var fullPath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageDto.File.FileName);
-                    var fullPath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var stream = new FileStream(fullPath, FileMode.Create))
-                    {
-                        await imageDto.File.CopyToAsync(stream);
-                    }
-
-                    product.ProductImagesPaths.Add(new ProductImagesPaths
-                    {
-                        ImagePath = Path.Combine("uploads", fileName).Replace("\\", "/")
-                    });
+                    await file.CopyToAsync(stream);
                 }
+
+                product.ProductImagesPaths.Add(new ProductImagesPaths
+                {
+                    ImagePath = Path.Combine("uploads", fileName).Replace("\\", "/")
+                });
             }
 
             await _unitOfWork.Products.AddAsync(product);
