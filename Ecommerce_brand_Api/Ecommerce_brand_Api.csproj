@@ -5,6 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="wwwroot\Images\**" />
+      <Content Remove="wwwroot\Images\**" />
+      <EmbeddedResource Remove="wwwroot\Images\**" />
+      <None Remove="wwwroot\Images\**" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="AutoMapper" Version="14.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
@@ -20,5 +26,8 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="9.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="wwwroot\uploads\" />
     </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@
 
         public int StockQuantity { get; set; }
 
-        public string ImageFileName { get; set; } = string.Empty;
+        public List<ProductImagesPaths> ProductImagesPaths { get; set; } = new List<ProductImagesPaths>();
 
         public decimal DiscountPercentage { get; set; }
         public decimal PriceAfterDiscount { get; set; }
