@@ -13,10 +13,9 @@
 
         // Navigation Property
         public ApplicationUser User { get; set; } = null!;
-        public Discount? Discount { get; set; }
+        public Discount Discount { get; set; }
         public Address Address { get; set; }
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-
 
         /// <summary>
         /// Updates the total base price, total amount, and the last updated timestamp for the cart.

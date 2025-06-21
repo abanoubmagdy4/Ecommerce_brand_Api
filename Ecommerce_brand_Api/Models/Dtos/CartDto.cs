@@ -1,7 +1,10 @@
-﻿namespace Ecommerce_brand_Api.Models.Dtos
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace Ecommerce_brand_Api.Models.Dtos
 {
     public class CartDto
     {
+        [BindNever]
         public int Id { get; set; }
 
         [Required]

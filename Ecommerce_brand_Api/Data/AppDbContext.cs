@@ -10,6 +10,7 @@ namespace Ecommerce_brand_Api.Data
         }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Status> Statuses { get; set; }
+        public DbSet<Discount> Discounts { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }

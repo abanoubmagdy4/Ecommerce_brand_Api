@@ -3,9 +3,10 @@
     public class Discount
     {
         public int Id { get; set; }
-        public decimal DicountValue { get; set; } = 0;
+        public decimal DicountValue { get; set; } = 0; //EGP
 
         public int orderId { get; set; }
         public Order order { get; set; }
+
     }
 }
