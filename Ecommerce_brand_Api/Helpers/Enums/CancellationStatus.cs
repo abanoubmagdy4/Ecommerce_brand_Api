@@ -1,6 +1,9 @@
 ﻿namespace Ecommerce_brand_Api.Helpers.Enums
 {
-    public class CancellationStatus
+    public enum CancellationStatus
     {
+        Pending = 1,
+        Approved = 8,
+        Rejected = 9
     }
 }
