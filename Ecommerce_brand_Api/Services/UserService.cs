@@ -85,9 +85,10 @@ namespace Ecommerce_brand_Api.Services
                     City = address.City,
                     Country = address.Country,
                     Floor = address.Floor,
-                    GovernorateShippingCost = _mapper.Map<GovernorateShippingCost>(address.GovernrateShippingCostDto),
+                    GovernorateShippingCostId = address.GovernrateShippingCostDto.Id,
                     Street = address.Street,
                     IsDeleted = address.IsDeleted,
+                    
                 };
                 addresses.Add(add);
 

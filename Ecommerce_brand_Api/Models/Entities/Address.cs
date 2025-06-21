@@ -19,10 +19,12 @@
         [MaxLength(50)]
         public string City { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(50)]
-        public GovernorateShippingCost GovernorateShippingCost { get; set; }
+        [ForeignKey("GovernorateShippingCost")]
+        public int GovernorateShippingCostId { get; set; }
 
+        [Required]
+        public GovernorateShippingCost GovernorateShippingCost { get; set; }
+       
         [Required]
         [MaxLength(50)]
         public string Country { get; set; } = string.Empty;
