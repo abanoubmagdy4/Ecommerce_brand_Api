@@ -1,0 +1,2 @@
+[6/21/2025 2:58:22 AM] Payload: {"test":"payload"}
+[6/21/2025 3:25:05 AM] Payload: {"event":"transaction_paid","amount":150.00,"currency":"EGP","order_id":"123456789"}

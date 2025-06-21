@@ -1,5 +1,6 @@
 ﻿using Ecommerce_brand_Api.Helpers;
 using Microsoft.Extensions.Options;
+using System.Data;
 using System.Net;
 using System.Net.Mail;
 
@@ -46,10 +47,11 @@ namespace Ecommerce_brand_Api.Services
             if (!isPasswordValid)
                 return ServiceResult.Fail("Invalid Email or Password");
 
-            IList<string> userRoles = await _userManager.GetRolesAsync(user);
-
-            // Generate JWT Token
-            string token = _tokenService.CreateToken(user, userRoles);
+            var  userRoles = await _userManager.GetRolesAsync(user);
+            var tokenExpiration = loginDto.IsRemember ? TimeSpan.FromDays(30) : TimeSpan.FromHours(1);
+                     
+            // Generate JWT Token 
+            var token = _tokenService.CreateToken(user, userRoles, tokenExpiration);
 
             return ServiceResult.Ok(token);
 
