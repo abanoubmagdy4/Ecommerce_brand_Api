@@ -10,15 +10,14 @@ namespace Ecommerce_brand_Api.Data.Configurations
             builder.HasKey(c => c.Id);
 
             builder.Property(c => c.TotalBasePrice).HasColumnType("decimal(18,2)");
-            builder.Property(c => c.TotalDiscount).HasColumnType("decimal(18,2)");
+            builder.Property(c => c.Discount).HasColumnType("decimal(18,2)");
             builder.Property(c => c.TotalAmount).HasColumnType("decimal(18,2)");
 
-            builder.HasQueryFilter(c => !c.IsDeleted);
 
             builder.HasMany(c => c.CartItems)
                 .WithOne(ci => ci.Cart)
                 .HasForeignKey(ci => ci.CartId);
         }
 
-        }
+    }
     }

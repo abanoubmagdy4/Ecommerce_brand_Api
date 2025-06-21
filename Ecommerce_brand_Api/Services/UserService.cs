@@ -1,11 +1,7 @@
 ﻿using Ecommerce_brand_Api.Helpers;
-using Ecommerce_brand_Api.Models.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
-using System.Text.Json;
 
 
 namespace Ecommerce_brand_Api.Services
@@ -19,6 +15,7 @@ namespace Ecommerce_brand_Api.Services
         private readonly IConfiguration config;
         private readonly EmailSettings _emailSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private IMapper _mapper;
 
         public UserService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
@@ -63,12 +60,22 @@ namespace Ecommerce_brand_Api.Services
         public async Task<ServiceResult> RegisterAsync([FromForm] RegisterDto registerDTO, string userRole)
         {
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
+            //List<GovernorateShippingCost> governorateShippingCosts = new List<GovernorateShippingCost>();
+            //foreach (var address in registerDTO.Addresses)
+            //{
+            //    var governorateShippingCost = _mapper.Map<GovernorateShippingCost>(address.GovernrateShippingCostDto);
+            //    if (governorateShippingCost != null)
+            //    {
+            //        governorateShippingCosts.Add(governorateShippingCost);
+            //    }
+            //}
             if (existingUser != null)
                 return ServiceResult.Fail("Email ALready Exists !");
 
-             List<Address> addresses = new List<Address>(); 
-         
-            foreach(var address in registerDTO.Addresses) {
+            List<Address> addresses = new List<Address>();
+
+            foreach (var address in registerDTO.Addresses)
+            {
                 Address add = new Address()
                 {
                     Apartment = address.Apartment,
@@ -76,7 +83,7 @@ namespace Ecommerce_brand_Api.Services
                     City = address.City,
                     Country = address.Country,
                     Floor = address.Floor,
-                    State = address.State,
+                    GovernorateShippingCost = _mapper.Map<GovernorateShippingCost>(address.GovernrateShippingCostDto),
                     Street = address.Street,
                     IsDeleted = address.IsDeleted,
                 };
@@ -250,7 +257,7 @@ namespace Ecommerce_brand_Api.Services
             await smtpClient.SendMailAsync(mailMessage);
         }
 
-       
+
         public async Task<bool> ResetPasswordAsync(ApplicationUser user, string token, string newPassword)
         {
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
@@ -263,8 +270,8 @@ namespace Ecommerce_brand_Api.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-      
 
-      
+
+
     }
 }
