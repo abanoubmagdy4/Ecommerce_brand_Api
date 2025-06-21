@@ -45,24 +45,60 @@ namespace Ecommerce_brand_Api.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var product = await _unitOfWork.Products.GetByIdAsync(id);
+            if (product == null) return false;
+
+            product.IsDeleted = true;
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
-        public Task<IEnumerable<ProductDto>> GetAllAsync()
+
+        public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var products = await _unitOfWork.Products.GetAllWithImagesAsync(); // Ensure Include Images in repo
+            return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
-        public Task<ProductDto?> GetByIdAsync(int id)
+
+        public async Task<ProductDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(id); // Ensure Include Images
+            return product == null ? null : _mapper.Map<ProductDto>(product);
         }
 
-        public Task<bool> UpdateAsync(int id, ProductDto dto)
+
+        public async Task<bool> UpdateAsync(int id, ProductDto dto)
         {
-            throw new NotImplementedException();
+            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(id);
+            if (product == null) return false;
+
+            _mapper.Map(dto, product);
+
+            // Optional: remove old images if needed (file system and DB)
+            if (dto.Images != null && dto.Images.Any())
+            {
+                string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                foreach (var file in dto.Images)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var fullPath = Path.Combine(uploadsFolder, fileName);
+
+                    using var stream = new FileStream(fullPath, FileMode.Create);
+                    await file.CopyToAsync(stream);
+
+                    product.ProductImagesPaths.Add(new ProductImagesPaths
+                    {
+                        ImagePath = Path.Combine("uploads", fileName).Replace("\\", "/")
+                    });
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
+
     }
 }
