@@ -18,9 +18,6 @@ namespace Ecommerce_brand_Api.Data.Configurations
             builder.Property(p => p.Price)
                 .HasColumnType("decimal(18,2)");
 
-            builder.Property(p => p.ImageFileName)
-                .HasMaxLength(255);
-
             builder.Property(p => p.DiscountPercentage)
                 .HasColumnType("decimal(5,2)");
 

@@ -14,6 +14,20 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<GovernrateShippingCostDto, GovernorateShippingCost>();
 
             CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
+
+            CreateMap<ProductDto, Product>();
+
+            CreateMap<Product, ProductDto>();
+
+            // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
+            CreateMap<Product, ProductDto>().ReverseMap();
+
+            // ProductImagesPaths ↔ ProductImagesPathsDto
+            CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
+                .ForMember(dest => dest.File, opt => opt.Ignore()); // مابش الـ IFormFile
+
+            CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
+                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
         }
     }
 }

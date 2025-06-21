@@ -1,7 +1,7 @@
 ﻿namespace Ecommerce_brand_Api.Models.Dtos
 {
-   
-     public class ProductDto
+
+    public class ProductDto
     {
         public int Id { get; set; }
 
@@ -13,18 +13,21 @@
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
 
+        [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
 
+        [Required]
         [Range(0, int.MaxValue)]
         public int StockQuantity { get; set; }
 
         [Required(ErrorMessage = "Image file name is required")]
-        [MaxLength(255)]
-        public string ImageFileName { get; set; } = string.Empty;
+        public List<ProductImagesPathsDto> ProductImagesPaths { get; set; } = new();
 
         [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
         public decimal DiscountPercentage { get; set; }
+
+        [Required]
         public decimal PriceAfterDiscount
         {
             get

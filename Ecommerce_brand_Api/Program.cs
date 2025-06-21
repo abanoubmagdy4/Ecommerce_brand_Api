@@ -52,8 +52,10 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryService, CateogryService>();
             builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -70,15 +72,17 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddSwaggerGen(c =>
             {
+                c.EnableAnnotations();
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Ecommerce Brand API",
                     Version = "1.0.0"
                 });
+                c.SchemaFilter<FormFileSchemaFilter>();
             });
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
-
+            app.UseStaticFiles();
 
             app.UseSwagger(options => options.OpenApiVersion =
             Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);

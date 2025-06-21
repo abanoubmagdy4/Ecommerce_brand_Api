@@ -43,6 +43,11 @@ namespace Ecommerce_brand_Api.Repositories
             _ServiceProvider.GetService<IGovernrateShippingCostRepository>()
             ?? throw new InvalidOperationException("No service registered for IGovernrateShippingCostRepository");
 
+        public IProductRepository Products =>
+         _ServiceProvider.GetService<IProductRepository>()
+         ?? throw new InvalidOperationException("No service registered for IGovernrateShippingCostRepository");
+
+
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()
