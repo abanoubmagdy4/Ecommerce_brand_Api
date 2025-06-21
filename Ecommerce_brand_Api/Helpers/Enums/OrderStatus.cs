@@ -5,10 +5,12 @@ namespace Ecommerce_brand_Api.Helpers.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum OrderStatus
     {
-        Pending = 1,
-        Processing = 2,
-        Shipped = 3,
-        Delivered = 4,
-        Canceled = 5
+        Pending = 0,          
+        Processing = 1,      
+        Canceled = 2,        
+        Shipped = 3,       
+        Delivered = 4,          
+        RefundRequested = 5,   
+        Refunded = 6
     }
 }

@@ -4,14 +4,15 @@ using System.Text.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Azure.Core;
 namespace Ecommerce_brand_Api.Controllers
 {
-    
 
-        [Route("api/paymob")]
-        [ApiController]
-        public class PaymentController : ControllerBase
-        {
+
+    [Route("api/paymob")]
+    [ApiController]
+    public class PaymentController : ControllerBase
+    {
 
         //[HttpPost("checkout")]
         //public async Task<IActionResult> Checkout([FromBody] CartDto cartDto)
@@ -103,11 +104,11 @@ namespace Ecommerce_brand_Api.Controllers
         //            var clientSecret = secretElement.GetString();
 
         //            var publicKey = "egy_pk_test_Wzpx5ANqdUPO28zxGtNd6HqkxiQMTFVc";
-                          
+
         //            ///add payment model to db
         //            var checkoutUrl = $"https://accept.paymob.com/unifiedcheckout/?publicKey={publicKey}&clientSecret={clientSecret}";
 
-                    
+
         //            return Ok(new
         //            {
         //                Message = "Payment intention created.",
@@ -147,12 +148,38 @@ namespace Ecommerce_brand_Api.Controllers
 
 
         [HttpPost("webhook")]
-            public IActionResult Webhook([FromBody] object payload)
-            {
+        public IActionResult Webhook([FromBody] object payload)
+        {
             System.IO.File.AppendAllText("webhook_log.txt", $"[{DateTime.Now}] Payload: {payload}\n");
 
             return Ok();
-            }
         }
+
+        //public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
+        //{
+           
+
+        //}
+        //public async Task<IActionResult> ClientCancellationRequest(int transactionId, decimal ammount)
+        //{
+
+
+        //}
+        //public async Task<IActionResult> AdminRefundRequest(int transactionId , decimal ammount)
+        //{
+        //   amount_cent = ammount *100 ,
+        //    var client = new HttpClient();
+        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
+        //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
+        //    var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
+        //    request.Content = content;
+        //    var response = await client.SendAsync(request);
+        //    response.EnsureSuccessStatusCode();
+        //    Console.WriteLine(await response.Content.ReadAsStringAsync());
+        
+        //}
+
+
+}
     }
 
