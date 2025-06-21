@@ -14,7 +14,7 @@
         public decimal Discount { get; set; }
         public decimal TotalAmount { get; set; }
 
-        public IdentityUser User { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
 
         public void UpdateTotals()
         {
