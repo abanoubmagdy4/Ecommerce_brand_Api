@@ -1,5 +1,4 @@
 ﻿
-using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Repositories
 {
@@ -38,7 +37,11 @@ namespace Ecommerce_brand_Api.Repositories
             return service;
         }
 
-        public ICategoryRepository Categories => _ServiceProvider.GetService<ICategoryRepository>()?? throw new InvalidOperationException("CategoryRepository not found");
+        public ICategoryRepository Categories => _ServiceProvider.GetService<ICategoryRepository>() ?? throw new InvalidOperationException("CategoryRepository not found");
+
+        public IGovernrateShippingCostRepository GovernratesShippingCosts =>
+            _ServiceProvider.GetService<IGovernrateShippingCostRepository>()
+            ?? throw new InvalidOperationException("No service registered for IGovernrateShippingCostRepository");
 
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 

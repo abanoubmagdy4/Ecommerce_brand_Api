@@ -2,6 +2,6 @@
 {
     public interface ITokenService
     {
-        string CreateToken(ApplicationUser user, IList<string> roles);
+        string CreateToken(ApplicationUser user, IList<string> roles, TimeSpan expiration);
     }
 }

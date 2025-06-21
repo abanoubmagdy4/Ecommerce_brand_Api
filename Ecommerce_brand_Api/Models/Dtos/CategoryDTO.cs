@@ -3,7 +3,6 @@
     public class CategoryDto
     {
         public int Id { get; set; }
-
         [Required(ErrorMessage = "Name is required")]
         [MinLength(3, ErrorMessage = "Name must be at least 3 characters")]
         [MaxLength(70, ErrorMessage = "Name must not exceed 70 characters")]

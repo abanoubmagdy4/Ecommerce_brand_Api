@@ -2,7 +2,7 @@
 {
     public class AddressDto
     {
-     
+
         [Required]
         [MaxLength(100)]
         public string Street { get; set; } = string.Empty;
@@ -12,8 +12,7 @@
         public string City { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(50)]
-        public string State { get; set; } = string.Empty;
+        public GovernrateShippingCostDto GovernrateShippingCostDto { get; set; }
 
         [Required]
         [MaxLength(50)]

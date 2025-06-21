@@ -2,9 +2,13 @@
 {
     public interface IUnitofwork : IDisposable
     {
-        public IBaseRepository<T> GetBaseRepository<T>() where T :class;
-        public IOrderRepository GetOrderRepository();
+        IBaseRepository<T> GetBaseRepository<T>() where T : class;
+
+        IOrderRepository GetOrderRepository();
         ICategoryRepository Categories { get; }
+        IGovernrateShippingCostRepository GovernratesShippingCosts { get; }
+
+        //IGovernrateShippingCostRepository GovernorateShippingCost { get; }
         //IProductRepository Products { get; }
         //ICartRepository Carts { get; }
         //ICartItemRepository CartItems { get; }
@@ -12,6 +16,5 @@
         //IFavoriteRepository Favorites { get; }
 
         Task<int> SaveChangesAsync();
-
     }
 }

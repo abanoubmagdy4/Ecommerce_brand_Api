@@ -15,7 +15,7 @@ namespace Ecommerce_brand_Api.Services
             _config = config;
         }
 
-        public string CreateToken(ApplicationUser user, IList<string> roles)
+        public string CreateToken(ApplicationUser user, IList<string> roles, TimeSpan expiration)
         {
             var claims = new List<Claim>
         {
@@ -35,7 +35,7 @@ namespace Ecommerce_brand_Api.Services
                 issuer: _config["JWT:Issuer"],
                 audience: _config["JWT:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["JWT:DurationInMinutes"]!)),
+                expires: DateTime.UtcNow.Add(expiration),
                 signingCredentials: creds
             );
 

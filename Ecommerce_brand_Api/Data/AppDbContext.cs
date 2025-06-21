@@ -21,6 +21,7 @@ namespace Ecommerce_brand_Api.Data
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
+        public DbSet<GovernorateShippingCost> GovernratesShippingCosts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
