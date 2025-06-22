@@ -18,7 +18,7 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         public DateTime? DeliveredAt { get; set; }
 
         [Required(ErrorMessage = "Customer ID is required.")]
-        public int CustomerId { get; set; }
+        public string CustomerId { get; set; }
 
         [Required]
         public int ShippingAddressId { get; set; }

@@ -5,14 +5,21 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Azure.Core;
+using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 namespace Ecommerce_brand_Api.Controllers
 {
-
 
     [Route("api/paymob")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
+        public readonly IOrderService _orderService;
+
+
+        public PaymentController(IOrderService orderService)
+        {
+            _orderService = orderService;   
+        }
 
         //[HttpPost("checkout")]
         //public async Task<IActionResult> Checkout([FromBody] CartDto cartDto)
@@ -35,6 +42,25 @@ namespace Ecommerce_brand_Api.Controllers
 
         //    try
         //    {
+
+        //        List<OrderItemDTO> orderItems = cartDto.CartItems.Select(item => new OrderItemDTO
+        //        {
+        //            ProductId = item.ProductId,
+        //            Quantity = item.Quantity,
+        //            TotalPrice = item.TotalPrice
+        //        }).ToList();
+
+
+        //        OrderDTO orderDTO = new OrderDTO() { 
+        //             CreatedAt = DateTime.Now,
+        //             CustomerId =cartDto.UserId,
+        //             ShippingAddressId = cartDto.AddressId,
+        //             OrderItems= orderItems,
+
+        //        };
+        //        var createOrder = await _orderService.AddNewOrderAsync(orderDTO);
+
+
         //        var httpClient = new HttpClient();
 
         //        var url = "https://accept.paymob.com/v1/intention/";
@@ -84,7 +110,7 @@ namespace Ecommerce_brand_Api.Controllers
         //        var response = await httpClient.PostAsync(url, content);
 
         //        if (!response.IsSuccessStatusCode)
-        //        {                      
+        //        {
         //            var errorBody = await response.Content.ReadAsStringAsync();
         //            return StatusCode((int)response.StatusCode, new
         //            {
@@ -92,7 +118,7 @@ namespace Ecommerce_brand_Api.Controllers
         //                Status = response.StatusCode,
         //                Details = errorBody
         //            });
-        //        } 
+        //        }
 
         //        var responseBody = await response.Content.ReadAsStringAsync();
 
@@ -147,17 +173,17 @@ namespace Ecommerce_brand_Api.Controllers
         //}
 
 
-        [HttpPost("webhook")]
-        public IActionResult Webhook([FromBody] object payload)
-        {
-            System.IO.File.AppendAllText("webhook_log.txt", $"[{DateTime.Now}] Payload: {payload}\n");
+        //[HttpPost("webhook")]
+        //public IActionResult Webhook([FromBody] object payload)
+        //{
+        //    System.IO.File.AppendAllText("webhook_log.txt", $"[{DateTime.Now}] Payload: {payload}\n");
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         //public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
         //{
-           
+
 
         //}
         //public async Task<IActionResult> ClientCancellationRequest(int transactionId, decimal ammount)
@@ -165,9 +191,9 @@ namespace Ecommerce_brand_Api.Controllers
 
 
         //}
-        //public async Task<IActionResult> AdminRefundRequest(int transactionId , decimal ammount)
+        //public async Task<IActionResult> AdminRefundRequest(int transactionId, decimal ammount)
         //{
-        //   amount_cent = ammount *100 ,
+        //    amount_cent = ammount * 100 ,
         //    var client = new HttpClient();
         //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
         //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
@@ -176,10 +202,10 @@ namespace Ecommerce_brand_Api.Controllers
         //    var response = await client.SendAsync(request);
         //    response.EnsureSuccessStatusCode();
         //    Console.WriteLine(await response.Content.ReadAsStringAsync());
-        
+
         //}
 
 
-}
+    }
     }
 
