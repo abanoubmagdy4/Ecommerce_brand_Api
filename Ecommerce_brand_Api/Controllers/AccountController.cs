@@ -41,6 +41,7 @@
             {
                 ServiceResult serviceResult = await _userService.RegisterAsync(registerDTO, "Customer");
                 if (!serviceResult.Success) return BadRequest(new ApiErrorResponse(StatusCodes.Status400BadRequest, serviceResult.ErrorMessage!));
+                
                 return Ok("User Register Success");
             }
 
@@ -49,7 +50,6 @@
 
         [HttpPost("AdminRegister")]
         [Consumes("multipart/form-data")]
-
         public async Task<ActionResult> AdminRegister([FromForm] RegisterDto registerDTO)
         {
             if (ModelState.IsValid)

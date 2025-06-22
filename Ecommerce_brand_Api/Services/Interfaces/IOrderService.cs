@@ -3,7 +3,7 @@ using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IOrderService 
+    public interface IOrderService
     {
         /// <summary>
         /// Retrieves all orders asynchronously.
@@ -57,7 +57,5 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<IEnumerable<OrderDTO>> GetOrdersWithCustomerAsync();
         Task<IEnumerable<OrderDTO>> GetOrdersByStatusAsync(OrderStatus status);
         Task<IEnumerable<OrderDTO>> GetOrdersOverTotalAsync(decimal amount);
-
-
     }
 }

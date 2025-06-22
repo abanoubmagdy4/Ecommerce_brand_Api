@@ -13,7 +13,7 @@ namespace Ecommerce_brand_Api.Controllers
             _productService = productService;
         }
 
-       
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -21,7 +21,7 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(products);
         }
 
-      
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -29,7 +29,7 @@ namespace Ecommerce_brand_Api.Controllers
             return product is null ? NotFound() : Ok(product);
         }
 
-        
+
         [HttpPost]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddProduct([FromForm] ProductDto dto)
@@ -41,7 +41,7 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(new { message = "Product created successfully." });
         }
 
-        
+
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductDto dto)
@@ -55,7 +55,7 @@ namespace Ecommerce_brand_Api.Controllers
                 : NotFound();
         }
 
-        
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -65,5 +65,4 @@ namespace Ecommerce_brand_Api.Controllers
                 : NotFound();
         }
     }
-
 }
