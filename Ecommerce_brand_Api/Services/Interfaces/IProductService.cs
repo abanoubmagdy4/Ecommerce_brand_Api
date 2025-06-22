@@ -9,5 +9,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task AddAsync(ProductDto dto);
         Task<bool> UpdateAsync(int id, ProductDto dto);
         Task<bool> DeleteAsync(int id);
+        Task<bool> DecreaseStockAsync(int productId, int quantity);
+        Task<bool> IncreaseStockAsync(int productId, int quantity);
     }
 }
