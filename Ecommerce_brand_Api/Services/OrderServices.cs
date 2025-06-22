@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
@@ -243,6 +244,7 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
+
         public async Task<OrderDTO> ChangeOrderStatusAsync(int orderId, OrderStatus newStatus)
         {
             if (orderId <= 0)
@@ -263,6 +265,11 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new ApplicationException($"An error occurred while changing the order status: {ex.Message}", ex);
             }
+
+
+        public async Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto) { 
+        
+        
 
         }
 

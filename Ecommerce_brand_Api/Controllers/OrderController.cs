@@ -14,7 +14,7 @@ namespace Ecommerce_brand_Api.Controllers
     /// <remarks>This controller handles operations related to orders, including retrieving, creating,
     /// updating,  and deleting orders. It uses the <see cref="IOrderService"/> to perform business logic and data 
     /// access operations. All endpoints are secured and require authorization.</remarks>
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase

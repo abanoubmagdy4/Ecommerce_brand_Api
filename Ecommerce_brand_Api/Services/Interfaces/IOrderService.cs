@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Services.Interfaces
@@ -57,7 +58,11 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<IEnumerable<OrderDTO>> GetOrdersWithCustomerAsync();
         Task<IEnumerable<OrderDTO>> GetOrdersByStatusAsync(OrderStatus status);
         Task<IEnumerable<OrderDTO>> GetOrdersOverTotalAsync(decimal amount);
+
         Task<OrderDTO> ChangeOrderStatusAsync(int orderId, OrderStatus newStatus);
+
+
+        Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto);
 
     }
 }
