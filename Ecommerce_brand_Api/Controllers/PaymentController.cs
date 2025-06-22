@@ -21,189 +21,177 @@ namespace Ecommerce_brand_Api.Controllers
             _orderService = orderService;   
         }
 
-        //[HttpPost("checkout")]
-        //public async Task<IActionResult> Checkout([FromBody] CartDto cartDto)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        var errors = ModelState
-        //            .Where(e => e.Value.Errors.Any())
-        //            .ToDictionary(
-        //                e => e.Key,
-        //                e => e.Value.Errors.Select(x => x.ErrorMessage).ToArray()
-        //            );
+        [HttpPost("checkout")]
+        public async Task<IActionResult> Checkout([FromBody] CartDto cartDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(e => e.Value.Errors.Any())
+                    .ToDictionary(
+                        e => e.Key,
+                        e => e.Value.Errors.Select(x => x.ErrorMessage).ToArray()
+                    );
 
-        //        return BadRequest(new
-        //        {
-        //            Message = "Validation failed.",
-        //            Errors = errors
-        //        });
-        //    }
+                return BadRequest(new
+                {
+                    Message = "Validation failed.",
+                    Errors = errors
+                });
+            }
 
-        //    try
-        //    {
+            try
+            {
 
-        //        List<OrderItemDTO> orderItems = cartDto.CartItems.Select(item => new OrderItemDTO
-        //        {
-        //            ProductId = item.ProductId,
-        //            Quantity = item.Quantity,
-        //            TotalPrice = item.TotalPrice
-        //        }).ToList();
+                var orderDTO = await _orderService.BuildOrderDtoFromCartAsync(cartDto);
+
+                
+                var createOrder = await _orderService.AddNewOrderAsync(orderDTO);
 
 
-        //        OrderDTO orderDTO = new OrderDTO() { 
-        //             CreatedAt = DateTime.Now,
-        //             CustomerId =cartDto.UserId,
-        //             ShippingAddressId = cartDto.AddressId,
-        //             OrderItems= orderItems,
+                var httpClient = new HttpClient();
 
-        //        };
-        //        var createOrder = await _orderService.AddNewOrderAsync(orderDTO);
+                var url = "https://accept.paymob.com/v1/intention/";
 
+                var payload = new
+                {
+                    amount = 40000,
+                    currency = "EGP",
+                    payment_methods = new[] { 5145466, 5145604, 5145468 },
+                    items = cartDto.CartItems.Select(i => new
+                    {
+                        name = i.namr,
+                        amount = i.TotalPrice,
+                        description = i.p,
+                        quantity = i.Quantity
+                    }),
+                    billing_data = new
+                    {
+                        apartment = "5",
+                        first_name = cartDto.CustomerFirstName,
+                        last_name = cartDto.CustomerLastName,
+                        street = "10 El Tahrir St",
+                        building = "25",
+                        phone_number = cartDto.PhoneNumber,
+                        city = cartDto.City,
+                        country = cartDto.Country,
+                        email = cartDto.BillingEmail,
+                        floor = "3",
+                        state = cartDto.City
+                    },
+                    customer = new
+                    {
+                        first_name = cartDto.CustomerFirstName,
+                        last_name = cartDto.CustomerLastName,
+                        email = cartDto.CustomerEmail,
+                        extras = new { order_source = "website" }
+                    },
+                    extras = new { notes = "Test order from backend" }
+                };
 
-        //        var httpClient = new HttpClient();
+                var json = JsonSerializer.Serialize(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        //        var url = "https://accept.paymob.com/v1/intention/";
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("", "");
 
-        //        var payload = new
-        //        {
-        //            amount = 40000,
-        //            currency = "EGP",
-        //            payment_methods = new[] { 5145466, 5145604, 5145468 },
-        //            items = cartDto.CartItems.Select(i => new
-        //            {
-        //                name = i.namr,
-        //                amount = i.TotalPrice,
-        //                description = i.p,
-        //                quantity = i.Quantity
-        //            }),
-        //            billing_data = new
-        //            {
-        //                apartment = "5",
-        //                first_name = cartDto.CustomerFirstName,
-        //                last_name = cartDto.CustomerLastName,
-        //                street = "10 El Tahrir St",
-        //                building = "25",
-        //                phone_number = cartDto.PhoneNumber,
-        //                city = cartDto.City,
-        //                country = cartDto.Country,
-        //                email = cartDto.BillingEmail,
-        //                floor = "3",
-        //                state = cartDto.City
-        //            },
-        //            customer = new
-        //            {
-        //                first_name = cartDto.CustomerFirstName,
-        //                last_name = cartDto.CustomerLastName,
-        //                email = cartDto.CustomerEmail,
-        //                extras = new { order_source = "website" }
-        //            },
-        //            extras = new { notes = "Test order from backend" }
-        //        };
+                var response = await httpClient.PostAsync(url, content);
 
-        //        var json = JsonSerializer.Serialize(payload);
-        //        var content = new StringContent(json, Encoding.UTF8, "application/json");
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, new
+                    {
+                        Message = "Payment order intention call failed.",
+                        Status = response.StatusCode,
+                        Details = errorBody
+                    });
+                }
 
-        //        httpClient.DefaultRequestHeaders.Authorization =
-        //            new AuthenticationHeaderValue("", "");
+                var responseBody = await response.Content.ReadAsStringAsync();
 
-        //        var response = await httpClient.PostAsync(url, content);
+                var jsonDoc = JsonDocument.Parse(responseBody);
+                var root = jsonDoc.RootElement;
 
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            var errorBody = await response.Content.ReadAsStringAsync();
-        //            return StatusCode((int)response.StatusCode, new
-        //            {
-        //                Message = "Payment order intention call failed.",
-        //                Status = response.StatusCode,
-        //                Details = errorBody
-        //            });
-        //        }
+                if (root.TryGetProperty("client_secret", out JsonElement secretElement))
+                {
+                    var clientSecret = secretElement.GetString();
 
-        //        var responseBody = await response.Content.ReadAsStringAsync();
+                    var publicKey = "egy_pk_test_Wzpx5ANqdUPO28zxGtNd6HqkxiQMTFVc";
 
-        //        var jsonDoc = JsonDocument.Parse(responseBody);
-        //        var root = jsonDoc.RootElement;
-
-        //        if (root.TryGetProperty("client_secret", out JsonElement secretElement))
-        //        {
-        //            var clientSecret = secretElement.GetString();
-
-        //            var publicKey = "egy_pk_test_Wzpx5ANqdUPO28zxGtNd6HqkxiQMTFVc";
-
-        //            ///add payment model to db
-        //            var checkoutUrl = $"https://accept.paymob.com/unifiedcheckout/?publicKey={publicKey}&clientSecret={clientSecret}";
+                    ///add payment model to db
+                    var checkoutUrl = $"https://accept.paymob.com/unifiedcheckout/?publicKey={publicKey}&clientSecret={clientSecret}";
 
 
-        //            return Ok(new
-        //            {
-        //                Message = "Payment intention created.",
-        //                Url = checkoutUrl
-        //            });
-        //        }
-        //        else
-        //        {
-        //            return StatusCode(500, new
-        //            {
-        //                Message = "client_secret not found in response.",
-        //                Response = responseBody
-        //            });
-        //        }
+                    return Ok(new
+                    {
+                        Message = "Payment intention created.",
+                        Url = checkoutUrl
+                    });
+                }
+                else
+                {
+                    return StatusCode(500, new
+                    {
+                        Message = "client_secret not found in response.",
+                        Response = responseBody
+                    });
+                }
 
 
 
 
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        return StatusCode(500, new
-        //        {
-        //            Message = "Could not reach payment service.",
-        //            Details = ex.Message
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new
-        //        {
-        //            Message = "An unexpected error occurred.",
-        //            Details = ex.Message
-        //        });
-        //    }
-        //}
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "Could not reach payment service.",
+                    Details = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An unexpected error occurred.",
+                    Details = ex.Message
+                });
+            }
+        }
 
 
-        //[HttpPost("webhook")]
-        //public IActionResult Webhook([FromBody] object payload)
-        //{
-        //    System.IO.File.AppendAllText("webhook_log.txt", $"[{DateTime.Now}] Payload: {payload}\n");
+        [HttpPost("webhook")]
+        public IActionResult Webhook([FromBody] object payload)
+        {
+            System.IO.File.AppendAllText("webhook_log.txt", $"[{DateTime.Now}] Payload: {payload}\n");
 
-        //    return Ok();
-        //}
+            return Ok();
+        }
 
-        //public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
-        //{
-
-
-        //}
-        //public async Task<IActionResult> ClientCancellationRequest(int transactionId, decimal ammount)
-        //{
+        public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
+        {
 
 
-        //}
-        //public async Task<IActionResult> AdminRefundRequest(int transactionId, decimal ammount)
-        //{
-        //    amount_cent = ammount * 100 ,
-        //    var client = new HttpClient();
-        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
-        //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
-        //    var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
-        //    request.Content = content;
-        //    var response = await client.SendAsync(request);
-        //    response.EnsureSuccessStatusCode();
-        //    Console.WriteLine(await response.Content.ReadAsStringAsync());
+        }
+        public async Task<IActionResult> ClientCancellationRequest(int transactionId, decimal ammount)
+        {
 
-        //}
+
+        }
+        public async Task<IActionResult> AdminRefundRequest(int transactionId, decimal ammount)
+        {
+            amount_cent = ammount * 100 ,
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
+            request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
+            var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
+            request.Content = content;
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+        }
 
 
     }

@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
@@ -241,6 +242,12 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new ApplicationException("An error occurred while retrieving orders with customer info.", ex);
             }
+        }
+
+        public async Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto) { 
+        
+        
+        
         }
 
     }
