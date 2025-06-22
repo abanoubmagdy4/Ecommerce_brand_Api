@@ -1,4 +1,7 @@
-﻿namespace Ecommerce_brand_Api.Repositories.Interfaces
+﻿using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
+
+namespace Ecommerce_brand_Api.Repositories.Interfaces
 {
     public interface IBaseRepository<T> where T : class
     {
@@ -10,5 +13,9 @@
         Task AddRangeAsync(IEnumerable<T> entities);
         void Attach(T entity);
         void SoftDelete(T entity);
+        Task<T?> GetFirstOrDefaultAsync(
+            Expression<Func<T, bool>> predicate,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null
+        );
     }
 }

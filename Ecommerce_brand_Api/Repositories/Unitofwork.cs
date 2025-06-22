@@ -65,6 +65,11 @@ namespace Ecommerce_brand_Api.Repositories
         public ICartRepository Carts => _ServiceProvider.GetService<ICartRepository>()
             ?? throw new InvalidOperationException("No service registered for CartRepository");
 
+        public ICartItemRepository CartItem => _ServiceProvider.GetService<ICartItemRepository>()
+    ?? throw new InvalidOperationException("No service registered for CartItemRepository");
+
+
+
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()

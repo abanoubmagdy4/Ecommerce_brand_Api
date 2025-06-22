@@ -109,16 +109,16 @@ namespace Ecommerce_brand_Api.Services
                 if (product == null || product.IsDeleted)
                     return false;
 
-                if (product.StockQuantity < quantity)
-                    throw new InvalidOperationException("Insufficient stock.");
+                //if (product.StockQuantity < quantity)
+                //    throw new InvalidOperationException("Insufficient stock.");
 
-                product.StockQuantity -= quantity;
+                //product.StockQuantity -= quantity;
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
             {
-                
+
                 throw new ApplicationException("Error while decreasing product stock.", ex);
             }
         }
@@ -130,7 +130,7 @@ namespace Ecommerce_brand_Api.Services
                 if (product == null || product.IsDeleted)
                     return false;
 
-                product.StockQuantity += quantity;
+                //product.StockQuantity += quantity;
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }

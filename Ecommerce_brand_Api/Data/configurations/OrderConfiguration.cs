@@ -20,22 +20,22 @@ namespace Ecommerce_brand_Api.Data.configurations
                .OnDelete(DeleteBehavior.Restrict);
 
             //Order-> Customer 
-          builder
-               .HasOne(o => o.Customer)
-                .WithMany(o => o.Orders)
-                .HasForeignKey(o => o.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
+            builder
+                 .HasOne(o => o.Customer)
+                  .WithMany(o => o.Orders)
+                  .HasForeignKey(o => o.CustomerId)
+                  .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
 
             // Order -> Discount 
-            builder
-                 .HasOne(o => o.Discount)
-                 .WithOne(o=>o.order)
-                 .HasForeignKey<Order>(o => o.DiscountId)
-                 .OnDelete(DeleteBehavior.SetNull);
+            //builder
+            //     .HasOne(o => o.Discount)
+            //     .WithOne(o=>o.order)
+            //     .HasForeignKey<Order>(o => o.DiscountId)
+            //     .OnDelete(DeleteBehavior.SetNull);
 
-            
+
             builder
-                .HasIndex(o => o.OrderNumber) 
+                .HasIndex(o => o.OrderNumber)
                 .IsUnique()
                 .IsClustered(false);
 
@@ -53,7 +53,7 @@ namespace Ecommerce_brand_Api.Data.configurations
                 .HasConversion<string>();
 
 
-            
+
         }
     }
 }

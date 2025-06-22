@@ -1,6 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ecommerce_brand_Api.Data.Configurations
 {
@@ -11,7 +9,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
             builder.HasKey(c => c.Id);
 
             builder.Property(c => c.TotalBasePrice).HasColumnType("decimal(18,2)");
-           // builder.Property(c => c.Discount.DicountValue).HasColumnType("decimal(18,2)");
+            // builder.Property(c => c.Discount.DicountValue).HasColumnType("decimal(18,2)");
             builder.Property(c => c.TotalAmount).HasColumnType("decimal(18,2)");
 
 
@@ -20,12 +18,16 @@ namespace Ecommerce_brand_Api.Data.Configurations
                 .HasForeignKey(ci => ci.CartId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(c => c.User)
+                .WithOne(u => u.Cart)
+                .HasForeignKey<Cart>(c => c.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
-            builder
-                .HasOne(c => c.Discount)
-                .WithMany()
-                .HasForeignKey(c => c.DiscountId)
-                .OnDelete(DeleteBehavior.Restrict); 
+            //builder
+            //    .HasOne(c => c.Discount)
+            //    .WithMany()
+            //    .HasForeignKey(c => c.DiscountId)
+            //    .OnDelete(DeleteBehavior.Restrict); 
         }
 
     }

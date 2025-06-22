@@ -53,12 +53,19 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
+            builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryService, CateogryService>();
+            builder.Services.AddScoped<ICartService, CartServices>();
+
             builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<ICartItemService, CartItemService>();
+
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IOrderService, OrderServices>();
@@ -70,13 +77,43 @@ namespace Ecommerce_brand_Api
             builder.Services.AddSwaggerGen(c =>
             {
                 c.EnableAnnotations();
+
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Ecommerce Brand API",
                     Version = "1.0.0"
                 });
+
+                // دعم تحميل الصور
                 c.SchemaFilter<FormFileSchemaFilter>();
+
+                // ✅ إضافة دعم الـ JWT في Swagger
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "أدخل 'Bearer' متبوعة بمسافة ثم التوكن. مثال: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
             });
+
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
             app.UseStaticFiles();

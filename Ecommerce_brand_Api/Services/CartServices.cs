@@ -1,7 +1,5 @@
 ﻿
 using Ecommerce_brand_Api.Models.Dtos;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -9,14 +7,16 @@ namespace Ecommerce_brand_Api.Services
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
+        private readonly ICurrentUserService currentUserService;
 
-        public CartServices(IUnitofwork _unitofwork, IMapper mapper)
+        public CartServices(IUnitofwork _unitofwork, IMapper mapper, ICurrentUserService currentUserService)
         {
             this._unitofwork = _unitofwork;
             this.mapper = mapper;
+            this.currentUserService = currentUserService;
         }
 
-        public async Task<IEnumerable<CartDto>> GetCartAsync()
+        public async Task<IEnumerable<CartDto>> GetAllCartsAsync()
         {
             try
             {
@@ -30,17 +30,22 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<CartDto?> GetCartByIdAsync(int Id)
+        public async Task<CartDto?> GetCurrentUserCartAsync()
         {
             try
             {
                 var cartRepo = _unitofwork.GetBaseRepository<Cart>();
-                var carts = await cartRepo.GetByIdAsync(Id);
-                return carts == null ? null : mapper.Map<CartDto>(carts);
+
+                var cart = await cartRepo.GetFirstOrDefaultAsync(
+                    c => c.UserId == currentUserService.UserId,
+                    include: q => q.Include(c => c.CartItems)
+                );
+
+                return cart == null ? null : mapper.Map<CartDto>(cart);
             }
             catch (Exception ex)
             {
-                throw new ApplicationException($"An error occurred while retrieving order with ID {Id}.", ex);
+                throw new ApplicationException("An error occurred while retrieving the cart.", ex);
             }
         }
 
@@ -51,12 +56,50 @@ namespace Ecommerce_brand_Api.Services
 
             try
             {
-                var cartEntity = mapper.Map<Cart>(cartDto);
-                var repo = _unitofwork.GetBaseRepository<Cart>();
+                var cart = new Cart
+                {
+                    UserId = cartDto.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    DiscountId = cartDto.DiscountId,
+                    AddressId = cartDto.AddressId,
+                    TotalBasePrice = cartDto.TotalBasePrice,
+                    TotalAmount = cartDto.TotalAmount,
+                    CartItems = cartDto.CartItems?.Select(ci => new CartItem
+                    {
+                        ProductId = ci.ProductId,
+                        Quantity = ci.Quantity,
+                        UnitPrice = ci.UnitPrice,
+                        TotalPriceForOneItemType = ci.TotalPrice
+                    }).ToList() ?? new List<CartItem>()
+                };
 
-                await repo.AddAsync(cartEntity);
+                var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+                await cartRepo.AddAsync(cart);
                 await _unitofwork.SaveChangesAsync();
-                return mapper.Map<CartDto>(cartEntity);
+
+                var result = new CartDto
+                {
+                    Id = cart.Id,
+                    UserId = cart.UserId,
+                    CreatedAt = cart.CreatedAt,
+                    UpdatedAt = cart.UpdatedAt,
+                    DiscountId = cart.DiscountId,
+                    AddressId = cart.AddressId,
+                    TotalBasePrice = cart.TotalBasePrice,
+                    TotalAmount = cart.TotalAmount,
+                    CartItems = cart.CartItems?.Select(ci => new CartItemDto
+                    {
+                        Id = ci.Id,
+                        CartId = ci.CartId,
+                        ProductId = ci.ProductId,
+                        Quantity = ci.Quantity,
+                        UnitPrice = ci.UnitPrice,
+                        TotalPrice = ci.TotalPriceForOneItemType
+                    }).ToList()
+                };
+
+                return result;
             }
             catch (Exception ex)
             {

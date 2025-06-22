@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
 
 namespace Ecommerce_brand_Api.Repositories
 {
@@ -61,6 +62,21 @@ namespace Ecommerce_brand_Api.Repositories
                 _dbSet.Update(entity);
             }
         }
+
+        public async Task<T?> GetFirstOrDefaultAsync(
+            Expression<Func<T, bool>> filter,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            return await query.FirstOrDefaultAsync(filter);
+        }
+
 
     }
 

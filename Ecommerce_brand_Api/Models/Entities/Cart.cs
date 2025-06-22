@@ -3,22 +3,25 @@
     public class Cart
     {
         public int Id { get; set; }
-        public int UserId { get; set; } // to order
+        [ForeignKey(nameof(User))]
+        public string UserId { get; set; } // to order
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
         public decimal TotalBasePrice { get; set; }
-        //public int DiscountId { get; set; } 
-        //public Discount Discount { get; set; }
+        public int DiscountId { get; set; }
+        public Discount Discount { get; set; }
         public decimal TotalAmount { get; set; }
 
         // Navigation Property
         public ApplicationUser User { get; set; } = null!;
-        public Discount Discount { get; set; }
+
         public Address Address { get; set; }
-        public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+        public int AddressId { get; set; }
+
+
 
         /// <summary>
         /// Updates the total base price, total amount, and the last updated timestamp for the cart.

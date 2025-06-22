@@ -1,8 +1,5 @@
-﻿using Ecommerce_brand_Api.Controllers.ResponseWrapper;
-using Ecommerce_brand_Api.Models.Dtos;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Models.Entities;
-using Microsoft.AspNetCore.Mvc;
+﻿using Ecommerce_brand_Api.Models.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ecommerce_brand_Api.Controllers
 {
@@ -25,21 +22,27 @@ namespace Ecommerce_brand_Api.Controllers
         /// Server Error  response is returned.</remarks>
         /// <returns>An <see cref="IActionResult"/> containing the cart data if found, or an appropriate error response.</returns> 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(typeof(ApiErrorResponse), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         [ProducesResponseType(typeof(ApiErrorResponse), 500)]
-        public async Task<IActionResult> GetCart()
+        public async Task<IActionResult> GetCurrentUserCart()
         {
             try
             {
-                var cart = await _cartService.GetCartAsync();
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                if (cart == null || !cart.Any())
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var cart = await _cartService.GetCurrentUserCartAsync();
+
+                if (cart == null)
                 {
                     return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, "No Carts found."));
                 }
 
-                return Ok(new ApiErrorResponse(StatusCodes.Status200OK, "Cart fetched successfully"));
+                return Ok(cart);
             }
             catch (Exception ex)
             {
@@ -60,13 +63,13 @@ namespace Ecommerce_brand_Api.Controllers
         [ProducesResponseType(typeof(ApiErrorResponse), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         [ProducesResponseType(typeof(ApiErrorResponse), 500)]
-        public async Task<IActionResult> getCartById(int Id)
+        public async Task<IActionResult> getCartById()
         {
             try
             {
-                var cart = await _cartService.GetCartByIdAsync(Id);
+                var curretnUserCart = await _cartService.GetCurrentUserCartAsync();
 
-                if (cart == null)
+                if (curretnUserCart == null)
                 {
                     return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, "No Cart found."));
                 }
@@ -124,7 +127,5 @@ namespace Ecommerce_brand_Api.Controllers
             }
 
         }
-
-
     }
 }
