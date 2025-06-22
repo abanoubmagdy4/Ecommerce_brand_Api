@@ -16,7 +16,6 @@
 
         // Navigation Property
         public ApplicationUser User { get; set; } = null!;
-        public Discount Discount { get; set; }
         public Address Address { get; set; }
 
         /// <summary>
