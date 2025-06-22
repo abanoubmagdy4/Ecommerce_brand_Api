@@ -11,7 +11,8 @@
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
         public decimal TotalBasePrice { get; set; }
-        public decimal Discount { get; set; }
+        //public int DiscountId { get; set; } 
+        //public Discount Discount { get; set; }
         public decimal TotalAmount { get; set; }
 
         public ApplicationUser User { get; set; } = null!;
@@ -19,7 +20,7 @@
         public void UpdateTotals()
         {
             TotalBasePrice = CartItems.Sum(item => item.TotalPriceForOneItemType);
-            TotalAmount = TotalBasePrice - Discount;
+            //TotalAmount = TotalBasePrice - Discount.DicountValue;
             UpdatedAt = DateTime.UtcNow;
         }
     }
