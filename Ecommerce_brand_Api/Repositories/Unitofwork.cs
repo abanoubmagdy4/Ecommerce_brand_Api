@@ -66,10 +66,12 @@ namespace Ecommerce_brand_Api.Repositories
             ?? throw new InvalidOperationException("No service registered for CartRepository");
 
         public ICartItemRepository CartItem => _ServiceProvider.GetService<ICartItemRepository>()
-    ?? throw new InvalidOperationException("No service registered for CartItemRepository");
+            ?? throw new InvalidOperationException("No service registered for CartItemRepository");
 
 
-
+        public IFeedbackRepository Feedbacks =>
+             _ServiceProvider.GetRequiredService<IFeedbackRepository>()
+            ?? throw new InvalidOperationException("No service registered for FeedbackRepository");
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()

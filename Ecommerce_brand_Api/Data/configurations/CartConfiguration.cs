@@ -23,11 +23,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
                 .HasForeignKey<Cart>(c => c.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            //builder
-            //    .HasOne(c => c.Discount)
-            //    .WithMany()
-            //    .HasForeignKey(c => c.DiscountId)
-            //    .OnDelete(DeleteBehavior.Restrict); 
+
         }
 
     }

@@ -7,7 +7,7 @@
         public string UserId { get; set; } = null!;              // FK to Identity user
 
         public int ProductId { get; set; }                       // FK to Product
-        public bool IsDeleted { get; set; } = false;
+      
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 
