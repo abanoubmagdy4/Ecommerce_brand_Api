@@ -22,6 +22,8 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<CartDto, Cart>();
 
             CreateMap<Cart, CartDto>();
+            CreateMap<Feedback, FavoriteDto>();
+            CreateMap<FeedbackDto, Feedback>();
 
             // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
             CreateMap<Product, ProductDto>().ReverseMap();

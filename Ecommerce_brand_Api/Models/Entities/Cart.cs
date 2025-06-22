@@ -16,7 +16,9 @@
 
         // Navigation Property
         public ApplicationUser User { get; set; } = null!;
+       
         public Address Address { get; set; }
+        
 
         /// <summary>
         /// Updates the total base price, total amount, and the last updated timestamp for the cart.

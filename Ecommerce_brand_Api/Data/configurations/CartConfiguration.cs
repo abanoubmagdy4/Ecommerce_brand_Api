@@ -21,11 +21,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            builder
-                .HasOne(c => c.Discount)
-                .WithMany()
-                .HasForeignKey(c => c.DiscountId)
-                .OnDelete(DeleteBehavior.Restrict); 
+            
         }
 
     }
