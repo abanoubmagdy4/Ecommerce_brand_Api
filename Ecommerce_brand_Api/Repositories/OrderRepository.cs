@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Repositories
@@ -31,6 +32,21 @@ namespace Ecommerce_brand_Api.Repositories
                 .ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
+
+        public async Task<Order> ChangeOrderStatusAsync(int orderId, OrderStatus newStatus)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+            if (order == null)
+                throw new ApplicationException($"Order with ID {orderId} not found.");
+
+            order.OrderStatus = newStatus;
+
+            await _context.SaveChangesAsync();
+
+            return order;
+        }
+
     }
 
 }

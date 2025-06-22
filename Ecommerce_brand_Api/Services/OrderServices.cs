@@ -243,5 +243,28 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
+        public async Task<OrderDTO> ChangeOrderStatusAsync(int orderId, OrderStatus newStatus)
+        {
+            if (orderId <= 0)
+            {
+                throw new ArgumentException("Invalid Order ID", nameof(orderId));
+            }
+
+            try
+            {
+                var repo = _unitofwork.GetOrderRepository();
+                var updatedOrder = await repo.ChangeOrderStatusAsync(orderId, newStatus);
+
+                await _unitofwork.SaveChangesAsync();
+
+                return mapper.Map<OrderDTO>(updatedOrder);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred while changing the order status: {ex.Message}", ex);
+            }
+
+        }
+
     }
 }
