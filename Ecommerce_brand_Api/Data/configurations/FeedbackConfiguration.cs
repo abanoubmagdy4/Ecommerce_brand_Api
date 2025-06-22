@@ -19,7 +19,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
                 .WithMany()
                 .HasForeignKey(f => f.UserId);
 
-            builder.HasQueryFilter(f => !f.IsDeleted);
+          
         }
     }
 }

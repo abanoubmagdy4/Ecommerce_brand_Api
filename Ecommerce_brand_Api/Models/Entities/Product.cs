@@ -16,6 +16,7 @@
 
         public decimal DiscountPercentage { get; set; }
         public decimal PriceAfterDiscount { get; set; }
+        public double AverageRating { get; set; } = 0;
         public bool IsDeleted { get; set; } = false;
         public int CategoryId { get; set; }
         public Category Category { get; set; } = null!;

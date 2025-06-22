@@ -18,7 +18,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
 
             builder.HasIndex(f => new { f.UserId, f.ProductId }).IsUnique();
 
-            builder.HasQueryFilter(f => !f.IsDeleted);
+           
         }
     }
 }

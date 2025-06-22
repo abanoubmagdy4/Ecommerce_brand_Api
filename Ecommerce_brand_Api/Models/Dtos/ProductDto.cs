@@ -26,6 +26,8 @@
 
         [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
         public decimal DiscountPercentage { get; set; }
+        public double AverageRating { get; set; }
+
 
         [Required]
         public decimal PriceAfterDiscount

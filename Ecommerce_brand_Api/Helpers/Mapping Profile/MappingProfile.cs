@@ -23,6 +23,8 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<CartDto, Cart>();
 
             CreateMap<Cart, CartDto>();
+            CreateMap<Feedback, FavoriteDto>();
+            CreateMap<FeedbackDto, Feedback>();
 
             CreateMap<OrderDTO, Order>();
 

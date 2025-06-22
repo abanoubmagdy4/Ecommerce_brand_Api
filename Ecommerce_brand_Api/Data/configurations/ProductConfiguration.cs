@@ -11,6 +11,9 @@ namespace Ecommerce_brand_Api.Data.Configurations
             builder.Property(p => p.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+            builder.Property(p => p.AverageRating)
+               .HasDefaultValue(0)
+               .HasPrecision(3, 2);
 
             builder.Property(p => p.Description)
                 .HasMaxLength(500);
