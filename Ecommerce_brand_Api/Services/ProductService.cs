@@ -100,5 +100,59 @@ namespace Ecommerce_brand_Api.Services
             return true;
         }
 
+
+        public async Task<bool> DecreaseStockAsync(int productId, int quantity)
+        {
+            try
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(productId);
+                if (product == null || product.IsDeleted)
+                    return false;
+
+                if (product.StockQuantity < quantity)
+                    throw new InvalidOperationException("Insufficient stock.");
+
+                product.StockQuantity -= quantity;
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                
+                throw new ApplicationException("Error while decreasing product stock.", ex);
+            }
+        }
+        public async Task<bool> IncreaseStockAsync(int productId, int quantity)
+        {
+            try
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(productId);
+                if (product == null || product.IsDeleted)
+                    return false;
+
+                product.StockQuantity += quantity;
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error while increasing product stock.", ex);
+            }
+        }
+        public async Task<IEnumerable<ProductDto>> GetByCategoryAsync(int categoryId)
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetAllWithImagesAsync();
+                var filtered = products
+                    .Where(p => p.CategoryId == categoryId && !p.IsDeleted);
+
+                return _mapper.Map<IEnumerable<ProductDto>>(filtered);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error while retrieving products by category.", ex);
+            }
+        }
     }
 }

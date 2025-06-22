@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 {
@@ -22,7 +23,15 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<CartDto, Cart>();
 
             CreateMap<Cart, CartDto>();
+            CreateMap<Feedback, FavoriteDto>();
+            CreateMap<FeedbackDto, Feedback>();
 
+            CreateMap<OrderDTO, Order>();
+
+            CreateMap<Order, OrderDTO>();
+
+            CreateMap<OrderItemDTO,OrderItem>();
+            CreateMap<OrderItem, OrderItemDTO>();
             // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
             CreateMap<Product, ProductDto>().ReverseMap();
 

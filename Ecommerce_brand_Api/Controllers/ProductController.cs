@@ -64,5 +64,25 @@ namespace Ecommerce_brand_Api.Controllers
                 ? Ok(new { message = "Product deleted successfully." })
                 : NotFound();
         }
+
+
+        [HttpGet("ByCategory/{categoryId}")]
+        public async Task<IActionResult> GetByCategory(int categoryId)
+        {
+            try
+            {
+                var products = await _productService.GetByCategoryAsync(categoryId);
+                if (products == null || !products.Any())
+                    return NotFound(new { message = "No products found in this category." });
+
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error while retrieving products by category.", details = ex.Message });
+            }
+        }
+
+
     }
 }
