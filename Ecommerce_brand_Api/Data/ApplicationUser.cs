@@ -12,5 +12,6 @@
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 }
