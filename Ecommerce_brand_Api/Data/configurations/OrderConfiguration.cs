@@ -26,12 +26,6 @@ namespace Ecommerce_brand_Api.Data.configurations
                 .HasForeignKey(o => o.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
 
-            // Order -> Discount 
-            builder
-                 .HasOne(o => o.Discount)
-                 .WithOne(o=>o.order)
-                 .HasForeignKey<Order>(o => o.DiscountId)
-                 .OnDelete(DeleteBehavior.SetNull);
 
             
             builder

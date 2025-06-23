@@ -2,7 +2,7 @@
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface ICategoryService
+    public interface ICategoryService : IBaseService<Category>
     {
         Task<IEnumerable<CategoryDto>> GetAllAsync();
         Task<CategoryDto?> GetByIdAsync(int id);
