@@ -1,8 +1,5 @@
-﻿using Ecommerce_brand_Api.Helpers.Enums;
-using Ecommerce_brand_Api.Models.Dtos;
+﻿using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Models.Entities;
-using Ecommerce_brand_Api.Services.Interfaces;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -244,11 +241,45 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto) { 
-        
-        
-        
+        public async Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto)
+        {
+            // 1. الحصول على الخصم الحالي (لو موجود)
+            var discount = await _unitofwork.Discount.GetActiveDiscountAsync();
+
+            // 2. تحويل عناصر السلة إلى عناصر الطلب
+            var orderItemsDto = cartDto.CartItems.Select(item => new OrderItemDTO
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                TotalPrice = item.TotalPrice
+            }).ToList();
+
+            // 3. حساب السعر الإجمالي لكل عناصر الطلب
+            decimal totalOrderItemsPrice = orderItemsDto.Sum(i => i.TotalPrice);
+
+            // 4. تطبيق الخصم لو متاح
+            decimal appliedDiscount = 0;
+            if (discount != null && totalOrderItemsPrice >= discount.Threshold)
+            {
+                appliedDiscount = discount.DiscountValue;
+            }
+
+            // 5. إنشاء كائن الطلب وربط البيانات يدويًا
+            var orderDto = new OrderDTO
+            {
+                CreatedAt = DateTime.UtcNow,
+                CustomerId = cartDto.UserId,
+                ShippingAddressId = cartDto.AddressId,
+                DiscountValue = appliedDiscount,
+                TotalOrderPrice = totalOrderItemsPrice - appliedDiscount,
+                OrderItems = orderItemsDto,
+                ShippingCost = cartDto.ShippingCost,
+                OrderStatus = OrderStatus.Pending
+            };
+
+            return orderDto;
         }
+
 
     }
 }

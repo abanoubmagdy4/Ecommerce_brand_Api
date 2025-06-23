@@ -14,6 +14,7 @@
         //ICartItemRepository CartItems { get; }
         IFeedbackRepository Feedbacks { get; }
         //IFavoriteRepository Favorites { get; }
+        IDiscountRepository Discount { get; }
 
         Task<int> SaveChangesAsync();
     }
