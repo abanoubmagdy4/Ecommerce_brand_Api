@@ -27,7 +27,8 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<FeedbackDto, Feedback>();
 
 
-            CreateMap<OrderDTO, Order>();
+            CreateMap<OrderDTO, Order>()
+                .ForMember(dest => dest.OrderId, opt => opt.Ignore()); 
 
             CreateMap<Order, OrderDTO>();
 

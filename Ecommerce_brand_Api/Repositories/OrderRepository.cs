@@ -19,7 +19,7 @@ namespace Ecommerce_brand_Api.Repositories
 
         public async Task<IEnumerable<Order>> GetOrdersOverTotalAsync(decimal amount)
         {
-            return await _context.Orders.Where(o => o.TotalOrderPrice > amount).ToListAsync();
+            return await _context.Orders.Where(o => o.TotalOrderPrice >= amount).ToListAsync();
         }
 
         public async Task<IEnumerable<Order>> GetOrdersWithCustomerAsync()

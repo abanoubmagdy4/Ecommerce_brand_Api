@@ -61,7 +61,6 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 
         Task<OrderDTO> ChangeOrderStatusAsync(int orderId, OrderStatus newStatus);
 
-
         Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto);
 
     }

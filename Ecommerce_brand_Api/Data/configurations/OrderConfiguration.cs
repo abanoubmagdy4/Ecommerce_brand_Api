@@ -29,7 +29,7 @@ namespace Ecommerce_brand_Api.Data.configurations
             // Order -> Discount 
             builder
                  .HasOne(o => o.Discount)
-                 .WithOne(o=>o.order)
+                 .WithOne()
                  .HasForeignKey<Order>(o => o.DiscountId)
                  .OnDelete(DeleteBehavior.SetNull);
 

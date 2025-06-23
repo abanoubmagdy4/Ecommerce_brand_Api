@@ -1,5 +1,6 @@
 ﻿using Ecommerce_brand_Api.Controllers.ResponseWrapper;
 using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Helpers.ErrorHandling;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
@@ -140,12 +141,18 @@ namespace Ecommerce_brand_Api.Controllers
             {
                 var orders = await _orderService.GetOrdersByStatusAsync(orderStatus);
 
+                if (orders == null || !orders.Any())
+                {
+                    return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, $"No Orders were found with status {orderStatus}"));
+                }
+
                 return Ok(new ApiResponse<IEnumerable<OrderDTO>>()
                 {
                     Data = orders,
                     Message = $"Orders with status '{orderStatus}' retrieved successfully",
                     Success = true
                 });
+
             }
             catch (Exception ex)
             {
@@ -245,7 +252,7 @@ namespace Ecommerce_brand_Api.Controllers
         [ProducesResponseType(typeof(ApiResponse<OrderDTO>), 201)]
         [ProducesResponseType(typeof(ApiResponse<string>), 400)]
         [ProducesResponseType(typeof(ApiResponse<string>), 500)]
-        public async Task<IActionResult> AddOrder([FromBody] OrderDTO newOrderDTO)
+        public async Task<IActionResult> AddOrder([FromForm] OrderDTO newOrderDTO)
         {
             try
             {
@@ -293,15 +300,16 @@ namespace Ecommerce_brand_Api.Controllers
         /// is invalid.</description></item> <item><description>A 404 Not Found response if no order with the specified
         /// ID exists.</description></item> <item><description>A 500 Internal Server Error response if an unexpected
         /// error occurs during the update process.</description></item> </list></returns> 
-        [HttpPut("{OrderId:int}")]
+        [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         [ProducesResponseType(typeof(ApiResponse<string>), 400)]
         [ProducesResponseType(typeof(ApiResponse<string>), 404)]
         [ProducesResponseType(typeof(ApiResponse<string>), 500)]
-        public async Task<IActionResult> UpdateOrder(int OrderId, [FromBody] OrderDTO updatedOrderDTO)
+        public async Task<IActionResult> UpdateOrder(int OrderId, [FromForm] OrderDTO updatedOrderDTO)
         {
             try
             {
+                ModelState.Remove("OrderId");
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(new ApiResponse<string>
@@ -332,11 +340,7 @@ namespace Ecommerce_brand_Api.Controllers
                     });
                 }
 
-                return Ok(new ApiResponse<string>
-                {
-                    Message = "Order updated successfully",
-                    Success = true
-                });
+                return Ok(new ApiErrorResponse(StatusCodes.Status200OK, "Order updated Successfully"));
             }
             catch (Exception ex)
             {
@@ -403,6 +407,45 @@ namespace Ecommerce_brand_Api.Controllers
                     Message = $"Server error: {ex.Message}",
                     Success = false
                 });
+            }
+        }
+
+
+        /// <summary>
+        /// Updates the status of an order identified by its ID.
+        /// </summary>
+        /// <remarks>This method is an HTTP PUT endpoint that allows clients to update the status of an
+        /// existing order. Ensure that the <paramref name="orderId"/> corresponds to a valid order and that the
+        /// <paramref name="status"/> is a valid enumeration value.</remarks>
+        /// <param name="orderId">The unique identifier of the order to update. Must be a positive integer.</param>
+        /// <param name="status">The new status to assign to the order. Must be a valid <see cref="OrderStatus"/> value.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the result of the operation: <list type="bullet">
+        /// <item><description>A 200 OK response with an <see cref="ApiResponse{T}"/> containing the updated order
+        /// details if the operation succeeds.</description></item> <item><description>A 404 Not Found response with an
+        /// <see cref="ApiResponse{T}"/> containing an error message if the order is not found.</description></item>
+        /// <item><description>A 500 Internal Server Error response with an <see cref="ApiResponse{T}"/> containing an
+        /// error message if a server error occurs.</description></item> </list></returns>
+        [HttpPut("{OrderId:int}/change-status/{OrderStatus}")]
+        [ProducesResponseType(typeof(ApiResponse<OrderDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 500)]
+        public async Task<IActionResult> ChangeOrderStatus(int OrderId, OrderStatus OrderStatus)
+        {
+            try
+            {
+                var updatedOrder = await _orderService.ChangeOrderStatusAsync(OrderId, OrderStatus);
+
+                return Ok(new ApiErrorResponse(StatusCodes.Status200OK, $"Order status updated to '{OrderStatus}' successfully."));
+
+
+            }
+            catch (ApplicationException ex)
+            {
+                return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiErrorResponse(StatusCodes.Status404NotFound, $"Server error: {ex.Message}"));
             }
         }
     }

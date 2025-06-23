@@ -119,9 +119,9 @@ namespace Ecommerce_brand_Api.Services
                 {
                     return ServiceResult.Ok("User Created Successesfuly");
                 }
-                return ServiceResult.Fail("Fialing during registeration");
+                return ServiceResult.Fail("Failing during registeration");
             }
-            return ServiceResult.Fail("Fialing during registeration");
+            return ServiceResult.Fail("Failing during registeration");
         }
 
 

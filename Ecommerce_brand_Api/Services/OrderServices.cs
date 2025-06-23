@@ -3,6 +3,7 @@ using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -164,10 +165,10 @@ namespace Ecommerce_brand_Api.Services
                 if (order == null)
                     return false;
 
-                var updatedEntity = mapper.Map<Order>(updatedOrder);
-                updatedEntity.OrderId = orderId;
+                mapper.Map(updatedOrder,order);
+              
 
-                await repo.UpdateAsync(updatedEntity);
+                await repo.UpdateAsync(order);
                 await _unitofwork.SaveChangesAsync();
 
                 return true;
@@ -193,6 +194,8 @@ namespace Ecommerce_brand_Api.Services
                 var repo = _unitofwork.GetOrderRepository();
                 var orders = await repo.GetOrdersByStatusAsync(status);
                 return mapper.Map<IEnumerable<OrderDTO>>(orders);
+
+
             }
             catch (Exception ex)
             {
@@ -265,11 +268,13 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new ApplicationException($"An error occurred while changing the order status: {ex.Message}", ex);
             }
+        }
 
 
-        public async Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto) { 
-        
-        
+        public async Task<OrderDTO> BuildOrderDtoFromCartAsync(CartDto cartDto)
+        {
+
+            throw new ArgumentException("Invalid Order ID");
 
         }
 
