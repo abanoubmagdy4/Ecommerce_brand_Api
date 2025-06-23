@@ -30,7 +30,7 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 
             CreateMap<Order, OrderDTO>();
 
-            CreateMap<OrderItemDTO,OrderItem>();
+            CreateMap<OrderItemDTO, OrderItem>();
             CreateMap<OrderItem, OrderItemDTO>();
             // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
             CreateMap<Product, ProductDto>().ReverseMap();
@@ -41,6 +41,7 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 
             CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
                 .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
+
         }
     }
 }
