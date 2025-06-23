@@ -4,7 +4,7 @@ using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IOrderService
+    public interface IOrderService: IBaseService<Order>
     {
         /// <summary>
         /// Retrieves all orders asynchronously.

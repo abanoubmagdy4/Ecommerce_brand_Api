@@ -2,7 +2,7 @@
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IProductService
+    public interface IProductService: IBaseService<Product>
     {
         Task<IEnumerable<ProductDto>> GetAllAsync();
         Task<ProductDto?> GetByIdAsync(int id);

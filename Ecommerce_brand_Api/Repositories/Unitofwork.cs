@@ -1,5 +1,7 @@
 ﻿
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Ecommerce_brand_Api.Repositories
 {
     public class Unitofwork : IUnitofwork
@@ -67,6 +69,10 @@ namespace Ecommerce_brand_Api.Repositories
         public IFeedbackRepository Feedbacks =>
              _ServiceProvider.GetRequiredService<IFeedbackRepository>() 
             ?? throw new InvalidOperationException("No service registered for FeedbackRepository");
+
+        public IDiscountRepository Discount => _ServiceProvider.GetRequiredService<IDiscountRepository> ();
+        public IUserRepository User => _ServiceProvider.GetRequiredService<IUserRepository>();
+
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()

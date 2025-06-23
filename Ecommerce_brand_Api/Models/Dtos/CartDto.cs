@@ -18,7 +18,6 @@ namespace Ecommerce_brand_Api.Models.Dtos
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal? ShippingCost { get; set; }
-
         [Required]
         public decimal TotalBasePrice { get; set; }
         public decimal TotalDiscount { get; set; }

@@ -15,6 +15,8 @@
         IFeedbackRepository Feedbacks { get; }
         //IFavoriteRepository Favorites { get; }
         IDiscountRepository Discount { get; }
+        IUserRepository User { get; }
+
 
         Task<int> SaveChangesAsync();
     }

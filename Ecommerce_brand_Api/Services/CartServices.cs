@@ -5,12 +5,13 @@ using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class CartServices : ICartService
+    public class CartServices : BaseService<Cart> ,ICartService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
 
-        public CartServices(IUnitofwork _unitofwork, IMapper mapper)
+        public CartServices(IUnitofwork unitofwork, IMapper mapper)
+        : base(unitofwork.GetBaseRepository<Cart>())
         {
             this._unitofwork = _unitofwork;
             this.mapper = mapper;

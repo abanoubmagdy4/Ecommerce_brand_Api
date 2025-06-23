@@ -2,7 +2,7 @@
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IGovernrateShippingCostService
+    public interface IGovernrateShippingCostService :
     {
         Task<IEnumerable<GovernrateShippingCostDto>> GetAllAsync();
         Task<GovernrateShippingCostDto?> GetByIdAsync(int id);

@@ -27,12 +27,15 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 
 
 
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal DiscountValue { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalOrderPrice { get; set; }
+
+
 
         [Required]
         [EnumDataType(typeof(OrderStatus), ErrorMessage = "Invalid Order Status")]

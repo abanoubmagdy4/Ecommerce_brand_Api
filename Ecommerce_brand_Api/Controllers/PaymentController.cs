@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using Azure.Core;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
+using System.Linq;
+using System.Net.Http;
 namespace Ecommerce_brand_Api.Controllers
 {
 
@@ -13,14 +15,21 @@ namespace Ecommerce_brand_Api.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        public readonly IOrderService _orderService;
+        private readonly IOrderService _orderService;
+        private readonly IServiceUnitOfWork _serviceunitOfWork;
+        private readonly IBaseService<Address> _AddressbaseService;
+        private readonly IUserService _userService;
+        private readonly HttpClient _httpClient;
 
-
-        public PaymentController(IOrderService orderService)
+        public PaymentController(IServiceUnitOfWork serviceUnitOfWork , IHttpClientFactory httpClientFactory)
         {
-            _orderService = orderService;   
-        }
+            _serviceunitOfWork = serviceUnitOfWork;
+            _orderService = _serviceunitOfWork.Orders;
+            _AddressbaseService = _serviceunitOfWork.GetBaseService<Address>();
+            _userService = _serviceunitOfWork.Users;
+            _httpClient = httpClientFactory.CreateClient();
 
+        }
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout([FromBody] CartDto cartDto)
         {
@@ -45,45 +54,61 @@ namespace Ecommerce_brand_Api.Controllers
 
                 var orderDTO = await _orderService.BuildOrderDtoFromCartAsync(cartDto);
 
-                
+
                 var createOrder = await _orderService.AddNewOrderAsync(orderDTO);
 
+                var shippingAddress = await _AddressbaseService.GetByIdAsync(createOrder.ShippingAddressId);
+                if (shippingAddress == null)
+                    return NotFound(new { Message = "Shipping address not found." });
+                var User = await _userService.GetByStringIdAsync(createOrder.CustomerId);
+                if (User == null)
+                    return NotFound(new { Message = "User not found." });
 
-                var httpClient = new HttpClient();
+             
 
                 var url = "https://accept.paymob.com/v1/intention/";
-
+                var itemsList = createOrder.OrderItems
+                       .Select(i => new
+                       {
+                           name = i.OrderItemId.ToString(),
+                           amount = i.TotalPrice,
+                           description = $"OrderId {i.OrderItemId} For Product Id {i.ProductId} In Database",
+                           quantity = i.Quantity
+                       })
+                           .Append(new
+                           {
+                               name = "Discount",
+                               amount = -createOrder.DiscountValue,
+                               description = "Total discount applied on this order",
+                               quantity = 1
+                           })
+                              .ToList();
                 var payload = new
                 {
-                    amount = 40000,
+                    amount = createOrder.TotalOrderPrice,
                     currency = "EGP",
                     payment_methods = new[] { 5145466, 5145604, 5145468 },
-                    items = cartDto.CartItems.Select(i => new
-                    {
-                        name = i.namr,
-                        amount = i.TotalPrice,
-                        description = i.p,
-                        quantity = i.Quantity
-                    }),
+                    items = itemsList,
+
                     billing_data = new
                     {
-                        apartment = "5",
-                        first_name = cartDto.CustomerFirstName,
-                        last_name = cartDto.CustomerLastName,
-                        street = "10 El Tahrir St",
-                        building = "25",
-                        phone_number = cartDto.PhoneNumber,
-                        city = cartDto.City,
-                        country = cartDto.Country,
-                        email = cartDto.BillingEmail,
-                        floor = "3",
-                        state = cartDto.City
+                        apartment = shippingAddress.Apartment,
+                        first_name = User.FirstName,
+                        last_name = User.LastName,
+                        street = shippingAddress.Street,
+                        building = shippingAddress.Building,
+                        phone_number = User.PhoneNumber,
+                        city = shippingAddress.City,
+                        country = shippingAddress.Country,
+                        email = User.Email,
+                        floor = shippingAddress.Floor,
+                        state = shippingAddress.GovernorateShippingCost.Name,
                     },
                     customer = new
                     {
-                        first_name = cartDto.CustomerFirstName,
-                        last_name = cartDto.CustomerLastName,
-                        email = cartDto.CustomerEmail,
+                        first_name = User.FirstName,
+                        last_name = User.LastName,
+                        email = User.Email,
                         extras = new { order_source = "website" }
                     },
                     extras = new { notes = "Test order from backend" }
@@ -92,10 +117,10 @@ namespace Ecommerce_brand_Api.Controllers
                 var json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                httpClient.DefaultRequestHeaders.Authorization =
+                _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("", "");
 
-                var response = await httpClient.PostAsync(url, content);
+                var response = await _httpClient.PostAsync(url, content);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -169,31 +194,31 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok();
         }
 
-        public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
-        {
+        //public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
+        //{
 
 
-        }
-        public async Task<IActionResult> ClientCancellationRequest(int transactionId, decimal ammount)
-        {
+        //}
+        //public async Task<IActionResult> ClientCancellationRequest(int transactionId, decimal ammount)
+        //{
 
 
-        }
-        public async Task<IActionResult> AdminRefundRequest(int transactionId, decimal ammount)
-        {
-            amount_cent = ammount * 100 ,
-            var client = new HttpClient();
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
-            request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
-            var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
-            request.Content = content;
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
+        //}
+        //public async Task<IActionResult> AdminRefundRequest(int transactionId, decimal ammount)
+        //{
+        //    amount_cent = ammount * 100 ,
+        //    var client = new HttpClient();
+        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
+        //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
+        //    var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
+        //    request.Content = content;
+        //    var response = await client.SendAsync(request);
+        //    response.EnsureSuccessStatusCode();
+        //    Console.WriteLine(await response.Content.ReadAsStringAsync());
 
-        }
+        //}
 
 
     }
-    }
+}
 
