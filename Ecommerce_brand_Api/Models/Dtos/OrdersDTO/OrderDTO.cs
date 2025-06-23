@@ -1,5 +1,4 @@
-﻿using Ecommerce_brand_Api.Helpers.Enums;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 {
@@ -26,11 +25,11 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         [Column(TypeName = "decimal(18,2)")]
         public decimal? ShippingCost { get; set; }
 
-        public int? DiscountId { get; set; }
+
 
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal DiscountValue { get; set; } 
+        public decimal DiscountValue { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

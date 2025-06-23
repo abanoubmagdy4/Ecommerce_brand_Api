@@ -8,12 +8,12 @@ namespace Ecommerce_brand_Api.Models.Dtos
         public int Id { get; set; }
 
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
         //Total Price After Each Item's Discount => Not Including Any Other Special Discounts
-        public int DiscountId { get; set; }
+
         public int AddressId { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
