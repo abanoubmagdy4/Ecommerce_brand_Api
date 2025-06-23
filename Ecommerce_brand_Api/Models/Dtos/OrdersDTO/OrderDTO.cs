@@ -9,7 +9,7 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         public int OrderId { get; set; }
 
         [StringLength(20, ErrorMessage = "OrderNumber can't exceed 20 characters")]
-        public string OrderNumber { get; set; }
+        public string? OrderNumber { get; set; }
 
         [BindNever]
         [Required]
@@ -28,12 +28,15 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 
         public int? DiscountId { get; set; }
 
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal DiscountValue { get; set; } 
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalOrderPrice { get; set; }
+
+
 
         [Required]
         [EnumDataType(typeof(OrderStatus), ErrorMessage = "Invalid Order Status")]
