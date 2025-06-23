@@ -2,7 +2,7 @@
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface ICartService
+    public interface ICartService :IBaseService<Cart>
     {
 
         Task<IEnumerable<CartDto>> GetCartAsync();

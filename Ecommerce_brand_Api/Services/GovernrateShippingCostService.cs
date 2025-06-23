@@ -1,13 +1,14 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class GovernrateShippingCostService : IGovernrateShippingCostService
+    public class GovernrateShippingCostService : BaseService<GovernorateShippingCost>,IGovernrateShippingCostService
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public GovernrateShippingCostService(IUnitofwork unitOfWork, IMapper mapper)
+        public GovernrateShippingCostService(IUnitofwork unitOfWork, IMapper mapper) : base(unitOfWork.GetBaseRepository<GovernorateShippingCost>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

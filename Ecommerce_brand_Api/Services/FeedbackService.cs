@@ -2,12 +2,12 @@
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class FeedbackService : IFeedbackService
+    public class FeedbackService : BaseService<Feedback>,IFeedbackService
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public FeedbackService(IUnitofwork unitOfWork, IMapper mapper)
+        public FeedbackService(IUnitofwork unitOfWork, IMapper mapper) : base(unitOfWork.GetBaseRepository<Feedback>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

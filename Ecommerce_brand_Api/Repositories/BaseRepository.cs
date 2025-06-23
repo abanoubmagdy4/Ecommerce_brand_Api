@@ -62,6 +62,10 @@ namespace Ecommerce_brand_Api.Repositories
             }
         }
 
+        public async Task<T> GetByStringIdAsync(string id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
     }
 
 }

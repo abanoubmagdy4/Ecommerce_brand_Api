@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Repositories;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Net;
@@ -7,7 +8,7 @@ using System.Net.Mail;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class UserService : IUserService
+    public class UserService :BaseService<ApplicationUser> ,IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -16,6 +17,8 @@ namespace Ecommerce_brand_Api.Services
         private readonly IConfiguration config;
         private readonly EmailSettings _emailSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUnitofwork _unitofwork;
+        private readonly IUserRepository _userRepository;
         private IMapper _mapper;
 
         public UserService(UserManager<ApplicationUser> userManager,
@@ -25,7 +28,8 @@ namespace Ecommerce_brand_Api.Services
                            IConfiguration config,
                            IOptions<EmailSettings> options,
                            RoleManager<IdentityRole> roleManager
-                          )
+        ,
+                           IUnitofwork unitofwork) : base(unitofwork.GetBaseRepository<ApplicationUser>())
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -34,6 +38,9 @@ namespace Ecommerce_brand_Api.Services
             this.config = config;
             _emailSettings = options.Value;
             _roleManager = roleManager;
+            _unitofwork = unitofwork;
+            _userRepository = _unitofwork.User;
+
         }
 
 

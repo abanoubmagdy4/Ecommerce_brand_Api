@@ -1,9 +1,10 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
+using Ecommerce_brand_Api.Repositories;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class OrderServices : IOrderService
+    public class OrderServices :BaseService<Order>, IOrderService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
@@ -16,7 +17,7 @@ namespace Ecommerce_brand_Api.Services
         /// <paramref name="mapper"/> are provided when creating an instance of this class.</remarks>
         /// <param name="_unitofwork">The unit of work instance used to manage database transactions and repositories.</param>
         /// <param name="mapper">The mapper instance used for object-to-object mapping between domain models and DTOs.</param> 
-        public OrderServices(IUnitofwork _unitofwork, IMapper mapper)
+        public OrderServices(IUnitofwork _unitofwork, IMapper mapper) : base(_unitofwork.GetBaseRepository<Order>())
         {
             this._unitofwork = _unitofwork;
             this.mapper = mapper;

@@ -1,7 +1,8 @@
-﻿namespace Ecommerce_brand_Api.Repositories.Interfaces
+﻿namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IBaseRepository<T> where T : class
+    public interface IBaseService<T> where T : class
     {
+
         Task<List<T>> GetAllAsync();
         Task<T> GetByIdAsync(int id);
         Task AddAsync(T entity);
@@ -11,5 +12,6 @@
         void Attach(T entity);
         void SoftDelete(T entity);
         Task<T> GetByStringIdAsync(string id);
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IUserService
+    public interface IUserService : IBaseService<ApplicationUser>
     {
         Task<ServiceResult> LoginAsync(LoginDto loginDTO);
         Task<ServiceResult> RegisterAsync(RegisterDto registerDTO, string userRole);
@@ -13,7 +13,7 @@
         Task<ApplicationUser> FindByEmailAsync(string email);
         Task SaveCodeAndTokenAsync(string email, string code, string token);
         Task<string?> GetStoredResetTokenAsync(string email);
-        
+
             //Task<bool> CheckEmailExistAsync(string email);
         }
 }

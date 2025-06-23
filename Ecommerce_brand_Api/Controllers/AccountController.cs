@@ -6,12 +6,14 @@
     {
 
         private readonly IUserService _userService;
+        private readonly IServiceUnitOfWork _serviceunitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
        // private readonly IMapper _mapper;
 
-        public AccountController(IUserService userService, UserManager<ApplicationUser> userManager)
+        public AccountController(IServiceUnitOfWork serviceunitOfWork, UserManager<ApplicationUser> userManager)
         {
-            _userService = userService;
+            _serviceunitOfWork=serviceunitOfWork;   
+            _userService = _serviceunitOfWork.Users;
             _userManager = userManager;
          //   _mapper = mapper;
         }

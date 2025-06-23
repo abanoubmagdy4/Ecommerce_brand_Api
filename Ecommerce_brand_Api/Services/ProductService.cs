@@ -2,14 +2,14 @@
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class ProductService : IProductService
+    public class ProductService :BaseService<Product> ,IProductService
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
 
 
-        public ProductService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env)
+        public ProductService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env): base(unitOfWork.GetBaseRepository<Product>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

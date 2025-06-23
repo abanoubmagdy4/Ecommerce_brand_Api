@@ -48,15 +48,19 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
             builder.Services.AddScoped<IUnitofwork, Unitofwork>();
+            builder.Services.AddScoped<IServiceUnitOfWork, ServiceUnitOfWork>();
+        
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddScoped<ICategoryService, CateogryService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
 
