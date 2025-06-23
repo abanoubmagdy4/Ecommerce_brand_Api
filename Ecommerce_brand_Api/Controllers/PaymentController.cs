@@ -73,7 +73,7 @@ namespace Ecommerce_brand_Api.Controllers
                            name = i.OrderItemId.ToString(),
                            amount = i.TotalPrice,
                            description = $"OrderId {i.OrderItemId} For Product Id {i.ProductId} In Database",
-                           quantity = i.Quantity
+                           quantity = i.Quantity 
                        })
                            .Append(new
                            {
