@@ -1,13 +1,7 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Dtos.Payment;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using Azure.Core;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using System.Linq;
-using System.Net.Http;
 namespace Ecommerce_brand_Api.Controllers
 {
 
@@ -21,7 +15,7 @@ namespace Ecommerce_brand_Api.Controllers
         private readonly IUserService _userService;
         private readonly HttpClient _httpClient;
 
-        public PaymentController(IServiceUnitOfWork serviceUnitOfWork , IHttpClientFactory httpClientFactory)
+        public PaymentController(IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory)
         {
             _serviceunitOfWork = serviceUnitOfWork;
             _orderService = _serviceunitOfWork.Orders;
@@ -64,7 +58,7 @@ namespace Ecommerce_brand_Api.Controllers
                 if (User == null)
                     return NotFound(new { Message = "User not found." });
 
-             
+
 
                 var url = "https://accept.paymob.com/v1/intention/";
                 var itemsList = createOrder.OrderItems
@@ -73,7 +67,7 @@ namespace Ecommerce_brand_Api.Controllers
                            name = i.OrderItemId.ToString(),
                            amount = i.TotalPrice,
                            description = $"OrderId {i.OrderItemId} For Product Id {i.ProductId} In Database",
-                           quantity = i.Quantity 
+                           quantity = i.Quantity
                        })
                            .Append(new
                            {
@@ -187,12 +181,45 @@ namespace Ecommerce_brand_Api.Controllers
 
 
         [HttpPost("webhook")]
-        public IActionResult Webhook([FromBody] object payload)
+        public async Task<IActionResult> Webhook([FromBody] WebhookRequestDto request)
         {
-            System.IO.File.AppendAllText("webhook_log.txt", $"[{DateTime.Now}] Payload: {payload}\n");
+            if (request == null)
+                return BadRequest("Invalid payload");
 
-            return Ok();
+            var payment = new Payment
+            {
+                OrderId = request.order_id,
+                Currency = request.currency,
+                IsPaymentLocked = request.is_payment_locked,
+                IsReturn = request.is_return,
+                IsCancel = request.is_cancel,
+                IsReturned = request.is_returned,
+                IsCanceled = request.is_canceled,
+                PaidAmountCents = request.paid_amount_cents,
+                PaymentStatus = request.payment_status,
+                PaymentMethod = request.payment_method,
+                SourceType = request.source_data?.type,
+                SourcePhoneNumber = request.source_data?.phone_number,
+                FirstName = request.payment_key_claims?.billing_data?.first_name,
+                LastName = request.payment_key_claims?.billing_data?.last_name,
+                Email = request.payment_key_claims?.billing_data?.email,
+                Address = $"{request.payment_key_claims?.billing_data?.street}, {request.payment_key_claims?.billing_data?.city}",
+                CreatedAt = request.created_at,
+                Items = request.items?.Select(i => new PaymentItem
+                {
+                    Name = i.name,
+                    Description = i.description,
+                    AmountCents = i.amount_cents,
+                    Quantity = i.quantity
+                }).ToList()
+            };
+
+            _context.Payments.Add(payment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { status = "saved" });
         }
+
 
         //public async Task<IActionResult> ClientRefundRequest(int transactionId, decimal ammount)
         //{
