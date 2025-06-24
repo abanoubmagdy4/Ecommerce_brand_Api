@@ -7,13 +7,13 @@ namespace Ecommerce_brand_Api.Services
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
-        private readonly ICurrentUserService currentUserService;
+        private readonly ICurrentUserService _currentUserService;
 
         public CartServices(IUnitofwork _unitofwork, IMapper mapper, ICurrentUserService currentUserService)
         {
             this._unitofwork = _unitofwork;
             this.mapper = mapper;
-            this.currentUserService = currentUserService;
+            this._currentUserService = currentUserService;
         }
 
         public async Task<IEnumerable<CartDto>> GetAllCartsAsync()
@@ -37,7 +37,7 @@ namespace Ecommerce_brand_Api.Services
                 var cartRepo = _unitofwork.GetBaseRepository<Cart>();
 
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
-                    c => c.UserId == currentUserService.UserId,
+                    c => c.UserId == _currentUserService.UserId,
                     include: q => q.Include(c => c.CartItems)
                 );
 
@@ -70,7 +70,7 @@ namespace Ecommerce_brand_Api.Services
                         ProductId = ci.ProductId,
                         Quantity = ci.Quantity,
                         UnitPrice = ci.UnitPrice,
-                        TotalPriceForOneItemType = ci.TotalPrice
+                        TotalPriceForOneItemType = ci.TotalPriceForOneItemType
                     }).ToList() ?? new List<CartItem>()
                 };
 
@@ -95,7 +95,7 @@ namespace Ecommerce_brand_Api.Services
                         ProductId = ci.ProductId,
                         Quantity = ci.Quantity,
                         UnitPrice = ci.UnitPrice,
-                        TotalPrice = ci.TotalPriceForOneItemType
+                        TotalPriceForOneItemType = ci.TotalPriceForOneItemType
                     }).ToList()
                 };
 
@@ -172,6 +172,35 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new ApplicationException($"An error occurred while updating the order with ID {Id}.", ex);
             }
+        }
+
+        public async Task<bool> ClearCurrentUserCart()
+        {
+            var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+            var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
+
+            var userId = _currentUserService.UserId;
+
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.UserId == userId,
+                include: q => q.Include(c => c.CartItems)
+            );
+
+            if (cart == null)
+                return false;
+
+            // احذف كل العناصر من الكارت
+            await cartItemRepo.DeleteRangeAsync(cart.CartItems);
+
+            // صفّر التوتال
+            cart.TotalBasePrice = 0;
+            cart.TotalAmount = 0;
+            cart.UpdatedAt = DateTime.UtcNow;
+
+            await cartRepo.UpdateAsync(cart);
+            await _unitofwork.SaveChangesAsync();
+
+            return true;
         }
     }
 }

@@ -70,9 +70,9 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
-        public async Task<bool> UpdateAsync(int id, ProductDto dto)
+        public async Task<bool> UpdateAsync(ProductDto dto)
         {
-            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(id);
+            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(dto.Id);
             if (product == null) return false;
 
             _mapper.Map(dto, product);
@@ -101,18 +101,18 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
-        public async Task<bool> DecreaseStockAsync(int productId, int quantity)
+        public async Task<bool> DecreaseStockAsync(int productSizeId, int quantity)
         {
             try
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(productId);
-                if (product == null || product.IsDeleted)
+                var product = await _unitOfWork.ProductsSizes.GetByIdAsync(productSizeId);
+                if (product == null)
                     return false;
 
-                //if (product.StockQuantity < quantity)
-                //    throw new InvalidOperationException("Insufficient stock.");
+                if (product.StockQuantity < quantity)
+                    throw new InvalidOperationException("Insufficient stock.");
 
-                //product.StockQuantity -= quantity;
+                product.StockQuantity -= quantity;
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
@@ -122,21 +122,22 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("Error while decreasing product stock.", ex);
             }
         }
-        public async Task<bool> IncreaseStockAsync(int productId, int quantity)
+        public async Task<bool> IncreaseStockAsync(int productSizeId, int quantity)
         {
             try
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(productId);
-                if (product == null || product.IsDeleted)
+                var product = await _unitOfWork.ProductsSizes.GetByIdAsync(productSizeId);
+                if (product == null)
                     return false;
 
-                //product.StockQuantity += quantity;
+                product.StockQuantity += quantity;
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error while increasing product stock.", ex);
+
+                throw new ApplicationException("Error while decreasing product stock.", ex);
             }
         }
         public async Task<IEnumerable<ProductDto>> GetByCategoryAsync(int categoryId)
@@ -152,6 +153,53 @@ namespace Ecommerce_brand_Api.Services
             catch (Exception ex)
             {
                 throw new ApplicationException("Error while retrieving products by category.", ex);
+            }
+        }
+
+        public async Task<ServiceResult> AddProductSizeToProductAsync(List<ProductSizeDto> dtoList)
+        {
+            try
+            {
+                foreach (var dto in dtoList)
+                {
+                    var product = await _unitOfWork.Products.GetByIdAsync(dto.ProductId);
+                    if (product == null)
+                        throw new KeyNotFoundException("Product not found.");
+                    var productSize = _mapper.Map<ProductSizes>(dto);
+                    productSize.ProductId = dto.ProductId;
+                    await _unitOfWork.ProductsSizes.AddAsync(productSize);
+                }
+                await _unitOfWork.SaveChangesAsync();
+                return ServiceResult.Ok("Product size added successfully.");
+
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error while adding product size.", ex);
+            }
+        }
+
+        public async Task<bool> UpdateProductSizes(List<ProductSizeDto> productsSizesDto)
+        {
+            try
+            {
+                foreach (var dto in productsSizesDto)
+                {
+                    var existingProductSize = await _unitOfWork.ProductsSizes.GetByIdAsync(dto.Id);
+                    if (existingProductSize == null)
+                        throw new KeyNotFoundException($"Product size with ID {dto.Id} not found.");
+
+                    _mapper.Map(dto, existingProductSize);
+
+                    await _unitOfWork.ProductsSizes.UpdateAsync(existingProductSize);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error while updating product sizes.", ex);
             }
         }
     }

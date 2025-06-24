@@ -62,6 +62,11 @@ namespace Ecommerce_brand_Api.Repositories
          _ServiceProvider.GetService<IProductRepository>()
          ?? throw new InvalidOperationException("No service registered for IProductRepository");
 
+        public IProductSizesRepository ProductsSizes =>
+        _ServiceProvider.GetService<IProductSizesRepository>()
+        ?? throw new InvalidOperationException("No service registered for IProductRepository");
+
+
         public ICartRepository Carts => _ServiceProvider.GetService<ICartRepository>()
             ?? throw new InvalidOperationException("No service registered for CartRepository");
 

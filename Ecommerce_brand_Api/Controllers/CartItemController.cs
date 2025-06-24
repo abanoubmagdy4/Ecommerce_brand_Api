@@ -25,6 +25,7 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result);
         }
 
+
         /// <summary>
         /// تعديل الكمية أو بيانات عنصر في الكارت
         /// </summary>
@@ -38,7 +39,7 @@ namespace Ecommerce_brand_Api.Controllers
         /// <summary>
         /// حذف عنصر من الكارت
         /// </summary>
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteCartItem(int cartItemId)
         {
             var result = await _cartItemService.DeleteCartItemFromCart(cartItemId);

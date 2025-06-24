@@ -9,6 +9,8 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 
         Task<CartDto?> GetCurrentUserCartAsync();
 
+        Task<bool> ClearCurrentUserCart();
+
         Task<CartDto> AddNewCartAsync(CartDto cart);
 
         Task<bool> UpdateCartAsync(int Id, CartDto cart);

@@ -6,6 +6,6 @@ namespace Ecommerce_brand_Api.Services.Interfaces
     {
         Task<CartItemDto> AddCartItemToCart(CartItemDto cartItemDto);
         Task<CartItemDto> UpdateCartItem(CartItemDto cartItemDto);
-        Task<CartItemDto> DeleteCartItemFromCart(int Id);
+        Task<bool> DeleteCartItemFromCart(int Id);
     }
 }

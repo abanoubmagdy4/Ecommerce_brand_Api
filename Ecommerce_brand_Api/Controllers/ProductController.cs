@@ -41,19 +41,50 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(new { message = "Product created successfully." });
         }
 
-
-        [HttpPut("{id}")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductDto dto)
+        [HttpPost]
+        [Route("AddProductSizeToProduct")]
+        public async Task<IActionResult> AddProductSizeToProduct(List<ProductSizeDto> dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _productService.UpdateAsync(id, dto);
+            var serviceResult = await _productService.AddProductSizeToProductAsync(dto);
+            if (!serviceResult.Success)
+                return BadRequest(new { message = serviceResult.ErrorMessage });
+            return Ok(new { message = "Product Sizes were created successfully." });
+        }
+
+
+
+
+
+        [HttpPut]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProduct([FromForm] ProductDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _productService.UpdateAsync(dto);
             return updated
                 ? Ok(new { message = "Product updated successfully." })
                 : NotFound();
         }
+
+        [HttpPut]
+        [Route("UpdateProductSizes")]
+        public async Task<IActionResult> UpdateProductSizes(List<ProductSizeDto> dtoList)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _productService.UpdateProductSizes(dtoList);
+            return updated
+                ? Ok(new { message = "Product Sizes Updated successfully." })
+                : NotFound();
+        }
+
+
 
 
         [HttpDelete("{id}")]
@@ -66,22 +97,43 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
 
-        //[HttpGet("ByCategory/{categoryId}")]
-        //public async Task<IActionResult> GetByCategory(int categoryId)
-        //{
-        //    try
-        //    {
-        //        var products = await _productService.GetByCategoryAsync(categoryId);
-        //        if (products == null || !products.Any())
-        //            return NotFound(new { message = "No products found in this category." });
+        [HttpGet("ByCategory/{categoryId}")]
+        public async Task<IActionResult> GetByCategory(int categoryId)
+        {
+            try
+            {
+                var products = await _productService.GetByCategoryAsync(categoryId);
+                if (products == null || !products.Any())
+                    return NotFound(new { message = "No products found in this category." });
 
-        //        return Ok(products);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = "Error while retrieving products by category.", details = ex.Message });
-        //    }
-        //}
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error while retrieving products by category.", details = ex.Message });
+            }
+        }
+
+
+        [HttpPost("decrease-stock")]
+        public async Task<IActionResult> DecreaseStock(int productSizeId, int quantity)
+        {
+            var result = await _productService.DecreaseStockAsync(productSizeId, quantity);
+            if (!result)
+                return NotFound("Product size not found or insufficient stock.");
+
+            return Ok("Stock decreased successfully.");
+        }
+
+        [HttpPost("increase-stock")]
+        public async Task<IActionResult> IncreaseStock(int productSizeId, int quantity)
+        {
+            var result = await _productService.IncreaseStockAsync(productSizeId, quantity);
+            if (!result)
+                return NotFound("Product size not found.");
+
+            return Ok("Stock increased successfully.");
+        }
 
 
     }

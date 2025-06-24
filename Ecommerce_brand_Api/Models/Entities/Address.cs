@@ -24,7 +24,8 @@
 
         [Required]
         public GovernorateShippingCost GovernorateShippingCost { get; set; }
-       
+
+
         [Required]
         [MaxLength(50)]
         public string Country { get; set; } = string.Empty;

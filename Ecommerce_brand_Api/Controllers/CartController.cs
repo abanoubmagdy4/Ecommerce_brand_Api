@@ -127,5 +127,28 @@ namespace Ecommerce_brand_Api.Controllers
             }
 
         }
+
+        //Clear Cart Action
+        [HttpPost]
+        [Route("ClearCurrentUserCart")]
+        public async Task<IActionResult> ClearCurrentUserCart()
+        {
+            try
+            {
+                var success = await _cartService.ClearCurrentUserCart();
+                if (success)
+                {
+                    return Ok(new ApiErrorResponse(StatusCodes.Status200OK, "Cart cleared successfully"));
+                }
+                else
+                {
+                    return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, "No Cart found to clear."));
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiErrorResponse(StatusCodes.Status500InternalServerError, $"Server error: {ex.Message}"));
+            }
+        }
     }
 }

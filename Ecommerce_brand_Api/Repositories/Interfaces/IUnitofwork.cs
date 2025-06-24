@@ -10,6 +10,7 @@
 
         //IGovernrateShippingCostRepository GovernorateShippingCost { get; }
         IProductRepository Products { get; }
+        IProductSizesRepository ProductsSizes { get; }
         ICartRepository Carts { get; }
         //ICartItemRepository CartItems { get; }
         IFeedbackRepository Feedbacks { get; }

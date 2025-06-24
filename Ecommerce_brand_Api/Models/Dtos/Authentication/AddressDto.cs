@@ -12,7 +12,7 @@
         public string City { get; set; } = string.Empty;
 
         [Required]
-        public GovernrateShippingCostDto GovernrateShippingCostDto { get; set; }
+        public int GovernrateShippingCostId { get; set; }
 
         [Required]
         [MaxLength(50)]

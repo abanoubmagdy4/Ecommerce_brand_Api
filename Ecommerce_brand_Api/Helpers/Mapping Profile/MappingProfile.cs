@@ -31,6 +31,7 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 
             // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
             CreateMap<Product, ProductDto>().ReverseMap();
+            CreateMap<ProductSizes, ProductSizeDto>().ReverseMap();
 
             // ProductImagesPaths ↔ ProductImagesPathsDto
             CreateMap<ProductImagesPaths, ProductImagesPathsDto>()

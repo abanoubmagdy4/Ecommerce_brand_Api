@@ -77,7 +77,11 @@ namespace Ecommerce_brand_Api.Repositories
             return await query.FirstOrDefaultAsync(filter);
         }
 
-
+        Task IBaseRepository<T>.DeleteRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+            return Task.CompletedTask;
+        }
     }
 
 }
