@@ -20,15 +20,12 @@ namespace Ecommerce_brand_Api.Services
             this._db = db;
         }
 
-        public async Task<CartItemDto> AddCartItemToCart(CartItemDto cartItemDto)
+        public async Task<CartItemDto> AddCartItemToCurrentCart(CartItemDto cartItemDto)
         {
             var cartRepo = _unitofwork.GetBaseRepository<Cart>();
             var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
             var userId = _currentUserService.UserId;
 
-            // ✅ جلب عنوان المستخدم
-            var firstUserAddress = await _db.Addresses.FirstOrDefaultAsync(x => x.UserId == userId)
-                ?? throw new Exception("User address not found");
 
             // ✅ جلب ProductSize + المنتج
             var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(
@@ -59,9 +56,7 @@ namespace Ecommerce_brand_Api.Services
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     TotalBasePrice = itemTotal,
-                    DiscountId = discount.Id,
                     TotalAmount = itemTotal - (itemTotal * discountValue),
-                    AddressId = firstUserAddress.Id,
                     CartItems = new List<CartItem>()
                 };
 
@@ -69,7 +64,6 @@ namespace Ecommerce_brand_Api.Services
                 await _unitofwork.SaveChangesAsync();
             }
 
-            // ✅ جلب الكارت بالعناصر بعد الحفظ
             var cartWithItems = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.Id == cart.Id,
                 include: q => q.Include(c => c.CartItems)
@@ -82,7 +76,7 @@ namespace Ecommerce_brand_Api.Services
             if (existingItem != null)
             {
                 existingItem.Quantity += cartItemDto.Quantity;
-                existingItem.TotalPriceForOneItemType = existingItem.UnitPrice * existingItem.Quantity;
+                existingItem.TotalPriceForOneItemType = existingItem.Product.PriceAfterDiscount * existingItem.Quantity;
                 await cartItemRepo.UpdateAsync(existingItem);
             }
             else
@@ -94,11 +88,10 @@ namespace Ecommerce_brand_Api.Services
             }
 
             cartWithItems.TotalBasePrice += itemTotal;
-            cartWithItems.DiscountId = discount.Id; // Assuming you want to add the discount ID
             cartWithItems.TotalAmount = cartWithItems.TotalBasePrice - discountValue;
             cartWithItems.UpdatedAt = DateTime.Now;
 
-            await cartRepo.UpdateAsync(cartWithItems); // ✅ كيان مش DTO
+            await cartRepo.UpdateAsync(cartWithItems);
             await _unitofwork.SaveChangesAsync();
 
             var finalItem = await cartItemRepo.GetFirstOrDefaultAsync(
@@ -144,7 +137,7 @@ namespace Ecommerce_brand_Api.Services
             // ✅ احسب الفرق في السعر وعدّل العنصر
             var oldTotal = cartItem.TotalPriceForOneItemType;
             cartItem.Quantity = cartItemDto.Quantity;
-            cartItem.TotalPriceForOneItemType = cartItem.UnitPrice * cartItemDto.Quantity;
+            cartItem.TotalPriceForOneItemType = cartItem.Product.PriceAfterDiscount * cartItemDto.Quantity;
 
             await cartItemRepo.UpdateAsync(cartItem);
 

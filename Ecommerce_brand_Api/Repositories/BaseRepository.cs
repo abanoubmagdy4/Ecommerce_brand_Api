@@ -82,6 +82,16 @@ namespace Ecommerce_brand_Api.Repositories
             _dbSet.RemoveRange(entities);
             return Task.CompletedTask;
         }
+
+        public async Task<T?> GetFirstOrDefaultAsync()
+        {
+            return await _dbSet.FirstOrDefaultAsync();
+        }
+
+        public IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
     }
 
 }

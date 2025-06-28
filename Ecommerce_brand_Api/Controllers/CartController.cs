@@ -8,10 +8,12 @@ namespace Ecommerce_brand_Api.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, ICurrentUserService currentUserService)
         {
             this._cartService = cartService;
+            this._currentUserService = currentUserService;
         }
 
         /// <summary>
@@ -50,38 +52,54 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Retrieves a cart by its unique identifier.
-        /// </summary>
-        /// <param name="Id">The unique identifier of the cart to retrieve. Must be a positive integer.</param>
-        /// <returns>An <see cref="IActionResult"/> containing the result of the operation: <list type="bullet"> <item>
-        /// <description>A 200 OK response with a success message if the cart is found.</description> </item> <item>
-        /// <description>A 404 Not Found response with an error message if no cart is found for the specified
-        /// identifier.</description> </item> <item> <description>A 500 Internal Server Error response with an error
-        /// message if a server error occurs.</description> </item> </list></returns>
-        [HttpGet("{Id:int}")]
+        [HttpGet]
+        [Route("getCartById/{userId}")]
         [ProducesResponseType(typeof(ApiErrorResponse), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         [ProducesResponseType(typeof(ApiErrorResponse), 500)]
-        public async Task<IActionResult> getCartById()
+        public async Task<IActionResult> getCartById(string userId)
         {
             try
             {
-                var curretnUserCart = await _cartService.GetCurrentUserCartAsync();
+                var userCart = await _cartService.GetUserCartAsyncById(userId);
 
-                if (curretnUserCart == null)
+                if (userCart == null)
                 {
                     return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, "No Cart found."));
                 }
 
-                return Ok(new ApiErrorResponse(StatusCodes.Status200OK, "Cart fetched successfully"));
+                return Ok(userCart);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiErrorResponse(StatusCodes.Status500InternalServerError, $"Server error: {ex.Message}"));
             }
-
         }
+
+        [HttpGet]
+        [Route("getCartItemsById/{userId}")]
+        [ProducesResponseType(typeof(ApiErrorResponse), 200)]
+        [ProducesResponseType(typeof(ApiErrorResponse), 404)]
+        [ProducesResponseType(typeof(ApiErrorResponse), 500)]
+        public async Task<IActionResult> getCartItemsById(string userId)
+        {
+            try
+            {
+                var userCart = await _cartService.GetUserCartAsyncById(userId);
+
+                if (userCart == null)
+                {
+                    return NotFound(new ApiErrorResponse(StatusCodes.Status404NotFound, "No Cart found."));
+                }
+
+                return Ok(userCart.CartItems);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiErrorResponse(StatusCodes.Status500InternalServerError, $"Server error: {ex.Message}"));
+            }
+        }
+
 
         /// <summary>
         /// Creates a new shopping cart based on the provided cart data.

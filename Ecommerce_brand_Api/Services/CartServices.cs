@@ -38,10 +38,32 @@ namespace Ecommerce_brand_Api.Services
 
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
                     c => c.UserId == _currentUserService.UserId,
-                    include: q => q.Include(c => c.CartItems)
+                    include: q => q
+                        .Include(c => c.CartItems)
+                            .ThenInclude(ci => ci.Product) // لازم نجيب البرودكت مع كل عنصر في الكارت
                 );
 
-                return cart == null ? null : mapper.Map<CartDto>(cart);
+                if (cart == null)
+                {
+                    return null;
+                }
+
+                var cartDto = mapper.Map<CartDto>(cart);
+
+                var discount = await _unitofwork.GetBaseRepository<Discount>().GetFirstOrDefaultAsync();
+
+                if (discount == null)
+                {
+                    cartDto.Threshold = 0;
+                    cartDto.TotalDiscount = 0;
+                }
+                else
+                {
+                    cartDto.Threshold = discount.Threshold;
+                    cartDto.TotalDiscount = cartDto.TotalBasePrice * discount.DicountValue / 100;
+                }
+
+                return cartDto;
             }
             catch (Exception ex)
             {
@@ -61,15 +83,12 @@ namespace Ecommerce_brand_Api.Services
                     UserId = cartDto.UserId,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    DiscountId = cartDto.DiscountId,
-                    AddressId = cartDto.AddressId,
                     TotalBasePrice = cartDto.TotalBasePrice,
                     TotalAmount = cartDto.TotalAmount,
                     CartItems = cartDto.CartItems?.Select(ci => new CartItem
                     {
                         ProductId = ci.ProductId,
                         Quantity = ci.Quantity,
-                        UnitPrice = ci.UnitPrice,
                         TotalPriceForOneItemType = ci.TotalPriceForOneItemType
                     }).ToList() ?? new List<CartItem>()
                 };
@@ -84,8 +103,6 @@ namespace Ecommerce_brand_Api.Services
                     UserId = cart.UserId,
                     CreatedAt = cart.CreatedAt,
                     UpdatedAt = cart.UpdatedAt,
-                    DiscountId = cart.DiscountId,
-                    AddressId = cart.AddressId,
                     TotalBasePrice = cart.TotalBasePrice,
                     TotalAmount = cart.TotalAmount,
                     CartItems = cart.CartItems?.Select(ci => new CartItemDto
@@ -94,7 +111,7 @@ namespace Ecommerce_brand_Api.Services
                         CartId = ci.CartId,
                         ProductId = ci.ProductId,
                         Quantity = ci.Quantity,
-                        UnitPrice = ci.UnitPrice,
+                        UnitPrice = ci.Product.Price,
                         TotalPriceForOneItemType = ci.TotalPriceForOneItemType
                     }).ToList()
                 };
@@ -201,6 +218,25 @@ namespace Ecommerce_brand_Api.Services
             await _unitofwork.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<CartDto?> GetUserCartAsyncById(string userId)
+        {
+            try
+            {
+                var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+
+                var cart = await cartRepo.GetFirstOrDefaultAsync(
+                    c => c.UserId == userId,
+                    include: q => q.Include(c => c.CartItems)
+                );
+
+                return cart == null ? null : mapper.Map<CartDto>(cart);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while retrieving the cart.", ex);
+            }
         }
     }
 }

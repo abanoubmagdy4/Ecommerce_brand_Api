@@ -11,15 +11,11 @@
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
         public decimal TotalBasePrice { get; set; }
-        public int DiscountId { get; set; }
-        public Discount Discount { get; set; }
         public decimal TotalAmount { get; set; }
 
         // Navigation Property
         public ApplicationUser User { get; set; } = null!;
 
-        public Address Address { get; set; }
-        public int AddressId { get; set; }
 
 
 

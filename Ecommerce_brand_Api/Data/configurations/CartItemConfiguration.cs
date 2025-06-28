@@ -9,7 +9,6 @@ namespace Ecommerce_brand_Api.Data.Configurations
         {
             builder.HasKey(ci => ci.Id);
 
-            builder.Property(ci => ci.UnitPrice).HasColumnType("decimal(18,2)");
             builder.Property(ci => ci.TotalPriceForOneItemType).HasColumnType("decimal(18,2)");
 
             // ✅ العلاقة مع Cart (Cascade مسموحة)

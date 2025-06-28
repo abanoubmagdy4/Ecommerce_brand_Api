@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Entities.Pagination;
 
 namespace Ecommerce_brand_Api.Controllers
 {
@@ -133,6 +134,14 @@ namespace Ecommerce_brand_Api.Controllers
                 return NotFound("Product size not found.");
 
             return Ok("Stock increased successfully.");
+        }
+
+        [HttpGet("paginated")]
+        public async Task<IActionResult> GetPagedProducts([FromQuery] PaginationParams pagination)
+        {
+            var result = await _productService.GetPaginatedProductsAsync(pagination);
+
+            return Ok(result);
         }
 
 

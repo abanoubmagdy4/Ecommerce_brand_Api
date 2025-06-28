@@ -15,17 +15,17 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 
             CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
 
-            CreateMap<CartDto, Cart>()
-                .ForMember(dest => dest.Address, opt => opt.Ignore())
-                .ForMember(dest => dest.Discount, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
+            CreateMap<Cart, CartDto>()
+                .ForMember(dest => dest.Threshold, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalDiscount, opt => opt.Ignore())
+                .ForSourceMember(dest => dest.User, opt => opt.DoNotValidate())
                 .ReverseMap();
 
-            CreateMap<CartItemDto, CartItem>().ReverseMap();
+            CreateMap<CartItem, CartItemDto>()
+                .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.Product.Price))
+                .ReverseMap();
 
-            CreateMap<CartDto, Cart>();
 
-            CreateMap<Cart, CartDto>();
             CreateMap<Feedback, FavoriteDto>();
             CreateMap<FeedbackDto, Feedback>();
 
@@ -40,7 +40,6 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
                 .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
-            CreateMap<CartItem, CartItemDto>().ReverseMap();
         }
     }
 }

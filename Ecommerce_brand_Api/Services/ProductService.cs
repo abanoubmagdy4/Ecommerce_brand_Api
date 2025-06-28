@@ -1,4 +1,6 @@
-﻿using Ecommerce_brand_Api.Models.Dtos;
+﻿using AutoMapper.QueryableExtensions;
+using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Entities.Pagination;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -58,14 +60,14 @@ namespace Ecommerce_brand_Api.Services
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            var products = await _unitOfWork.Products.GetAllWithImagesAsync(); // Ensure Include Images in repo
+            var products = await _unitOfWork.Products.GetAllWithImagesAsync();
             return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
 
         public async Task<ProductDto?> GetByIdAsync(int id)
         {
-            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(id); // Ensure Include Images
+            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(id);
             return product == null ? null : _mapper.Map<ProductDto>(product);
         }
 
@@ -77,7 +79,6 @@ namespace Ecommerce_brand_Api.Services
 
             _mapper.Map(dto, product);
 
-            // Optional: remove old images if needed (file system and DB)
             if (dto.Images != null && dto.Images.Any())
             {
                 string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
@@ -140,6 +141,7 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("Error while decreasing product stock.", ex);
             }
         }
+
         public async Task<IEnumerable<ProductDto>> GetByCategoryAsync(int categoryId)
         {
             try
@@ -178,7 +180,6 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("Error while adding product size.", ex);
             }
         }
-
         public async Task<bool> UpdateProductSizes(List<ProductSizeDto> productsSizesDto)
         {
             try
@@ -201,6 +202,19 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new ApplicationException("Error while updating product sizes.", ex);
             }
+        }
+
+        public async Task<PaginatedResult<ProductDto>> GetPaginatedProductsAsync(PaginationParams pagination)
+        {
+            var productRepo = _unitOfWork.GetBaseRepository<Product>();
+
+            var query = productRepo.GetQueryable().OrderBy(p => p.Id);
+
+            var pagedResult = await query
+                .ProjectTo<ProductDto>(_mapper.ConfigurationProvider)
+                .ToPaginatedResultAsync(pagination.PageIndex, pagination.PageSize);
+
+            return pagedResult;
         }
     }
 }
