@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 using Ecommerce_brand_Api.Models.Dtos.Payment;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -215,8 +216,8 @@ namespace Ecommerce_brand_Api.Controllers
                 }).ToList()
             };
 
-            _context.Payments.Add(payment);
-            await _context.SaveChangesAsync();
+            //_context.Payments.Add(payment);
+            //await _context.SaveChangesAsync();
 
             return Ok(new { status = "saved" });
         }

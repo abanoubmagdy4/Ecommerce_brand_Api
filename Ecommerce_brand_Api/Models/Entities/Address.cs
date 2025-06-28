@@ -39,9 +39,9 @@
         [MaxLength(50)]
         public string Floor { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
+        public bool IsShopped { get; set; } = false;
 
-        public int orderId { get; set; }
 
-        public Order Order { get; set; }
+        public List<Order> Order { get; set; }
     }
 }

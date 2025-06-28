@@ -15,8 +15,8 @@ namespace Ecommerce_brand_Api.Data.configurations
             //Order-> ShippingAddress 
             builder
                 .HasOne(o => o.ShippingAddress)
-                 .WithOne(a => a.Order)
-                .HasForeignKey<Order>(o => o.ShippingAddressId)
+                 .WithMany(a => a.Order)
+                .HasForeignKey(o => o.ShippingAddressId)
                .OnDelete(DeleteBehavior.Restrict);
 
             //Order-> Customer 
