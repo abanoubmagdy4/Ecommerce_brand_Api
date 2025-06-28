@@ -31,7 +31,7 @@ namespace Ecommerce_brand_Api.Controllers
 
         }
         [HttpPost("checkout")]
-        public async Task<IActionResult> Checkout([FromBody] CartDto cartDto)
+        public async Task<IActionResult> Checkout([FromBody] OrderDTO orderDto)
         {
             if (!ModelState.IsValid)
             {
@@ -52,22 +52,23 @@ namespace Ecommerce_brand_Api.Controllers
             try
             {
 
-                var orderDTO = await _orderService.BuildOrderDtoFromCartAsync(cartDto);
+
+                var orderDTOAfterPrepare = await _orderService.BuildOrderDto(orderDto);
 
 
-                var createOrder = await _orderService.AddNewOrderAsync(orderDTO);
+                var Ordercreated = await _orderService.AddNewOrderAsync(orderDTOAfterPrepare);
 
-                var shippingAddress = await _AddressbaseService.GetByIdAsync(createOrder.ShippingAddressId);
+                var shippingAddress = await _AddressbaseService.GetByIdAsync(Ordercreated.ShippingAddressId);
                 if (shippingAddress == null)
                     return NotFound(new { Message = "Shipping address not found." });
-                var User = await _userService.GetByStringIdAsync(createOrder.CustomerId);
+                var User = await _userService.GetByStringIdAsync(Ordercreated.CustomerId);
                 if (User == null)
                     return NotFound(new { Message = "User not found." });
 
              
 
                 var url = "https://accept.paymob.com/v1/intention/";
-                var itemsList = createOrder.OrderItems
+                var itemsList = Ordercreated.OrderItems
                        .Select(i => new
                        {
                            name = i.OrderItemId.ToString(),
@@ -78,14 +79,14 @@ namespace Ecommerce_brand_Api.Controllers
                            .Append(new
                            {
                                name = "Discount",
-                               amount = -createOrder.DiscountValue,
+                               amount = -Ordercreated.DiscountValue,
                                description = "Total discount applied on this order",
                                quantity = 1
                            })
                               .ToList();
                 var payload = new
                 {
-                    amount = createOrder.TotalOrderPrice,
+                    amount = Ordercreated.TotalOrderPrice,
                     currency = "EGP",
                     payment_methods = new[] { 5145466, 5145604, 5145468 },
                     items = itemsList,

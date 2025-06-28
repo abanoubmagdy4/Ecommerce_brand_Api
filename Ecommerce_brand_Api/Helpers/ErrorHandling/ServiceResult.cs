@@ -2,13 +2,19 @@
 {
     public class ServiceResult
     {
-        public bool Success { get; set; } // الحالة: نجحت ولا لأ
-        public string? ErrorMessage { get; set; } // الرسالة في حالة الفشل
+        public bool Success { get; set; }
+        public string? ErrorMessage { get; set; }
         public string? SuccessMessage { get; set; }
-        // لو العملية نجحت، بنرجّع كائن ServiceResult ناجح
-        public static ServiceResult Ok(string successMessage) => new ServiceResult { Success = true, SuccessMessage = successMessage };
+        public object? Data { get; set; }
 
-        // لو العملية فشلت، بنرجّع كائن ServiceResult فاشل ومعاه رسالة
-        public static ServiceResult Fail(string error) => new ServiceResult { Success = false, ErrorMessage = error };
+        public static ServiceResult Ok(string successMessage) =>
+            new ServiceResult { Success = true, SuccessMessage = successMessage };
+
+        public static ServiceResult OkWithData(object data) =>
+            new ServiceResult { Success = true, Data = data };
+
+        public static ServiceResult Fail(string error) =>
+            new ServiceResult { Success = false, ErrorMessage = error };
     }
+
 }

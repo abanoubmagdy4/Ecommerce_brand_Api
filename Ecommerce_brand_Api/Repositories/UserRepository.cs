@@ -1,4 +1,5 @@
-﻿namespace Ecommerce_brand_Api.Repositories
+﻿
+namespace Ecommerce_brand_Api.Repositories
 {
     public class UserRepository : BaseRepository<ApplicationUser>, IUserRepository
     {
@@ -7,6 +8,12 @@
 
         }
 
+        public async Task<ApplicationUser> FindByEmailAsync(string email)
+        {
+             ApplicationUser applicationUser =await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+           
+            return  applicationUser;
+        }
     }
         
 }

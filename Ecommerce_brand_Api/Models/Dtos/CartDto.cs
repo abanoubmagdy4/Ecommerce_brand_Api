@@ -14,7 +14,6 @@ namespace Ecommerce_brand_Api.Models.Dtos
 
         //Total Price After Each Item's Discount => Not Including Any Other Special Discounts
 
-        public int AddressId { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal? ShippingCost { get; set; }

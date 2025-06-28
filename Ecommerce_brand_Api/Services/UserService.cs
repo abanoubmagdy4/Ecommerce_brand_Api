@@ -1,4 +1,6 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Models.Dtos.Authentication;
+using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Repositories;
 using Microsoft.Extensions.Options;
 using System.Data;
@@ -64,7 +66,82 @@ namespace Ecommerce_brand_Api.Services
 
             // Remember Me !!!!!!!!!!
         }
+        public async Task SaveCodeAsync(string email, string code)
+        {
+            // امسح الأكواد القديمة لنفس الإيميل (لو عايز تخلي كود واحد فعال)
+            var oldCodes = _context.OtpCodes.Where(x => x.Email == email);
+            _context.OtpCodes.RemoveRange(oldCodes);
 
+            var otp = new OtpCode
+            {
+                Email = email,
+                Code = code,
+                CreatedAt = DateTime.UtcNow,
+                ExpireAt = DateTime.UtcNow.AddMinutes(5)
+            };
+
+            _context.OtpCodes.Add(otp);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> VerifyCodeAsync(CustomerLoginDto customerDto)
+        {
+            var otp = await _context.OtpCodes
+                .Where(x => x.Email == customerDto.email && x.Code == customerDto.Code)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (otp == null || otp.ExpireAt < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            // ممكن تمسحه بعد الاستخدام
+            _context.OtpCodes.Remove(otp);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<ServiceResult> HandleCustomerLoginAsync(CustomerLoginDto customerLoginDto)
+        {
+
+            var isValidOtp = await VerifyCodeAsync(customerLoginDto);
+            if (!isValidOtp)
+                return ServiceResult.Fail("Invalid or expired OTP.");
+
+            var user = await _userRepository.FindByEmailAsync(customerLoginDto.email.ToLowerInvariant());
+
+
+            if (user == null)
+            {
+                var newUser = new ApplicationUser
+                {
+                    Email = customerLoginDto.email,
+                    UserName = customerLoginDto.email
+                };
+
+                var result = await _userManager.CreateAsync(newUser); 
+                if (!result.Succeeded)
+                {
+                    return ServiceResult.Fail("User creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+                var roleResult = await _userManager.AddToRoleAsync(newUser, "Customer");
+                if (!roleResult.Succeeded)
+                {
+                    return ServiceResult.Fail("Failed to assign role: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                }
+                user = newUser;
+            }
+
+            var tokenExpiration = TimeSpan.FromHours(2);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var token = _tokenService.CreateToken(user, userRoles, tokenExpiration);
+            if (token == null) return ServiceResult.Fail("Token generation failed.");
+
+            return ServiceResult.OkWithData(token);
+        }
 
         public async Task<ServiceResult> RegisterAsync([FromForm] RegisterDto registerDTO, string userRole)
         {

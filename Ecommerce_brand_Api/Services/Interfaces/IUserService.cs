@@ -13,7 +13,8 @@
         Task<ApplicationUser> FindByEmailAsync(string email);
         Task SaveCodeAndTokenAsync(string email, string code, string token);
         Task<string?> GetStoredResetTokenAsync(string email);
-
-            //Task<bool> CheckEmailExistAsync(string email);
+        Task SaveCodeAsync(string email, string code);
+        Task<bool> VerifyCodeAsync(CustomerLoginDto customerDto);
+        Task<ServiceResult> HandleCustomerLoginAsync(CustomerLoginDto customerLoginDto);//Task<bool> CheckEmailExistAsync(string email);
         }
 }

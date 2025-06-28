@@ -7,9 +7,7 @@ namespace Ecommerce_brand_Api.Data.configurations
 
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
-            builder.HasMany(p => p.Items)
-            .WithOne()
-            .HasForeignKey(i => i.PaymentId);
+           
         }
     }
 }
