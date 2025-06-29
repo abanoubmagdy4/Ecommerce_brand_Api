@@ -9,12 +9,10 @@
         public string CustomerId { get; set; }
         public int ShippingAddressId { get; set; }
         public decimal? ShippingCost { get; set; }
-        public int? DiscountId { get; set; }
         public decimal TotalOrderPrice { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
-
-
+        public decimal DiscountValue { get; set; } = 0;
         //Customer Information For every single order (He can change it later but still saved as info for specific order)
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -27,7 +25,6 @@
         public Cancelation? Cancelation { get; set; }
         public Address ShippingAddress { get; set; }
         public ApplicationUser Customer { get; set; }
-        public Discount? Discount { get; set; }
 
         public bool IsDeleted { get; set; } = false;
     }

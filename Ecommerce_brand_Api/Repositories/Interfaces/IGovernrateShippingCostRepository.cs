@@ -2,6 +2,6 @@
 {
     public interface IGovernrateShippingCostRepository : IBaseRepository<GovernorateShippingCost>
     {
-
+        Task<GovernorateShippingCost?> GetByNameAsync(string name);
     }
 }

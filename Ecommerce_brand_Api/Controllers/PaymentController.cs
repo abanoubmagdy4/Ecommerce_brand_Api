@@ -59,54 +59,69 @@ namespace Ecommerce_brand_Api.Controllers
 
                 newAddress = (Address)addressResult.Data;
 
-                var orderDTOAfterPrepare = await _orderService.BuildOrderDto(orderDto);
+                ServiceResult orderDtoServiceResult = await _orderService.BuildOrderDto(orderDto);
+                if (!orderDtoServiceResult.Success)
+                    return BadRequest(orderDtoServiceResult.ErrorMessage);
+                if (orderDtoServiceResult.Data == null)
+                    return BadRequest("Order preparation failed: no data returned.");
+                OrderDTO orderDTOAfterPrepare =(OrderDTO)orderDtoServiceResult.Data;
 
-                var Ordercreated = await _orderService.AddNewOrderAsync(orderDTOAfterPrepare);
+
+                Order orderCreated = await _orderService.AddNewOrderAsync(orderDTOAfterPrepare, newAddress, existedUser);
+                if (orderCreated == null)
+                    return StatusCode(500, "An error occurred while creating the order.");
 
 
                 var url = "https://accept.paymob.com/v1/intention/";
-                var itemsList = Ordercreated.OrderItems
-                       .Select(i => new
-                       {
-                           name = i.OrderItemId.ToString(),
-                           amount = i.TotalPrice,
-                           description = $"OrderId {i.OrderItemId} For Product Id {i.ProductId} In Database",
-                           quantity = i.Quantity
-                       })
-                           .Append(new
-                           {
-                               name = "Discount",
-                               amount = -Ordercreated.DiscountValue,
-                               description = "Total discount applied on this order",
-                               quantity = 1
-                           })
-                              .ToList();
+                var itemsList = orderCreated.OrderItems
+               .Select(i => new
+               {
+                   name = i.OrderItemId.ToString(),
+                   amount = i.TotalPrice,
+                   description = $"OrderId {i.OrderItemId} For Product Id {i.ProductId} In Database",
+                   quantity = i.Quantity
+               })
+               .Append(new
+               {
+                   name = "Discount",
+                   amount = -orderCreated.DiscountValue,
+                   description = "Total discount applied on this order",
+                   quantity = 1
+               })
+               .Append(new
+               {
+                   name = "Shipping",
+                   amount = orderCreated.ShippingCost ?? 0,
+                   description = "Shipping cost for this order",
+                   quantity = 1
+               })
+               .ToList();
                 var payload = new
                 {
-                    amount = Ordercreated.TotalOrderPrice,
+                    amount = orderCreated.TotalOrderPrice,
                     currency = "EGP",
                     payment_methods = new[] { 5145466, 5145604, 5145468 },
                     items = itemsList,
 
                     billing_data = new
                     {
-                        apartment = shippingAddress.Apartment,
-                        first_name = User.FirstName,
-                        last_name = User.LastName,
-                        street = shippingAddress.Street,
-                        building = shippingAddress.Building,
-                        phone_number = User.PhoneNumber,
-                        city = shippingAddress.City,
-                        country = shippingAddress.Country,
-                        email = User.Email,
-                        floor = shippingAddress.Floor,
-                        state = shippingAddress.GovernorateShippingCost.Name,
+                        apartment = orderCreated.ShippingAddress.Apartment,
+                        first_name = orderCreated.FirstName,
+                        last_name = orderCreated.LastName,
+                        street = orderCreated.ShippingAddress.Street,
+                        building = orderCreated.ShippingAddress.Building,
+                        phone_number = orderCreated.PhoneNumber,
+                        city = orderCreated.ShippingAddress.Street,
+                        country = orderCreated.ShippingAddress.Country,
+                        email = orderCreated.Customer.Email,
+                        floor = orderCreated.ShippingAddress.Floor,
+                        state = orderCreated.ShippingAddress.City,
                     },
                     customer = new
                     {
-                        first_name = User.FirstName,
-                        last_name = User.LastName,
-                        email = User.Email,
+                        first_name = orderCreated.FirstName,
+                        last_name = orderCreated.LastName,
+                        email = orderCreated.Customer.Email,
                         extras = new { order_source = "website" }
                     },
                     extras = new { notes = "Test order from backend" }

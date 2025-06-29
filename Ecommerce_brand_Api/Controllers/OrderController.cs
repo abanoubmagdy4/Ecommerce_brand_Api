@@ -220,58 +220,7 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Creates a new order based on the provided order details.
-        /// </summary>
-        /// <remarks>This method validates the provided order data before attempting to create the order. 
-        /// If the data is invalid, a 400 Bad Request response is returned.  If the order is successfully created, a 201
-        /// Created response is returned with the created order details.  In the event of a server error, a 500 Internal
-        /// Server Error response is returned with an appropriate error message.</remarks>
-        /// <param name="newOrderDTO">The data transfer object containing the details of the order to be created.  This parameter must not be null
-        /// and must pass model validation.</param>
-        /// <returns>An <see cref="IActionResult"/> containing the result of the operation: <list type="bullet"> <item>
-        /// <description> A 201 Created response with an <see cref="ApiResponse{T}"/> containing the created <see
-        /// cref="OrderDTO"/> if the operation succeeds. </description> </item> <item> <description> A 400 Bad Request
-        /// response with an <see cref="ApiResponse{T}"/> containing an error message if the provided order data is
-        /// invalid. </description> </item> <item> <description> A 500 Internal Server Error response with an <see
-        /// cref="ApiResponse{T}"/> containing an error message if a server-side error occurs. </description> </item>
-        /// </list></returns> 
-        [HttpPost("Add_New_Order")]
-        [ProducesResponseType(typeof(ApiResponse<OrderDTO>), 201)]
-        [ProducesResponseType(typeof(ApiResponse<string>), 400)]
-        [ProducesResponseType(typeof(ApiResponse<string>), 500)]
-        public async Task<IActionResult> AddOrder([FromBody] OrderDTO newOrderDTO)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new ApiResponse<string>
-                    {
-                        Message = "Invalid order data",
-                        Success = false
-                    });
-                }
-
-                var createOrder = await _orderService.AddNewOrderAsync(newOrderDTO);
-
-                return CreatedAtAction(nameof(GetOrderById), new { OrderId = createOrder.OrderId }, new ApiResponse<OrderDTO>
-                {
-                    Data = createOrder,
-                    Message = "Order created successfully",
-                    Success = true
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiResponse<string>
-                {
-                    Message = $"Server error: {ex.Message}",
-                    Success = false
-                });
-            }
-        }
-
+   
 
         /// <summary>
         /// Updates an existing order with the specified ID using the provided order details.

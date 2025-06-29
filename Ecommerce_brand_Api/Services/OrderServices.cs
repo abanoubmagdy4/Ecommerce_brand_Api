@@ -81,6 +81,10 @@
             if (orderDto == null || address == null || user == null)
                 throw new ArgumentNullException("Data cannot be null.");
 
+            if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())
+                throw new ArgumentException("Order must contain at least one item.");
+
+
             try
             {
                 var orderItemsAfterMapping = new List<OrderItem>();
@@ -96,14 +100,29 @@
 
                     orderItemsAfterMapping.Add(item);
                 }
+                string shippingAreaName = address.GovernorateShippingCost?.Name ?? "Unknown";
+
                 Order order = new Order()
                 {
                     OrderItems = orderItemsAfterMapping,
-                    OrderAddressInfo = $"{address.Street}, Apt: {address.Apartment}, Bldg: {address.Building}, Floor: {address.Floor}, " + $"{address.City}, {address.Country} - Shipping Area: {address.GovernorateShippingCost.Name}",
                     OrderStatus = OrderStatus.Pending,
                     TotalOrderPrice = orderDto.TotalOrderPrice,
                     CreatedAt = orderDto.CreatedAt,
-                    DeliveredAt = orderDto.DeliveredAt
+                    DeliveredAt = orderDto.DeliveredAt,
+                    DiscountValue = Math.Max(orderDto.DiscountValue, 0),
+
+                    // Customer and address cost 
+                    CustomerId = user.Id,
+                    ShippingAddressId = address.Id,
+                    OrderAddressInfo = $"{address.Street}, Apt: {address.Apartment}, Bldg: {address.Building}, Floor: {address.Floor}, " + $"{address.City}, {shippingAreaName}",
+                    ShippingCost = orderDto.ShippingCost,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+
+                    // Navigation properties
+                    Customer = user,
+                    ShippingAddress = address,
                 };
 
                 return order;
@@ -256,24 +275,52 @@
             }
         }
 
-        public async Task<OrderDTO> BuildOrderDto(OrderDTO orderDto)
+        public async Task<ServiceResult> BuildOrderDto(OrderDTO orderDto)
         {
-            var discount = await _unitofwork.Discount.GetActiveDiscountAsync();
-
-
-            decimal totalOrderItemsPrice = orderDto.OrderItems?.Sum(i => i.TotalPrice) ?? 0;
-
-            decimal appliedDiscount = 0;
-            if (discount != null && totalOrderItemsPrice >= discount.Threshold)
+            try
             {
-                appliedDiscount = discount.DiscountValue;
+                if (orderDto == null)
+                    return ServiceResult.Fail("Order data is missing.");
+
+                if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())
+                    return ServiceResult.Fail("No order items found.");
+
+                if (string.IsNullOrWhiteSpace(orderDto.AddressInfo?.City))
+                    return ServiceResult.Fail("City name is required.");
+
+                // Get discount
+                var discount = await _unitofwork.Discount.GetActiveDiscountAsync();
+
+                // Calculate total
+                decimal totalOrderItemsPrice = orderDto.OrderItems.Sum(i => i.TotalPrice);
+                decimal appliedDiscount = 0;
+
+                if (discount != null && totalOrderItemsPrice >= discount.Threshold)
+                {
+                    appliedDiscount = discount.DiscountValue;
+                }
+
+                // Get shipping cost
+                var governorateShippingCost = await _unitofwork.GovernratesShippingCosts
+                    .GetByNameAsync(orderDto.AddressInfo.City);
+
+                if (governorateShippingCost == null)
+                    return ServiceResult.Fail("Shipping cost not found for the given city.");
+
+                // Set order properties
+                orderDto.CreatedAt = DateTime.UtcNow;
+                orderDto.DiscountValue = appliedDiscount;
+                orderDto.TotalOrderPrice = totalOrderItemsPrice - appliedDiscount;
+                orderDto.OrderStatus = OrderStatus.Pending;
+                orderDto.DeliveredAt = orderDto.CreatedAt.AddDays(3);
+                orderDto.ShippingCost= governorateShippingCost.ShippingCost;
+
+                return ServiceResult.OkWithData(orderDto);
             }
-            orderDto.CreatedAt = DateTime.UtcNow;
-            orderDto.DiscountValue = appliedDiscount;
-            orderDto.TotalOrderPrice = totalOrderItemsPrice - appliedDiscount;
-            orderDto.OrderStatus = OrderStatus.Pending;
-            orderDto.DeliveredAt = orderDto.CreatedAt + TimeSpan.FromDays(3);
-            return orderDto;
+            catch (Exception ex)
+            {
+                return ServiceResult.Fail($"An error occurred: {ex.Message}");
+            }
         }
 
 
