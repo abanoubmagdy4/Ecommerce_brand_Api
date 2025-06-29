@@ -77,6 +77,11 @@ namespace Ecommerce_brand_Api.Repositories
         public IFeedbackRepository Feedbacks =>
              _ServiceProvider.GetRequiredService<IFeedbackRepository>()
             ?? throw new InvalidOperationException("No service registered for FeedbackRepository");
+
+        public INewArrivalsRepository NewArrivals =>
+             _ServiceProvider.GetRequiredService<INewArrivalsRepository>()
+            ?? throw new InvalidOperationException("No service registered for NewArrivalsRepository");
+
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
         public void Dispose()
@@ -85,6 +90,7 @@ namespace Ecommerce_brand_Api.Repositories
         }
     }
 }
+
 
 
 

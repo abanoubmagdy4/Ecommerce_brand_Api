@@ -7,19 +7,19 @@
 
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
-       // private readonly IMapper _mapper;
+        // private readonly IMapper _mapper;
 
         public AccountController(IUserService userService, UserManager<ApplicationUser> userManager)
         {
             _userService = userService;
             _userManager = userManager;
-         //   _mapper = mapper;
+            //   _mapper = mapper;
         }
 
         [HttpPost("Login")]
         [Consumes("multipart/form-data")]
 
-        public async Task<ActionResult> Login([FromForm]LoginDto loginDto)
+        public async Task<ActionResult> Login([FromForm] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -35,13 +35,13 @@
 
         [HttpPost("Register")]
 
-        public async Task<ActionResult> Register( [FromBody]RegisterDto registerDTO)
+        public async Task<ActionResult> Register([FromBody] RegisterDto registerDTO)
         {
             if (ModelState.IsValid)
             {
                 ServiceResult serviceResult = await _userService.RegisterAsync(registerDTO, "Customer");
                 if (!serviceResult.Success) return BadRequest(new ApiErrorResponse(StatusCodes.Status400BadRequest, serviceResult.ErrorMessage!));
-                
+
                 return Ok("User Register Success");
             }
 

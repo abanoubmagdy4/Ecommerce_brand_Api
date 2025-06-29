@@ -16,5 +16,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<bool> DecreaseStockAsync(int productId, int quantity);
         Task<bool> IncreaseStockAsync(int productId, int quantity);
         Task<IEnumerable<ProductDto>> GetByCategoryAsync(int categoryId);
+
+        Task<ProductDto> AddToNewArrivals(int Id);
     }
 }

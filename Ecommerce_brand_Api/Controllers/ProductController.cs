@@ -8,10 +8,12 @@ namespace Ecommerce_brand_Api.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly INewArrivalsService _newArrivalsService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IProductService productService, INewArrivalsService newArrivalsService)
         {
             _productService = productService;
+            _newArrivalsService = newArrivalsService;
         }
 
 
@@ -144,6 +146,35 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result);
         }
 
+        [HttpPost("add-to-new-arrivals/{productId}")]
+        public async Task<IActionResult> AddToNewArrivalsAsync(int productId)
+        {
+            var result = await _newArrivalsService.AddNewArrivalAsync(productId);
+            return Ok();
+        }
+
+        [HttpGet("new-arrivals")]
+        public async Task<IActionResult> GetNewArrivals([FromQuery] PaginationParams pagination)
+        {
+            var newArrivals = await _newArrivalsService.GetNewArrivalsAsync(pagination);
+            return Ok(newArrivals);
+        }
+
+        [HttpDelete("delete-new-arrival/{productId}")]
+        public async Task<IActionResult> DeleteNewArrival(int productId)
+        {
+            try
+            {
+                var deleted = await _newArrivalsService.DeleteNewArrival(productId);
+                return deleted
+                               ? Ok(new { message = "New Arrival deleted successfully." })
+                               : NotFound();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error while deleting new arrival.", details = ex.Message });
+            }
+        }
 
     }
 }

@@ -40,7 +40,7 @@ namespace Ecommerce_brand_Api.Services
                     c => c.UserId == _currentUserService.UserId,
                     include: q => q
                         .Include(c => c.CartItems)
-                            .ThenInclude(ci => ci.Product) // لازم نجيب البرودكت مع كل عنصر في الكارت
+                            .ThenInclude(ci => ci.Product)
                 );
 
                 if (cart == null)

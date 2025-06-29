@@ -56,19 +56,22 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IProductSizesRepository, ProductsSizesRepository>();
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            builder.Services.AddScoped<INewArrivalsRepository, NewArrivalsRepository>();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
             builder.Services.AddScoped<ICategoryService, CateogryService>();
             builder.Services.AddScoped<ICartService, CartServices>();
-
-
             builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
-
-
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+            builder.Services.AddScoped<INewArrivalsService, NewArrivalsService>();
+
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IOrderService, OrderServices>();

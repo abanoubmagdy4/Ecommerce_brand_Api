@@ -5,7 +5,7 @@ namespace Ecommerce_brand_Api.Services
     public class CartItemService : ICartItemService
     {
         private readonly IUnitofwork _unitofwork;
-        private readonly IMapper mapper;
+        private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly IProductSizesRepository _productSizesRepository;
         private readonly ICartService _cartService;
@@ -13,7 +13,7 @@ namespace Ecommerce_brand_Api.Services
         public CartItemService(IUnitofwork unitofwork, IMapper mapper, ICurrentUserService currentUserService, IProductSizesRepository productSizesRepository, ICartService cartService, AppDbContext db)
         {
             _unitofwork = unitofwork;
-            this.mapper = mapper;
+            this._mapper = mapper;
             this._currentUserService = currentUserService;
             this._productSizesRepository = productSizesRepository;
             this._cartService = cartService;
@@ -27,7 +27,6 @@ namespace Ecommerce_brand_Api.Services
             var userId = _currentUserService.UserId;
 
 
-            // ✅ جلب ProductSize + المنتج
             var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(
                 ps => ps.Id == cartItemDto.ProductSizeId,
                 include: q => q.Include(ps => ps.Product)
@@ -82,7 +81,7 @@ namespace Ecommerce_brand_Api.Services
             else
             {
                 cartItemDto.TotalPriceForOneItemType = cartItemDto.UnitPrice * cartItemDto.Quantity;
-                var newCartItem = mapper.Map<CartItem>(cartItemDto);
+                var newCartItem = _mapper.Map<CartItem>(cartItemDto);
                 newCartItem.CartId = cart.Id;
                 await cartItemRepo.AddAsync(newCartItem);
             }
@@ -100,7 +99,7 @@ namespace Ecommerce_brand_Api.Services
                      i.ProductSizeId == cartItemDto.ProductSizeId
             );
 
-            return mapper.Map<CartItemDto>(finalItem);
+            return _mapper.Map<CartItemDto>(finalItem);
         }
 
 
@@ -153,7 +152,7 @@ namespace Ecommerce_brand_Api.Services
             await cartRepo.UpdateAsync(cart);
             await _unitofwork.SaveChangesAsync();
 
-            return mapper.Map<CartItemDto>(cartItem);
+            return _mapper.Map<CartItemDto>(cartItem);
         }
 
         public async Task<bool> DeleteCartItemFromCart(int cartItemId)

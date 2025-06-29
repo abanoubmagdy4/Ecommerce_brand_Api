@@ -123,6 +123,7 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("Error while decreasing product stock.", ex);
             }
         }
+
         public async Task<bool> IncreaseStockAsync(int productSizeId, int quantity)
         {
             try
@@ -180,6 +181,7 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("Error while adding product size.", ex);
             }
         }
+
         public async Task<bool> UpdateProductSizes(List<ProductSizeDto> productsSizesDto)
         {
             try
@@ -216,5 +218,16 @@ namespace Ecommerce_brand_Api.Services
 
             return pagedResult;
         }
+
+        public async Task<ProductDto> AddToNewArrivals(int Id)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(Id);
+            if (product == null)
+                throw new KeyNotFoundException("Product not found.");
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<ProductDto>(product);
+        }
+
+
     }
 }
