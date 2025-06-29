@@ -16,5 +16,8 @@
         Task SaveCodeAsync(string email, string code);
         Task<bool> VerifyCodeAsync(CustomerLoginDto customerDto);
         Task<ServiceResult> HandleCustomerLoginAsync(CustomerLoginDto customerLoginDto);//Task<bool> CheckEmailExistAsync(string email);
-        }
+        Task<ApplicationUser> UpdatedUserAsync(ApplicationUser user, CustomerDto customerDto);
+        Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId);
+        Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto);
+    }
 }

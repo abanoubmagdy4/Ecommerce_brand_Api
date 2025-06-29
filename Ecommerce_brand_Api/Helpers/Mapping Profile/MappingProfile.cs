@@ -42,6 +42,20 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
                 .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
+            CreateMap<Address, AddressDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.GovernrateShippingCostDto, opt => opt.MapFrom(src => src.GovernorateShippingCost));
+
+            // DTO → Entity
+            CreateMap<AddressDto, Address>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? 0)) // Default fallback
+                .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostDto.Id))
+                .ForMember(dest => dest.GovernorateShippingCost, opt => opt.Ignore()) // Avoid circular or tracked context issue
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())  // Set manually during creation
+                .ForMember(dest => dest.User, opt => opt.Ignore())    // Not mapped
+                .ForMember(dest => dest.Order, opt => opt.Ignore());  // Will not be mapped from DTO
+
+            CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
         }
     }
 }

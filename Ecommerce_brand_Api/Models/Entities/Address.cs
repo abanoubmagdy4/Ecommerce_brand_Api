@@ -24,7 +24,7 @@
 
         [Required]
         public GovernorateShippingCost GovernorateShippingCost { get; set; }
-       
+
         [Required]
         [MaxLength(50)]
         public string Country { get; set; } = string.Empty;
@@ -38,9 +38,6 @@
         [Required]
         [MaxLength(50)]
         public string Floor { get; set; } = string.Empty;
-        public bool IsDeleted { get; set; } = false;
-        public bool IsShopped { get; set; } = false;
-
 
         public List<Order> Order { get; set; }
     }

@@ -2,6 +2,7 @@
 {
     public class AddressDto
     {
+        public int? Id { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -27,6 +28,5 @@
         [Required]
         [MaxLength(50)]
         public string Floor { get; set; } = string.Empty;
-        public bool IsDeleted { get; set; } = false;
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Ecommerce_brand_Api.Repositories
+﻿namespace Ecommerce_brand_Api.Repositories
 {
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {

@@ -19,9 +19,6 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         [Required(ErrorMessage = "Customer ID is required.")]
         public string CustomerId { get; set; }
 
-        [Required]
-        public int ShippingAddressId { get; set; }
-
         [Column(TypeName = "decimal(18,2)")]
         public decimal? ShippingCost { get; set; }
 
@@ -43,5 +40,10 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 
         [Required]
         public ICollection<OrderItemDTO> OrderItems { get; set; }
+
+        [Required]
+        public CustomerDto CustomerInfo { get; set; }
+        [Required]
+        public AddressDto AddressInfo { get; set; }
     }
 }

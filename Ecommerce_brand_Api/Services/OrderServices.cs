@@ -1,13 +1,10 @@
-﻿using Ecommerce_brand_Api.Models.Dtos;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Repositories;
-
-namespace Ecommerce_brand_Api.Services
+﻿namespace Ecommerce_brand_Api.Services
 {
-    public class OrderServices :BaseService<Order>, IOrderService
+    public class OrderServices : BaseService<Order>, IOrderService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
+        private readonly IGovernrateShippingCostRepository _governrateShippingCostRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderServices"/> class.
@@ -79,20 +76,37 @@ namespace Ecommerce_brand_Api.Services
         /// transfer object.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="orderDto"/> is <see langword="null"/>.</exception>
         /// <exception cref="ApplicationException">Thrown if an error occurs while adding the order.</exception> 
-        public async Task<OrderDTO> AddNewOrderAsync(OrderDTO orderDto)
+        public async Task<Order> AddNewOrderAsync(OrderDTO orderDto, Address address, ApplicationUser user)
         {
-            if (orderDto == null)
-                throw new ArgumentNullException(nameof(orderDto), "Order data cannot be null.");
+            if (orderDto == null || address == null || user == null)
+                throw new ArgumentNullException("Data cannot be null.");
 
             try
             {
-                var orderEntity = mapper.Map<Order>(orderDto);
-                var repo = _unitofwork.GetBaseRepository<Order>();
+                var orderItemsAfterMapping = new List<OrderItem>();
 
-                await repo.AddAsync(orderEntity);
-                await _unitofwork.SaveChangesAsync();
+                foreach (var dto in orderDto.OrderItems)
+                {
+                    var item = new OrderItem
+                    {
+                        ProductId = dto.ProductId,
+                        Quantity = dto.Quantity,
+                        TotalPrice = dto.TotalPrice
+                    };
 
-                return mapper.Map<OrderDTO>(orderEntity);
+                    orderItemsAfterMapping.Add(item);
+                }
+                Order order = new Order()
+                {
+                    OrderItems = orderItemsAfterMapping,
+                    OrderAddressInfo = $"{address.Street}, Apt: {address.Apartment}, Bldg: {address.Building}, Floor: {address.Floor}, " + $"{address.City}, {address.Country} - Shipping Area: {address.GovernorateShippingCost.Name}",
+                    OrderStatus = OrderStatus.Pending,
+                    TotalOrderPrice = orderDto.TotalOrderPrice,
+                    CreatedAt = orderDto.CreatedAt,
+                    DeliveredAt = orderDto.DeliveredAt
+                };
+
+                return order;
             }
             catch (Exception ex)
             {
@@ -254,12 +268,11 @@ namespace Ecommerce_brand_Api.Services
             {
                 appliedDiscount = discount.DiscountValue;
             }
-
             orderDto.CreatedAt = DateTime.UtcNow;
             orderDto.DiscountValue = appliedDiscount;
             orderDto.TotalOrderPrice = totalOrderItemsPrice - appliedDiscount;
             orderDto.OrderStatus = OrderStatus.Pending;
-            
+            orderDto.DeliveredAt = orderDto.CreatedAt + TimeSpan.FromDays(3);
             return orderDto;
         }
 
