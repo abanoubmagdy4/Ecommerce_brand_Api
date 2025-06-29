@@ -1,8 +1,4 @@
-﻿using Ecommerce_brand_Api.Models.Dtos;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Models.Dtos.Payment;
-using System.Net.Http.Headers;
-using System.Text.Json;
+﻿
 namespace Ecommerce_brand_Api.Controllers
 {
 
@@ -46,20 +42,26 @@ namespace Ecommerce_brand_Api.Controllers
 
             try
             {
+                ApplicationUser existedUser = await _userService.FindByEmailAsync(orderDto.CustomerInfo.Email);
+                if (existedUser == null)
+                    return BadRequest("Please Complete Your Information !");
 
+                existedUser = await _userService.UpdatedUserAsync(existedUser, orderDto.CustomerInfo);
+                Address newAddress = new Address();
+
+                if (orderDto.AddressInfo.Id == 0)
+                {
+                    newAddress = await _userService.AddNewAddressAsync(orderDto.AddressInfo, existedUser.Id);
+                }
+                ServiceResult addressResult = await _userService.UpdatedAddressAsync(orderDto.AddressInfo);
+                if (addressResult.Success == false)
+                    return BadRequest("Please Complete Your information !");
+
+                newAddress = (Address)addressResult.Data;
 
                 var orderDTOAfterPrepare = await _orderService.BuildOrderDto(orderDto);
 
-
                 var Ordercreated = await _orderService.AddNewOrderAsync(orderDTOAfterPrepare);
-
-                var shippingAddress = await _AddressbaseService.GetByIdAsync(Ordercreated.ShippingAddressId);
-                if (shippingAddress == null)
-                    return NotFound(new { Message = "Shipping address not found." });
-                var User = await _userService.GetByStringIdAsync(Ordercreated.CustomerId);
-                if (User == null)
-                    return NotFound(new { Message = "User not found." });
-
 
 
                 var url = "https://accept.paymob.com/v1/intention/";

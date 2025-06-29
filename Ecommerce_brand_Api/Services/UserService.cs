@@ -1,16 +1,12 @@
 ﻿using Ecommerce_brand_Api.Helpers;
-using Ecommerce_brand_Api.Models.Dtos.Authentication;
-using Ecommerce_brand_Api.Models.Entities;
-using Ecommerce_brand_Api.Repositories;
 using Microsoft.Extensions.Options;
-using System.Data;
 using System.Net;
 using System.Net.Mail;
 
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class UserService :BaseService<ApplicationUser> ,IUserService
+    public class UserService : BaseService<ApplicationUser>, IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -56,9 +52,9 @@ namespace Ecommerce_brand_Api.Services
             if (!isPasswordValid)
                 return ServiceResult.Fail("Invalid Email or Password");
 
-            var  userRoles = await _userManager.GetRolesAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
             var tokenExpiration = loginDto.IsRemember ? TimeSpan.FromDays(30) : TimeSpan.FromHours(1);
-                     
+
             // Generate JWT Token 
             var token = _tokenService.CreateToken(user, userRoles, tokenExpiration);
 
@@ -121,7 +117,7 @@ namespace Ecommerce_brand_Api.Services
                     UserName = customerLoginDto.email
                 };
 
-                var result = await _userManager.CreateAsync(newUser); 
+                var result = await _userManager.CreateAsync(newUser);
                 if (!result.Succeeded)
                 {
                     return ServiceResult.Fail("User creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
@@ -170,9 +166,8 @@ namespace Ecommerce_brand_Api.Services
                     Country = address.Country,
                     Floor = address.Floor,
                     GovernorateShippingCostId = address.GovernrateShippingCostDto.Id,
-                    Street = address.Street,
-                    IsDeleted = address.IsDeleted,
-                    
+                    Street = address.Street
+
                 };
                 addresses.Add(add);
 
@@ -359,6 +354,38 @@ namespace Ecommerce_brand_Api.Services
 
 
 
+        public async Task<ApplicationUser> UpdatedUserAsync(ApplicationUser user, CustomerDto customerDto)
+        {
+            if (user == null || customerDto == null)
+                return null;
 
+            user.FirstName = customerDto.FirstName;
+            user.LastName = customerDto.LastName;
+            user.PhoneNumber = customerDto.PhoneNumber;
+            user.DateOfBirth = customerDto.DateOfBirth;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId)
+        {
+            Address address = _mapper.Map<Address>(addressDto);
+            _context.Addresses.Add(address);
+            await _context.SaveChangesAsync();
+            return address;
+        }
+
+        public async Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto)
+        {
+            if (addressDto == null)
+                return ServiceResult.Fail("Address Not Found");
+
+            Address address = _mapper.Map<Address>(addressDto);
+            _context.Addresses.Update(address);
+            await _context.SaveChangesAsync();
+            return ServiceResult.OkWithData(address);
+        }
     }
 }
