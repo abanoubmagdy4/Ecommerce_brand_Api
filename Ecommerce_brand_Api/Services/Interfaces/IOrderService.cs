@@ -57,5 +57,8 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<IEnumerable<OrderDTO>> GetOrdersByStatusAsync(OrderStatus status);
         Task<IEnumerable<OrderDTO>> GetOrdersOverTotalAsync(decimal amount);
         Task<ServiceResult> BuildOrderDto(OrderDTO orderDto);
+
+        Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
+
             }
 }

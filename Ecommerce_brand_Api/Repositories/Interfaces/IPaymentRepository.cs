@@ -2,7 +2,7 @@
 {
     public interface IPaymentRepository: IBaseRepository<Payment>
     {
-
+        Task<Payment?> GetPaymentByTransactionIdAsync(long transactionId);
 
     }
 }

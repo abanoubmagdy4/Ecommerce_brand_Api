@@ -18,6 +18,7 @@ namespace Ecommerce_brand_Api
                             .AddEntityFrameworkStores<AppDbContext>()
                             .AddDefaultTokenProviders();
 
+            builder.Services.AddHttpClient();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -28,6 +29,7 @@ namespace Ecommerce_brand_Api
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                   
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -43,6 +45,7 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddAuthorization();
 
+            builder.Services.AddHttpContextAccessor();
 
             // Add services to the container.
 
@@ -51,10 +54,11 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
             builder.Services.AddScoped<IUnitofwork, Unitofwork>();
             builder.Services.AddScoped<IServiceUnitOfWork, ServiceUnitOfWork>();
-        
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();  
+            builder.Services.AddScoped<IRefundRequestService,RefundRequestService>();   
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -63,7 +67,9 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
-
+            builder.Services.AddScoped<IPaymentService, PaymentService>();  
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();    
+            builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IOrderService, OrderServices>();
             builder.Services.AddAutoMapper(typeof(MappingProfile));

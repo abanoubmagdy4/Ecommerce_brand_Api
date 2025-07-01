@@ -5,12 +5,10 @@ namespace Ecommerce_brand_Api.Helpers.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum OrderStatus
     {
-        Pending = 0,          
-        Processing = 1,      
-        Canceled = 2,        
-        Shipped = 3,       
-        Delivered = 4,          
-        RefundRequested = 5,   
-        Refunded = 6
+        Created,            // الطلب اتعمل ولسه مفيش دفع
+        AwaitingPayment,    // مستني الدفع يخلص
+        Processing,         // الدفع تم وجاري التجهيز
+        Cancelled,          // الطلب اتلغى قبل ما يتشحن
+        Returned            // العميل رجّع الطلب واسترد فلوسه
     }
 }

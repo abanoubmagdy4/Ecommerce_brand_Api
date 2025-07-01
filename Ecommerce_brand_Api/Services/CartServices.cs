@@ -131,5 +131,37 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException($"An error occurred while updating the order with ID {Id}.", ex);
             }
         }
+
+        public async Task<bool> ClearCartForUserAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("Invalid User ID", nameof(userId));
+
+            try
+            {
+                var cartRepo = _unitofwork.Carts;
+                var userCart = await cartRepo.GetCartByUserIdAsync(userId);
+                if (userCart == null)
+                    return false;
+
+                var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
+
+                if (!userCart.CartItems.Any())
+                    return false;
+
+                foreach (var item in userCart.CartItems)
+                {
+                    await cartItemRepo.DeleteAsync(item.Id);    
+                }
+
+                await _unitofwork.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred while clearing the cart for user {userId}.", ex);
+            }
+        }
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using Ecommerce_brand_Api.Repositories.Interfaces;
+﻿using Ecommerce_brand_Api.Models.Entities;
+using Ecommerce_brand_Api.Repositories.Interfaces;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -36,11 +37,18 @@ namespace Ecommerce_brand_Api.Services
         private IProductService _products;
         public IProductService Products => _products ??= _serviceProvider.GetRequiredService<IProductService>();
 
+        private IPaymentService _payment;
+        public IPaymentService Payment => _payment ??= _serviceProvider.GetRequiredService<IPaymentService>();
+
         private ITokenService _tokens;
         public ITokenService Tokens => _tokens ??= _serviceProvider.GetRequiredService<ITokenService>();
 
         private IUserService _users;
         public IUserService Users => _users ??= _serviceProvider.GetRequiredService<IUserService>();
+
+
+        private IRefundRequestService _refundRequest;
+        public IRefundRequestService refundRequest => _refundRequest ??= _serviceProvider.GetRequiredService<IRefundRequestService>();
 
         public Task<int> SaveChangesAsync()
         {

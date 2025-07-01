@@ -1,10 +1,13 @@
-﻿namespace Ecommerce_brand_Api.Services
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Ecommerce_brand_Api.Services
 {
     public class OrderServices : BaseService<Order>, IOrderService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
         private readonly IGovernrateShippingCostRepository _governrateShippingCostRepository;
+        private readonly IDiscountRepository _discountRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderServices"/> class.
@@ -17,6 +20,7 @@
         public OrderServices(IUnitofwork _unitofwork, IMapper mapper) : base(_unitofwork.GetBaseRepository<Order>())
         {
             this._unitofwork = _unitofwork;
+            _discountRepository = _unitofwork.Discount;
             this.mapper = mapper;
         }
 
@@ -105,12 +109,12 @@
                 Order order = new Order()
                 {
                     OrderItems = orderItemsAfterMapping,
-                    OrderStatus = OrderStatus.Pending,
+                    OrderStatus = OrderStatus.Created,
                     TotalOrderPrice = orderDto.TotalOrderPrice,
                     CreatedAt = orderDto.CreatedAt,
                     DeliveredAt = orderDto.DeliveredAt,
                     DiscountValue = Math.Max(orderDto.DiscountValue, 0),
-
+                    OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                     // Customer and address cost 
                     CustomerId = user.Id,
                     ShippingAddressId = address.Id,
@@ -124,6 +128,10 @@
                     Customer = user,
                     ShippingAddress = address,
                 };
+                var repo = _unitofwork.GetOrderRepository();
+
+                await repo.AddAsync(order);
+                await _unitofwork.SaveChangesAsync();
 
                 return order;
             }
@@ -289,10 +297,10 @@
                     return ServiceResult.Fail("City name is required.");
 
                 // Get discount
-                var discount = await _unitofwork.Discount.GetActiveDiscountAsync();
+                var discount = await _discountRepository.GetActiveDiscountAsync();
 
                 // Calculate total
-                decimal totalOrderItemsPrice = orderDto.OrderItems.Sum(i => i.TotalPrice);
+                decimal totalOrderItemsPrice = orderDto.OrderItems.Sum(i => i.TotalPrice * i.Quantity);
                 decimal appliedDiscount = 0;
 
                 if (discount != null && totalOrderItemsPrice >= discount.Threshold)
@@ -310,8 +318,8 @@
                 // Set order properties
                 orderDto.CreatedAt = DateTime.UtcNow;
                 orderDto.DiscountValue = appliedDiscount;
-                orderDto.TotalOrderPrice = totalOrderItemsPrice - appliedDiscount;
-                orderDto.OrderStatus = OrderStatus.Pending;
+                orderDto.TotalOrderPrice = totalOrderItemsPrice - appliedDiscount + governorateShippingCost.ShippingCost;
+                orderDto.OrderStatus = OrderStatus.Created;
                 orderDto.DeliveredAt = orderDto.CreatedAt.AddDays(3);
                 orderDto.ShippingCost= governorateShippingCost.ShippingCost;
 
@@ -322,6 +330,13 @@
                 return ServiceResult.Fail($"An error occurred: {ex.Message}");
             }
         }
+
+        public async Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId)
+        {
+            var repo = _unitofwork.GetOrderRepository();
+            return await repo.GetOrderByPaymobOrderIdAsync(paymobOrderId);
+        }
+
 
 
     }

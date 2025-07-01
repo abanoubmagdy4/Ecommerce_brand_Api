@@ -2,8 +2,10 @@
 {
     public enum RefundStatus
     {
-        Pending = 1,
-        Completed = 6,
-        Failed = 7
+        Pending,     // لسه مستني مراجعة الأدمن
+        Approved,    // الأدمن وافق عليه
+        Rejected,    // الأدمن رفض
+        Completed    // تم تنفيذ الريفاند
     }
+
 }

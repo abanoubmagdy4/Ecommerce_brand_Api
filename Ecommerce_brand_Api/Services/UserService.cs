@@ -17,6 +17,8 @@ namespace Ecommerce_brand_Api.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUnitofwork _unitofwork;
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         private IMapper _mapper;
 
         public UserService(UserManager<ApplicationUser> userManager,
@@ -25,9 +27,10 @@ namespace Ecommerce_brand_Api.Services
                            AppDbContext context,
                            IConfiguration config,
                            IOptions<EmailSettings> options,
-                           RoleManager<IdentityRole> roleManager
-        ,
-                           IUnitofwork unitofwork) : base(unitofwork.GetBaseRepository<ApplicationUser>())
+                           RoleManager<IdentityRole> roleManager,
+                           IHttpContextAccessor httpContextAccessor,
+                           IUnitofwork unitofwork,
+                           IMapper mapper) : base(unitofwork.GetBaseRepository<ApplicationUser>())
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -38,6 +41,8 @@ namespace Ecommerce_brand_Api.Services
             _roleManager = roleManager;
             _unitofwork = unitofwork;
             _userRepository = _unitofwork.User;
+            _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
 
         }
 
@@ -372,6 +377,8 @@ namespace Ecommerce_brand_Api.Services
         public async Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId)
         {
             Address address = _mapper.Map<Address>(addressDto);
+            address.UserId = UserId;    
+            address.GovernorateShippingCostId = addressDto.GovernrateShippingCostDto.Id;    
             _context.Addresses.Add(address);
             await _context.SaveChangesAsync();
             return address;
@@ -387,5 +394,17 @@ namespace Ecommerce_brand_Api.Services
             await _context.SaveChangesAsync();
             return ServiceResult.OkWithData(address);
         }
+        public string GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+            {
+                throw new UnauthorizedAccessException("User ID not found in token.");
+            }
+
+            return userIdClaim.Value;
+        }
+
+
     }
 }

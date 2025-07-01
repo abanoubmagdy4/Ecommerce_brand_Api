@@ -16,6 +16,9 @@
         //IFavoriteRepository Favorites { get; }
         IDiscountRepository Discount { get; }
         IUserRepository User { get; }
+        IPaymentRepository Payment { get; }
+        IRefundRequestRepository RefundRequest {get; }
+
 
 
         Task<int> SaveChangesAsync();

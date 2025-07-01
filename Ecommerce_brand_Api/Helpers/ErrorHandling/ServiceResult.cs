@@ -15,6 +15,9 @@
 
         public static ServiceResult Fail(string error) =>
             new ServiceResult { Success = false, ErrorMessage = error };
+
+
+        public static ServiceResult FailWithData(object data) => new ServiceResult { Success = false, Data = data };
     }
 
 }

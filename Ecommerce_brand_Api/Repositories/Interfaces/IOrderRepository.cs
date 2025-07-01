@@ -10,6 +10,8 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         Task<IEnumerable<Order>> GetOrdersWithCustomerAsync();
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status);
         Task<IEnumerable<Order>> GetOrdersOverTotalAsync(decimal amount);
+        Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
+        Task<Order?> GetOrderWithPaymentAsync(int orderId);
 
     }
 }

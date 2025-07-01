@@ -3,7 +3,8 @@
     public class Order
     {
         public int OrderId { get; set; }
-        public string OrderNumber { get; set; }
+        public string? OrderNumber { get; set; }
+        public int PaymobOrderId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? DeliveredAt { get; set; }
         public string CustomerId { get; set; }
@@ -11,6 +12,7 @@
         public decimal? ShippingCost { get; set; }
         public decimal TotalOrderPrice { get; set; }
         public OrderStatus OrderStatus { get; set; }
+        public ShippingStatus ShippingStatus { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
         public decimal DiscountValue { get; set; } = 0;
         //Customer Information For every single order (He can change it later but still saved as info for specific order)

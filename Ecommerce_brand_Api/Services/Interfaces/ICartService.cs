@@ -14,5 +14,6 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<bool> UpdateCartAsync(int Id, CartDto cart);
 
         Task<bool> DeleteCartAsync(int Id);
+        Task<bool> ClearCartForUserAsync(string userId);
     }
 }

@@ -19,5 +19,6 @@
         Task<ApplicationUser> UpdatedUserAsync(ApplicationUser user, CustomerDto customerDto);
         Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId);
         Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto);
+        string GetCurrentUserId();
     }
 }

@@ -1,4 +1,6 @@
 ﻿
+using Ecommerce_brand_Api.Models.Entities;
+
 namespace Ecommerce_brand_Api.Repositories
 {
     public class UserRepository : BaseRepository<ApplicationUser>, IUserRepository
@@ -14,6 +16,7 @@ namespace Ecommerce_brand_Api.Repositories
            
             return  applicationUser;
         }
+
     }
         
 }

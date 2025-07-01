@@ -12,6 +12,9 @@
         IProductService Products { get; }
         ITokenService Tokens { get; }
         IUserService Users { get; }
+        IPaymentService Payment { get; }
+        IRefundRequestService refundRequest { get; }
+
 
         Task<int> SaveChangesAsync();
     }
