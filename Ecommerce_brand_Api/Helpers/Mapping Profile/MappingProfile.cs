@@ -3,59 +3,56 @@ using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 {
-    public class MappingProfile : Profile
-    {
-        public MappingProfile()
+    
+        public class MappingProfile : Profile
         {
-            // Map from DTO to Entity
-            CreateMap<CategoryDto, Category>();
+            public MappingProfile()
+            {
+                CreateMap<CategoryDto, Category>();
+                CreateMap<Category, CategoryDto>();
 
-            CreateMap<Category, CategoryDto>();
+                CreateMap<GovernrateShippingCostDto, GovernorateShippingCost>();
+                CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
 
-            CreateMap<GovernrateShippingCostDto, GovernorateShippingCost>();
+                CreateMap<ProductDto, Product>();
+                CreateMap<Product, ProductDto>();
 
-            CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
+                CreateMap<CartDto, Cart>();
+                CreateMap<Cart, CartDto>();
 
-            CreateMap<ProductDto, Product>();
+                CreateMap<CartItemDto, CartItem>();
+                CreateMap<CartItem, CartItemDto>();
 
-            CreateMap<Product, ProductDto>();
+                CreateMap<Feedback, FavoriteDto>();
+                CreateMap<FeedbackDto, Feedback>();
 
-            CreateMap<CartDto, Cart>();
+                CreateMap<OrderDTO, Order>();
+                CreateMap<Order, OrderDTO>();
 
-            CreateMap<Cart, CartDto>();
-            CreateMap<Feedback, FavoriteDto>();
-            CreateMap<FeedbackDto, Feedback>();
+                CreateMap<OrderItemDTO, OrderItem>();
+                CreateMap<OrderItem, OrderItemDTO>();
 
-            CreateMap<OrderDTO, Order>();
+                CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
+                    .ForMember(dest => dest.File, opt => opt.Ignore());
 
-            CreateMap<Order, OrderDTO>();
+                CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
+                    .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
-            CreateMap<OrderItemDTO, OrderItem>();
-            CreateMap<OrderItem, OrderItemDTO>();
-            // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
-            CreateMap<Product, ProductDto>().ReverseMap();
+                CreateMap<Address, AddressDto>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                    .ForMember(dest => dest.GovernrateShippingCostDto, opt => opt.MapFrom(src => src.GovernorateShippingCost));
 
-            // ProductImagesPaths ↔ ProductImagesPathsDto
-            CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
-                .ForMember(dest => dest.File, opt => opt.Ignore()); // مابش الـ IFormFile
+                CreateMap<AddressDto, Address>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? 0))
+                    .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostDto.Id))
+                    .ForMember(dest => dest.GovernorateShippingCost, opt => opt.Ignore())
+                    .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                    .ForMember(dest => dest.User, opt => opt.Ignore())
+                    .ForMember(dest => dest.Order, opt => opt.Ignore());
 
-            CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
-                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
-
-            CreateMap<Address, AddressDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.GovernrateShippingCostDto, opt => opt.MapFrom(src => src.GovernorateShippingCost));
-
-            // DTO → Entity
-            CreateMap<AddressDto, Address>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? 0)) // Default fallback
-                .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostDto.Id))
-                .ForMember(dest => dest.GovernorateShippingCost, opt => opt.Ignore()) // Avoid circular or tracked context issue
-                .ForMember(dest => dest.UserId, opt => opt.Ignore())  // Set manually during creation
-                .ForMember(dest => dest.User, opt => opt.Ignore())    // Not mapped
-                .ForMember(dest => dest.Order, opt => opt.Ignore());  // Will not be mapped from DTO
-
-            CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
+                CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
+            }
         }
+
     }
-}
+

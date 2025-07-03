@@ -7,7 +7,7 @@
         Success,
         Declined,
         Refunded,
-        Canceled
+        Canceled,
     }
 
 

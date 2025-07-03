@@ -64,6 +64,11 @@
         {
             return await _dbSet.FindAsync(id);
         }
+        public async Task DeleteRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+        }
+
     }
 
 }

@@ -11,5 +11,6 @@
         void Attach(T entity);
         void SoftDelete(T entity);
         Task<T> GetByStringIdAsync(string id);
+        Task DeleteRangeAsync(IEnumerable<T> entities);
     }
 }

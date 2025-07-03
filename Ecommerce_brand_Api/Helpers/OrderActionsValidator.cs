@@ -18,7 +18,9 @@
             // Case 3: Order is being processed, payment is authorized but not captured yet, and shipment hasn't gone out
             if (orderStatus == OrderStatus.Processing
                 && paymentStatus == PaymentStatus.Authorized
-                && (shippingStatus == ShippingStatus.NotShipped || shippingStatus == ShippingStatus.ReadyToShip))
+                && (shippingStatus == ShippingStatus.NotShipped
+                    || shippingStatus == ShippingStatus.ReadyToShip
+                    || shippingStatus == ShippingStatus.NotApplicable)) 
                 return true;
 
             // If none of the above, the order cannot be cancelled

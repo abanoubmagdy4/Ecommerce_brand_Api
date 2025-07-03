@@ -262,7 +262,13 @@ namespace Ecommerce_brand_Api.Services
 
             if (order != null && ShouldClearCart(payment.Status))
             {
-                await _cartService.ClearCartForUserAsync(order.CustomerId);
+                List<int> cartProductIds = order.OrderItems
+                .Select(item => item.ProductId)
+                .ToList();
+
+
+                await _cartService.RemovePurchasedProductsFromCartAsync(order.CustomerId, cartProductIds);
+
             }
 
         }
@@ -283,7 +289,8 @@ namespace Ecommerce_brand_Api.Services
                              transaction.pending,
                              transaction.is_refunded,
                              transaction.Order?.is_canceled ?? false,
-                             transaction.is_captured
+                             transaction.is_captured,
+                             transaction.is_refunded
                          ),
                 PaymentStatus = transaction.Order?.payment_status ?? "UNPAID",
                 Success = transaction.success,
@@ -331,7 +338,14 @@ namespace Ecommerce_brand_Api.Services
             }
         public void UpdatePaymentFromWebhook(Payment existing, Payment updated)
         {
-            existing.Status = updated.Status;
+            existing.Status = GetPaymentStatus(
+                            updated.Success,
+                           updated.Pending,
+                            updated.IsCaptured,
+                            updated.IsCanceled,
+                           updated.IsCaptured,
+                            updated.IsRefunded
+                        );
             existing.PaymentStatus = updated.PaymentStatus;
 
             existing.Success = updated.Success;
@@ -362,19 +376,29 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
-        private PaymentStatus GetPaymentStatus(bool success, bool pending, bool isRefunded, bool isCanceled, bool isCaptured)
+        private PaymentStatus GetPaymentStatus(
+                bool success,
+                bool pending,
+                bool isRefunded,
+                bool isCanceled,
+                bool isCaptured,
+                bool isVoided 
+ )
         {
             if (isRefunded)
                 return PaymentStatus.Refunded;
-            //Order:    user:
+
+            if (isVoided)
+                return PaymentStatus.Canceled; 
+
             if (isCanceled)
                 return PaymentStatus.Canceled;
 
-            if (success && !pending && !isCaptured)
-                return PaymentStatus.Authorized;
-
             if (success && !pending && isCaptured)
                 return PaymentStatus.Success;
+
+            if (success && !pending && !isCaptured)
+                return PaymentStatus.Authorized;
 
             if (!success && pending)
                 return PaymentStatus.Pending;
@@ -384,6 +408,7 @@ namespace Ecommerce_brand_Api.Services
 
             throw new Exception("Invalid status state");
         }
+
         public OrderStatus GetOrderStatusFromPayment(PaymentStatus paymentStatus)
         {
             return paymentStatus switch
@@ -462,11 +487,22 @@ namespace Ecommerce_brand_Api.Services
                 refundRequest.Status = RefundStatus.Approved;
                 refundRequest.ApprovedAt = DateTime.UtcNow;
                 refundRequest.ApprovedByAdminId = _IUserService.GetCurrentUserId();
-                ;
+                await _refundRequestRepository.UpdateAsync(refundRequest);
+                await _unitOfWork.SaveChangesAsync();
+
             }
             else
             {
                 refundRequest.Status = RefundStatus.Rejected;
+                await _refundRequestRepository.UpdateAsync(refundRequest);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new ServiceResult
+                {
+                    Success = true,
+                    SuccessMessage = "Refund request Rejected.",
+                    Data = refundRequest
+                };
             }
 
 
