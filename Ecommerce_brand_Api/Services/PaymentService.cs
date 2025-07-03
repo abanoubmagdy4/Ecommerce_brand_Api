@@ -191,7 +191,7 @@ namespace Ecommerce_brand_Api.Services
                     await _unitOfWork.SaveChangesAsync();
 
                 }
-                var publicKey = "egy_pk_test_zlXaEaszx75SyUEPfSsZwlTjg4DCvBhg";
+                var publicKey = "egy_pk_test_zLrPn85LuwoQSPS4WBigcxB0wVNIHsiC";
                 ///add payment model to db
                 var checkoutUrl = $"https://accept.paymob.com/unifiedcheckout/?publicKey={publicKey}&clientSecret={clientSecret}";
                 return ServiceResult.OkWithData(new
@@ -212,7 +212,7 @@ namespace Ecommerce_brand_Api.Services
 
 
         // Webhook logic: save Payment and update order status 
-        public async Task HandleIncomingTransactionAsync(TransactionDto transaction)
+        public async Task HandleIncomingTransactionAsync(Transaction transaction)
         {
 
 
@@ -271,7 +271,7 @@ namespace Ecommerce_brand_Api.Services
               status == PaymentStatus.Authorized || status == PaymentStatus.Success;
 
 
-        public Payment CreatePaymentFromTransaction(TransactionDto transaction)
+        public Payment CreatePaymentFromTransaction(Transaction transaction)
         {
             return new Payment
             {
@@ -486,9 +486,9 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail("Refund or cancellation is not allowed for this order status.");
             }
 
-            string secretKey = "omn_skxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+            string secretKey = "egy_sk_test_65c900f7b4dc44aa0c785734f91bc88d77fe23d44b6396eeb1c98e758a6338a9";
 
-            bool doCancel = canCancel;
+            bool doCancel = canCancel; 
 
             var resultMessage = await ProcessTransactionCancellationOrRefund(payment.TransactionId, refundRequest.AmountCents, doCancel, secretKey);
 
@@ -497,10 +497,9 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail(resultMessage);
             }
 
-            // تحديث الحالات حسب العملية
             if (doCancel)
             {
-                payment.Status = PaymentStatus.Canceled;  // بدل Void تستخدم Canceled عندك
+                payment.Status = PaymentStatus.Canceled;  
                 refundRequest.Status = RefundStatus.Completed;
                 refundRequest.Payment.Order.OrderStatus = OrderStatus.Cancelled;
             }

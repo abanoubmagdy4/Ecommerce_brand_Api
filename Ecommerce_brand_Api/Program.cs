@@ -57,6 +57,8 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<ICartService, CartServices>();
+            builder.Services.AddScoped<IRefundRequestRepository, RefundRequestRepository>();
             builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();  
             builder.Services.AddScoped<IRefundRequestService,RefundRequestService>();   
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
@@ -76,6 +78,11 @@ namespace Ecommerce_brand_Api
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
             builder.Services.AddSwaggerGen(c =>
             {

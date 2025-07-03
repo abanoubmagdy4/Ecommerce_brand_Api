@@ -15,7 +15,9 @@ namespace Ecommerce_brand_Api.Models.Entities
             public string? PaymobOrderId { get; set; }
 
             // حالة الدفع
-            public string PaymentStatus { get; set; }  // UNPAID, PAID, FAILED, CANCELED, REFUNDED
+            public string PaymentStatus { get; set; }  // UN
+                                                       //
+                                                       // , PAID, FAILED, CANCELED, REFUNDED
             public bool Success { get; set; }
             public bool Pending { get; set; }
             public bool IsCaptured { get; set; }

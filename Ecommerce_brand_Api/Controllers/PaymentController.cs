@@ -4,11 +4,14 @@ using Ecommerce_brand_Api.Helpers.ErrorHandling;
 using Ecommerce_brand_Api.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace Ecommerce_brand_Api.Controllers
 {
 
-    [Route("api/paymob")]
+    [Route("api/payment")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
@@ -18,8 +21,9 @@ namespace Ecommerce_brand_Api.Controllers
         private readonly IUserService _userService;
         private readonly IPaymentService _paymentService;   
         private readonly HttpClient _httpClient;
-
-        public PaymentController(IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory)
+        private readonly ILogger<PaymentController> _logger;
+        private readonly IWebHostEnvironment _env;
+        public PaymentController(IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory, ILogger<PaymentController> logger, IWebHostEnvironment env)
         {
             _serviceunitOfWork = serviceUnitOfWork;
             _orderService = _serviceunitOfWork.Orders;
@@ -27,7 +31,8 @@ namespace Ecommerce_brand_Api.Controllers
             _userService = _serviceunitOfWork.Users;
             _httpClient = httpClientFactory.CreateClient();
             _paymentService = serviceUnitOfWork.Payment;
-
+            _logger = logger;
+            _env = env;
         }
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout([FromBody] OrderDTO orderDto)
@@ -84,25 +89,64 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
 
-
-
-        [HttpPost("Webhook")]
-        public async Task<IActionResult> Webhook([FromBody] WebhookRequestDto request)
+        [HttpPost("webhook")]
+        public async Task<IActionResult> Webhook()
         {
-            if (request == null || request.obj == null)
-                return BadRequest("Invalid payload");
+            try
+            {
+                using var reader = new StreamReader(Request.Body);
+                var rawBody = await reader.ReadToEndAsync();
 
-            var transaction = request.obj;
+                // ✅ طباعة الـ Raw JSON في اللوج
+                _logger.LogInformation("🔔 Raw Webhook:\n{Json}", rawBody);
 
-            await _paymentService.HandleIncomingTransactionAsync(transaction);
+                // ✅ حفظ نسخة من الـ JSON في ملف داخل Logs
+                var logFileName = $"webhook_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+                var logDirectory = Path.Combine(_env.ContentRootPath, "Logs");
+                var logFilePath = Path.Combine(logDirectory, logFileName);
 
-            return Ok(new { status = "saved" });
+                Directory.CreateDirectory(logDirectory);
+                await System.IO.File.WriteAllTextAsync(logFilePath, rawBody);
+
+                // ✅ نحاول نعمل Deserialize
+                WebhookRequestDto? request = null;
+                try
+                {
+                    request = JsonSerializer.Deserialize<WebhookRequestDto>(rawBody, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (request == null || request.obj == null)
+                    {
+                        _logger.LogWarning("⚠️ Webhook payload is null or incomplete.");
+                        return BadRequest("Invalid payload");
+                    }
+
+                    _logger.LogInformation("✅ Deserialized Successfully. Type = {Type}", request.type);
+
+                    // ✅ معالجة الطلب
+                    await _paymentService.HandleIncomingTransactionAsync(request.obj);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "⚠️ Failed to deserialize WebhookRequestDto");
+                    return BadRequest("Deserialization failed");
+                }
+
+                return Ok(new { status = "saved" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error while handling webhook");
+                return BadRequest();
+            }
         }
 
 
 
         [HttpPost("request-refund")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> RequestRefund([FromBody] RefundRequestDto dto)
         {
             ServiceResult serviceResult = await _paymentService.HandleRequestRefundAsync(dto);
@@ -121,7 +165,7 @@ namespace Ecommerce_brand_Api.Controllers
 
 
         [HttpPost("admin/approve-refund")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveRefund(ApproveRefundDto dto)
         {
 

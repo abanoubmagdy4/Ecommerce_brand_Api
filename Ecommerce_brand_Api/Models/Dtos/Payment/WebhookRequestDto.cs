@@ -1,11 +1,14 @@
-﻿namespace Ecommerce_brand_Api.Models.Dtos.Payment
+﻿using Ecommerce_brand_Api.Helpers;
+using System.Text.Json.Serialization;
+
+namespace Ecommerce_brand_Api.Models.Dtos.Payment
 {
     public class WebhookRequestDto
     {
         public string type { get; set; }
-        public TransactionDto obj { get; set; }
+        public Transaction obj { get; set; }
 
-        public class TransactionDto
+        public class Transaction
         {
             public long id { get; set; }
             public bool pending { get; set; }
@@ -23,9 +26,10 @@
 
             public OrderDto Order { get; set; }
             public DateTime created_at { get; set; }
+            [JsonConverter(typeof(EmptyStringToEmptyListConverter<object>))]
             public List<object> transaction_processed_callback_responses { get; set; }
             public string currency { get; set; }
-            public SourceDataDto source_data { get; set; }
+            public SourceData source_data { get; set; }
             public string api_source { get; set; }
             public object terminal_id { get; set; }
             public int merchant_commission { get; set; }
@@ -33,9 +37,9 @@
             public List<object> discount_details { get; set; }
             public bool is_void { get; set; }
             public bool is_refund { get; set; }
-            public ExtraDataDto data { get; set; }
+            public ExtraData data { get; set; }
             public bool is_hidden { get; set; }
-            public PaymentKeyClaimsDto payment_key_claims { get; set; }
+            public PaymentKeyClaims payment_key_claims { get; set; }
             public int accept_fees { get; set; }
             public bool error_occured { get; set; }
             public bool is_live { get; set; }
@@ -58,10 +62,10 @@
             public int id { get; set; }
             public DateTime created_at { get; set; }
             public bool delivery_needed { get; set; }
-            public MerchantDto merchant { get; set; }
+            public Merchant merchant { get; set; }
             public object collector { get; set; }
             public int amount_cents { get; set; }
-            public ShippingDataDto shipping_data { get; set; }
+            public ShippingData shipping_data { get; set; }
             public string currency { get; set; }
             public bool is_payment_locked { get; set; }
             public bool is_return { get; set; }
@@ -72,7 +76,7 @@
             public object wallet_notification { get; set; }
             public int paid_amount_cents { get; set; }
             public bool notify_user_with_email { get; set; }
-            public List<ItemDto> items { get; set; }
+            public List<Item> items { get; set; }
             public string order_url { get; set; }
             public int commission_fees { get; set; }
             public int delivery_fees_cents { get; set; }
@@ -80,11 +84,11 @@
             public string payment_method { get; set; }
             public object merchant_staff_tag { get; set; }
             public string api_source { get; set; }
-            public ExtraDataDto data { get; set; }
+            public ExtraData data { get; set; }
             public string payment_status { get; set; }
         }
 
-        public class MerchantDto
+        public class Merchant
         {
             public int id { get; set; }
             public DateTime created_at { get; set; }
@@ -98,7 +102,7 @@
             public string street { get; set; }
         }
 
-        public class ShippingDataDto
+        public class ShippingData
         {
             public int id { get; set; }
             public string first_name { get; set; }
@@ -119,7 +123,7 @@
             public int order { get; set; }
         }
 
-        public class ItemDto
+        public class Item
         {
             public string name { get; set; }
             public string description { get; set; }
@@ -127,7 +131,7 @@
             public int quantity { get; set; }
         }
 
-        public class SourceDataDto
+        public class SourceData
         {
             public string type { get; set; }
             public string phone_number { get; set; }
@@ -136,22 +140,22 @@
             public string pan { get; set; }
         }
 
-        public class PaymentKeyClaimsDto
+        public class PaymentKeyClaims
         {
             public int user_id { get; set; }
             public int amount_cents { get; set; }
             public string currency { get; set; }
             public int integration_id { get; set; }
             public int order_id { get; set; }
-            public BillingDataDto billing_data { get; set; }
+            public BillingData billing_data { get; set; }
             public bool lock_order_when_paid { get; set; }
-            public ExtraDto extra { get; set; }
+            public Extra extra { get; set; }
             public bool single_payment_attempt { get; set; }
             public string next_payment_intention { get; set; }
             public string redirect_url { get; set; }
         }
 
-        public class BillingDataDto
+        public class BillingData
         {
             public string first_name { get; set; }
             public string last_name { get; set; }
@@ -168,13 +172,13 @@
             public string extra_description { get; set; }
         }
 
-        public class ExtraDto
+        public class Extra
         {
             public string notes { get; set; }
             public object merchant_order_id { get; set; }
         }
 
-        public class ExtraDataDto
+        public class ExtraData
         {
             public string message { get; set; }
         }
