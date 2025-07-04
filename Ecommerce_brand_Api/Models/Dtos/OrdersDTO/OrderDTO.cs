@@ -1,5 +1,4 @@
-﻿using Ecommerce_brand_Api.Helpers.Enums;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 {
@@ -9,7 +8,7 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         public int OrderId { get; set; }
 
         [StringLength(20, ErrorMessage = "OrderNumber can't exceed 20 characters")]
-        public string OrderNumber { get; set; }
+        public string? OrderNumber { get; set; }
 
         [BindNever]
         [Required]
@@ -18,22 +17,22 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         public DateTime? DeliveredAt { get; set; }
 
         [Required(ErrorMessage = "Customer ID is required.")]
-        public int CustomerId { get; set; }
-
-        [Required]
-        public int ShippingAddressId { get; set; }
+        public string CustomerId { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal? ShippingCost { get; set; }
 
-        public int? DiscountId { get; set; }
+
+
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal DiscountValue { get; set; } 
+        public decimal DiscountValue { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalOrderPrice { get; set; }
+
+
 
         [Required]
         [EnumDataType(typeof(OrderStatus), ErrorMessage = "Invalid Order Status")]
@@ -41,5 +40,10 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
 
         [Required]
         public ICollection<OrderItemDTO> OrderItems { get; set; }
+
+        [Required]
+        public CustomerDto CustomerInfo { get; set; }
+        [Required]
+        public AddressDto AddressInfo { get; set; }
     }
 }

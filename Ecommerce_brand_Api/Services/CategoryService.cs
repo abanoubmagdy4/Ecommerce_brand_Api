@@ -1,13 +1,15 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Entities;
+using Ecommerce_brand_Api.Repositories;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class CateogryService : ICategoryService
+    public class CategoryService : BaseService<Category>, ICategoryService
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public CateogryService(IUnitofwork unitOfWork, IMapper mapper)
+        public CategoryService(IUnitofwork unitOfWork, IMapper mapper) : base(unitOfWork.GetBaseRepository<Category>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

@@ -15,7 +15,15 @@
         //ICartItemRepository CartItems { get; }
         IFeedbackRepository Feedbacks { get; }
         //IFavoriteRepository Favorites { get; }
+
         INewArrivalsRepository NewArrivals { get; }
+
+        IDiscountRepository Discount { get; }
+        IUserRepository User { get; }
+        IPaymentRepository Payment { get; }
+        IRefundRequestRepository RefundRequest {get; }
+
+
 
         Task<int> SaveChangesAsync();
     }

@@ -15,8 +15,8 @@ namespace Ecommerce_brand_Api.Data.configurations
             //Order-> ShippingAddress 
             builder
                 .HasOne(o => o.ShippingAddress)
-                 .WithOne(a => a.Order)
-                .HasForeignKey<Order>(o => o.ShippingAddressId)
+                 .WithMany(a => a.Order)
+                .HasForeignKey(o => o.ShippingAddressId)
                .OnDelete(DeleteBehavior.Restrict);
 
             //Order-> Customer 
@@ -25,13 +25,6 @@ namespace Ecommerce_brand_Api.Data.configurations
                   .WithMany(o => o.Orders)
                   .HasForeignKey(o => o.CustomerId)
                   .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
-
-            // Order -> Discount 
-            //builder
-            //     .HasOne(o => o.Discount)
-            //     .WithOne(o=>o.order)
-            //     .HasForeignKey<Order>(o => o.DiscountId)
-            //     .OnDelete(DeleteBehavior.SetNull);
 
 
             builder

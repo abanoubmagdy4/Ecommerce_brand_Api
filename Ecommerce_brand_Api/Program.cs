@@ -18,6 +18,7 @@ namespace Ecommerce_brand_Api
                             .AddEntityFrameworkStores<AppDbContext>()
                             .AddDefaultTokenProviders();
 
+            builder.Services.AddHttpClient();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -28,6 +29,7 @@ namespace Ecommerce_brand_Api
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                   
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -43,18 +45,26 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddAuthorization();
 
+            builder.Services.AddHttpContextAccessor();
 
             // Add services to the container.
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
             builder.Services.AddScoped<IUnitofwork, Unitofwork>();
+            builder.Services.AddScoped<IServiceUnitOfWork, ServiceUnitOfWork>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<ICartService, CartServices>();
+            builder.Services.AddScoped<IRefundRequestRepository, RefundRequestRepository>();
+            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();  
+            builder.Services.AddScoped<IRefundRequestService,RefundRequestService>();   
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
             builder.Services.AddScoped<IProductSizesRepository, ProductsSizesRepository>();
             builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             builder.Services.AddScoped<INewArrivalsRepository, NewArrivalsRepository>();
@@ -73,15 +83,31 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddHttpContextAccessor();
 
+
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();  
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();    
+            builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IOrderService, OrderServices>();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
             builder.Services.AddSwaggerGen(c =>
             {
+
                 c.EnableAnnotations();
 
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -90,10 +116,12 @@ namespace Ecommerce_brand_Api
                     Version = "1.0.0"
                 });
 
+
                 // دعم تحميل الصور
                 c.SchemaFilter<FormFileSchemaFilter>();
 
                 // ✅ إضافة دعم الـ JWT في Swagger
+
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -101,23 +129,23 @@ namespace Ecommerce_brand_Api
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "أدخل 'Bearer' متبوعة بمسافة ثم التوكن. مثال: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    Description = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
+      {
+          {
+              new OpenApiSecurityScheme
+              {
+                  Reference = new OpenApiReference
+                  {
+                      Type = ReferenceType.SecurityScheme,
+                      Id = "Bearer"
+                  }
+              },
+              new string[] {}
+          }
+      });
             });
 
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();

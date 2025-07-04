@@ -6,7 +6,7 @@ using System.Net.Mail;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class UserService : IUserService
+    public class UserService : BaseService<ApplicationUser>, IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -15,6 +15,10 @@ namespace Ecommerce_brand_Api.Services
         private readonly IConfiguration config;
         private readonly EmailSettings _emailSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUnitofwork _unitofwork;
+        private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         private IMapper _mapper;
 
         public UserService(UserManager<ApplicationUser> userManager,
@@ -23,8 +27,10 @@ namespace Ecommerce_brand_Api.Services
                            AppDbContext context,
                            IConfiguration config,
                            IOptions<EmailSettings> options,
-                           RoleManager<IdentityRole> roleManager
-                          )
+                           RoleManager<IdentityRole> roleManager,
+                           IHttpContextAccessor httpContextAccessor,
+                           IUnitofwork unitofwork,
+                           IMapper mapper) : base(unitofwork.GetBaseRepository<ApplicationUser>())
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -33,6 +39,11 @@ namespace Ecommerce_brand_Api.Services
             this.config = config;
             _emailSettings = options.Value;
             _roleManager = roleManager;
+            _unitofwork = unitofwork;
+            _userRepository = _unitofwork.User;
+            _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
+
         }
 
 
@@ -56,7 +67,82 @@ namespace Ecommerce_brand_Api.Services
 
             // Remember Me !!!!!!!!!!
         }
+        public async Task SaveCodeAsync(string email, string code)
+        {
+            // امسح الأكواد القديمة لنفس الإيميل (لو عايز تخلي كود واحد فعال)
+            var oldCodes = _context.OtpCodes.Where(x => x.Email == email);
+            _context.OtpCodes.RemoveRange(oldCodes);
 
+            var otp = new OtpCode
+            {
+                Email = email,
+                Code = code,
+                CreatedAt = DateTime.UtcNow,
+                ExpireAt = DateTime.UtcNow.AddMinutes(5)
+            };
+
+            _context.OtpCodes.Add(otp);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> VerifyCodeAsync(CustomerLoginDto customerDto)
+        {
+            var otp = await _context.OtpCodes
+                .Where(x => x.Email == customerDto.email && x.Code == customerDto.Code)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (otp == null || otp.ExpireAt < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            // ممكن تمسحه بعد الاستخدام
+            _context.OtpCodes.Remove(otp);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<ServiceResult> HandleCustomerLoginAsync(CustomerLoginDto customerLoginDto)
+        {
+
+            var isValidOtp = await VerifyCodeAsync(customerLoginDto);
+            if (!isValidOtp)
+                return ServiceResult.Fail("Invalid or expired OTP.");
+
+            var user = await _userRepository.FindByEmailAsync(customerLoginDto.email.ToLowerInvariant());
+
+
+            if (user == null)
+            {
+                var newUser = new ApplicationUser
+                {
+                    Email = customerLoginDto.email,
+                    UserName = customerLoginDto.email
+                };
+
+                var result = await _userManager.CreateAsync(newUser);
+                if (!result.Succeeded)
+                {
+                    return ServiceResult.Fail("User creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+                var roleResult = await _userManager.AddToRoleAsync(newUser, "Customer");
+                if (!roleResult.Succeeded)
+                {
+                    return ServiceResult.Fail("Failed to assign role: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                }
+                user = newUser;
+            }
+
+            var tokenExpiration = TimeSpan.FromHours(2);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var token = _tokenService.CreateToken(user, userRoles, tokenExpiration);
+            if (token == null) return ServiceResult.Fail("Token generation failed.");
+
+            return ServiceResult.OkWithData(token);
+        }
 
         public async Task<ServiceResult> RegisterAsync([FromForm] RegisterDto registerDTO, string userRole)
         {
@@ -84,6 +170,7 @@ namespace Ecommerce_brand_Api.Services
                     City = address.City,
                     Country = address.Country,
                     Floor = address.Floor,
+
                     GovernorateShippingCostId = address.GovernrateShippingCostId,
                     Street = address.Street,
                     IsDeleted = address.IsDeleted,
@@ -273,6 +360,52 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
+
+        public async Task<ApplicationUser> UpdatedUserAsync(ApplicationUser user, CustomerDto customerDto)
+        {
+            if (user == null || customerDto == null)
+                return null;
+
+            user.FirstName = customerDto.FirstName;
+            user.LastName = customerDto.LastName;
+            user.PhoneNumber = customerDto.PhoneNumber;
+            user.DateOfBirth = customerDto.DateOfBirth;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId)
+        {
+            Address address = _mapper.Map<Address>(addressDto);
+            address.UserId = UserId;    
+            address.GovernorateShippingCostId = addressDto.GovernrateShippingCostDto.Id;    
+            _context.Addresses.Add(address);
+            await _context.SaveChangesAsync();
+            return address;
+        }
+
+        public async Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto)
+        {
+            if (addressDto == null)
+                return ServiceResult.Fail("Address Not Found");
+
+            Address address = _mapper.Map<Address>(addressDto);
+            _context.Addresses.Update(address);
+            await _context.SaveChangesAsync();
+            return ServiceResult.OkWithData(address);
+        }
+        public string GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+            {
+                throw new UnauthorizedAccessException("User ID not found in token.");
+            }
+
+            return userIdClaim.Value;
+        }
 
 
     }

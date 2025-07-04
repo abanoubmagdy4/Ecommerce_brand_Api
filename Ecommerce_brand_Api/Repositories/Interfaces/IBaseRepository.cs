@@ -20,6 +20,8 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
             Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null
         );
         IQueryable<T?> GetQueryable();
+        Task<T> GetByStringIdAsync(string id);
+        Task DeleteRangeAsync(IEnumerable<T> entities);
 
     }
 }

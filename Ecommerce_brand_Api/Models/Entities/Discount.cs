@@ -6,4 +6,5 @@
         public decimal Threshold { get; set; }
         public decimal DicountValue { get; set; }
     }
+
 }

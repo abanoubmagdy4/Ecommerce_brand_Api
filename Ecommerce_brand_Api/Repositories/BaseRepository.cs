@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace Ecommerce_brand_Api.Repositories
+
+
 {
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
@@ -63,6 +66,7 @@ namespace Ecommerce_brand_Api.Repositories
             }
         }
 
+
         public async Task<T?> GetFirstOrDefaultAsync(
             Expression<Func<T, bool>> filter,
             Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null)
@@ -92,6 +96,17 @@ namespace Ecommerce_brand_Api.Repositories
         {
             return _dbSet.AsQueryable();
         }
+
+      
+        public async Task<T> GetByStringIdAsync(string id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+        public async Task DeleteRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+        }
+
     }
 
 }

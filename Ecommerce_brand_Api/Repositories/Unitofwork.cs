@@ -1,5 +1,7 @@
 ﻿
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Ecommerce_brand_Api.Repositories
 {
     public class Unitofwork : IUnitofwork
@@ -78,9 +80,17 @@ namespace Ecommerce_brand_Api.Repositories
              _ServiceProvider.GetRequiredService<IFeedbackRepository>()
             ?? throw new InvalidOperationException("No service registered for FeedbackRepository");
 
+
         public INewArrivalsRepository NewArrivals =>
              _ServiceProvider.GetRequiredService<INewArrivalsRepository>()
             ?? throw new InvalidOperationException("No service registered for NewArrivalsRepository");
+
+        public IDiscountRepository Discount => _ServiceProvider.GetRequiredService<IDiscountRepository> ();
+        public IUserRepository User => _ServiceProvider.GetRequiredService<IUserRepository>();
+        public IPaymentRepository Payment => _ServiceProvider.GetRequiredService<IPaymentRepository>();
+
+        public IRefundRequestRepository RefundRequest => _ServiceProvider.GetRequiredService<IRefundRequestRepository>();
+
 
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 

@@ -16,8 +16,9 @@ namespace Ecommerce_brand_Api.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<PaymentItem> PaymentItems { get; set; }
         public DbSet<Cancelation> Cancellations { get; set; }
-        public DbSet<Refund> Refunds { get; set; }
+        public DbSet<RefundRequest> RefundRequest { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
@@ -25,6 +26,9 @@ namespace Ecommerce_brand_Api.Data
         public DbSet<GovernorateShippingCost> GovernratesShippingCosts { get; set; }
         public DbSet<ProductSizes> ProductSizes { get; set; }
         public DbSet<NewArrivals> NewArrivals { get; set; }
+        public DbSet<OtpCode> OtpCodes { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

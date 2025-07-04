@@ -3,7 +3,7 @@ using Ecommerce_brand_Api.Models.Entities.Pagination;
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IProductService
+    public interface IProductService: IBaseService<Product>
     {
         Task<PaginatedResult<ProductDto>> GetPaginatedProductsAsync(PaginationParams pagination);
         Task<IEnumerable<ProductDto>> GetAllAsync();

@@ -1,9 +1,8 @@
-﻿using Ecommerce_brand_Api.Helpers.Enums;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
+﻿using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
-    public interface IOrderService
+    public interface IOrderService : IBaseService<Order>
     {
         /// <summary>
         /// Retrieves all orders asynchronously.
@@ -32,7 +31,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         /// <param name="order">The order details to be added. Must not be null and should contain valid data.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the added order details,
         /// including any system-generated fields.</returns>
-        Task<OrderDTO> AddNewOrderAsync(OrderDTO order);
+        Task<Order> AddNewOrderAsync(OrderDTO order, Address address, ApplicationUser user);
 
         /// <summary>
         /// Updates the details of an existing order asynchronously.
@@ -57,5 +56,9 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<IEnumerable<OrderDTO>> GetOrdersWithCustomerAsync();
         Task<IEnumerable<OrderDTO>> GetOrdersByStatusAsync(OrderStatus status);
         Task<IEnumerable<OrderDTO>> GetOrdersOverTotalAsync(decimal amount);
-    }
+        Task<ServiceResult> BuildOrderDto(OrderDTO orderDto);
+
+        Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
+
+            }
 }

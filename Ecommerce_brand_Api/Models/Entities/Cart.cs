@@ -3,7 +3,9 @@
     public class Cart
     {
         public int Id { get; set; }
+
         [ForeignKey(nameof(User))]
+
         public string UserId { get; set; } // to order
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -11,13 +13,12 @@
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
         public decimal TotalBasePrice { get; set; }
+
+ 
         public decimal TotalAmount { get; set; }
 
         // Navigation Property
         public ApplicationUser User { get; set; } = null!;
-
-
-
 
         /// <summary>
         /// Updates the total base price, total amount, and the last updated timestamp for the cart.

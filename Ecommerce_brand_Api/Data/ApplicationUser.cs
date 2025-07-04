@@ -13,5 +13,7 @@
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
         public Cart Cart { get; set; }
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
     }
 }

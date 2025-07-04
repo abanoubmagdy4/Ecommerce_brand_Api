@@ -1,14 +1,13 @@
-﻿using Ecommerce_brand_Api.Helpers.Enums;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Models.Entities;
-using Ecommerce_brand_Api.Services.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class OrderServices : IOrderService
+    public class OrderServices : BaseService<Order>, IOrderService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
+        private readonly IGovernrateShippingCostRepository _governrateShippingCostRepository;
+        private readonly IDiscountRepository _discountRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderServices"/> class.
@@ -18,9 +17,10 @@ namespace Ecommerce_brand_Api.Services
         /// <paramref name="mapper"/> are provided when creating an instance of this class.</remarks>
         /// <param name="_unitofwork">The unit of work instance used to manage database transactions and repositories.</param>
         /// <param name="mapper">The mapper instance used for object-to-object mapping between domain models and DTOs.</param> 
-        public OrderServices(IUnitofwork _unitofwork, IMapper mapper)
+        public OrderServices(IUnitofwork _unitofwork, IMapper mapper) : base(_unitofwork.GetBaseRepository<Order>())
         {
             this._unitofwork = _unitofwork;
+            _discountRepository = _unitofwork.Discount;
             this.mapper = mapper;
         }
 
@@ -80,20 +80,60 @@ namespace Ecommerce_brand_Api.Services
         /// transfer object.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="orderDto"/> is <see langword="null"/>.</exception>
         /// <exception cref="ApplicationException">Thrown if an error occurs while adding the order.</exception> 
-        public async Task<OrderDTO> AddNewOrderAsync(OrderDTO orderDto)
+        public async Task<Order> AddNewOrderAsync(OrderDTO orderDto, Address address, ApplicationUser user)
         {
-            if (orderDto == null)
-                throw new ArgumentNullException(nameof(orderDto), "Order data cannot be null.");
+            if (orderDto == null || address == null || user == null)
+                throw new ArgumentNullException("Data cannot be null.");
+
+            if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())
+                throw new ArgumentException("Order must contain at least one item.");
+
 
             try
             {
-                var orderEntity = mapper.Map<Order>(orderDto);
-                var repo = _unitofwork.GetBaseRepository<Order>();
+                var orderItemsAfterMapping = new List<OrderItem>();
 
-                await repo.AddAsync(orderEntity);
+                foreach (var dto in orderDto.OrderItems)
+                {
+                    var item = new OrderItem
+                    {
+                        ProductId = dto.ProductId,
+                        Quantity = dto.Quantity,
+                        TotalPrice = dto.TotalPrice
+                    };
+
+                    orderItemsAfterMapping.Add(item);
+                }
+                string shippingAreaName = address.GovernorateShippingCost?.Name ?? "Unknown";
+
+                Order order = new Order()
+                {
+                    OrderItems = orderItemsAfterMapping,
+                    OrderStatus = OrderStatus.Created,
+                    TotalOrderPrice = orderDto.TotalOrderPrice,
+                    CreatedAt = orderDto.CreatedAt,
+                    DeliveredAt = orderDto.DeliveredAt,
+                    DiscountValue = Math.Max(orderDto.DiscountValue, 0),
+                    OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                    // Customer and address cost 
+                    CustomerId = user.Id,
+                    ShippingAddressId = address.Id,
+                    OrderAddressInfo = $"{address.Street}, Apt: {address.Apartment}, Bldg: {address.Building}, Floor: {address.Floor}, " + $"{address.City}, {shippingAreaName}",
+                    ShippingCost = orderDto.ShippingCost,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+
+                    // Navigation properties
+                    Customer = user,
+                    ShippingAddress = address,
+                };
+                var repo = _unitofwork.GetOrderRepository();
+
+                await repo.AddAsync(order);
                 await _unitofwork.SaveChangesAsync();
 
-                return mapper.Map<OrderDTO>(orderEntity);
+                return order;
             }
             catch (Exception ex)
             {
@@ -242,6 +282,62 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("An error occurred while retrieving orders with customer info.", ex);
             }
         }
+
+        public async Task<ServiceResult> BuildOrderDto(OrderDTO orderDto)
+        {
+            try
+            {
+                if (orderDto == null)
+                    return ServiceResult.Fail("Order data is missing.");
+
+                if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())
+                    return ServiceResult.Fail("No order items found.");
+
+                if (string.IsNullOrWhiteSpace(orderDto.AddressInfo?.City))
+                    return ServiceResult.Fail("City name is required.");
+
+                // Get discount
+                var discount = await _discountRepository.GetActiveDiscountAsync();
+
+                // Calculate total
+                decimal totalOrderItemsPrice = orderDto.OrderItems.Sum(i => i.TotalPrice * i.Quantity);
+                decimal appliedDiscount = 0;
+
+                if (discount != null && totalOrderItemsPrice >= discount.Threshold)
+                {
+                    appliedDiscount = discount.DiscountValue;
+                }
+
+                // Get shipping cost
+                var governorateShippingCost = await _unitofwork.GovernratesShippingCosts
+                    .GetByNameAsync(orderDto.AddressInfo.City);
+
+                if (governorateShippingCost == null)
+                    return ServiceResult.Fail("Shipping cost not found for the given city.");
+
+                // Set order properties
+                orderDto.CreatedAt = DateTime.UtcNow;
+                orderDto.DiscountValue = appliedDiscount;
+                orderDto.TotalOrderPrice = totalOrderItemsPrice - appliedDiscount + governorateShippingCost.ShippingCost;
+                orderDto.OrderStatus = OrderStatus.Created;
+                orderDto.DeliveredAt = orderDto.CreatedAt.AddDays(3);
+                orderDto.ShippingCost= governorateShippingCost.ShippingCost;
+
+                return ServiceResult.OkWithData(orderDto);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult.Fail($"An error occurred: {ex.Message}");
+            }
+        }
+
+        public async Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId)
+        {
+            var repo = _unitofwork.GetOrderRepository();
+            return await repo.GetOrderByPaymobOrderIdAsync(paymobOrderId);
+        }
+
+
 
     }
 }

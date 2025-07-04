@@ -26,11 +26,26 @@ namespace Ecommerce_brand_Api.Repositories
             return await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.ShippingAddress)
-                .Include(o => o.Discount)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
+
+        public async Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .Include(o => o.ShippingAddress)
+                .Include(o => o.Customer)
+                .FirstOrDefaultAsync(o => o.PaymobOrderId == paymobOrderId && !o.IsDeleted);
+        }
+        public async Task<Order?> GetOrderWithPaymentAsync(int orderId)
+        {
+            return await _context.Orders
+                .Include(o => o.Payment)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        }
+
     }
 
 }

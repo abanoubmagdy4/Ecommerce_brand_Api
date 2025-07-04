@@ -3,15 +3,18 @@ using Ecommerce_brand_Api.Models.Dtos;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class CartServices : ICartService
+    public class CartServices : BaseService<Cart> ,ICartService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
         private readonly ICurrentUserService _currentUserService;
 
-        public CartServices(IUnitofwork _unitofwork, IMapper mapper, ICurrentUserService currentUserService)
+
+        public CartServices(IUnitofwork _unitofwork, IMapper mapper, ICurrentUserService currentUserService) : base(unitofwork.GetBaseRepository<Cart>())
+
+
         {
-            this._unitofwork = _unitofwork;
+            this._unitofwork = unitofwork;
             this.mapper = mapper;
             this._currentUserService = currentUserService;
         }
@@ -191,6 +194,7 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
+
         public async Task<bool> ClearCurrentUserCart()
         {
             var cartRepo = _unitofwork.GetBaseRepository<Cart>();
@@ -238,5 +242,44 @@ namespace Ecommerce_brand_Api.Services
                 throw new ApplicationException("An error occurred while retrieving the cart.", ex);
             }
         }
+
+
+        public async Task<ServiceResult> RemovePurchasedProductsFromCartAsync(string userId, List<int> purchasedProductIds)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return ServiceResult.Fail("Invalid User ID");
+
+            try
+            {
+                var cartRepo = _unitofwork.Carts;
+                var userCart = await cartRepo.GetCartByUserIdAsync(userId);
+
+                if (userCart == null || userCart.CartItems == null || !userCart.CartItems.Any())
+                    return ServiceResult.OkWithData(new List<int>()); // مفيش كارت أو مفيش عناصر
+
+                var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
+
+                // فلتر المنتجات اللي فعلاً موجودة في الكارت
+                var itemsToRemove = userCart.CartItems
+                    .Where(ci => purchasedProductIds.Contains(ci.ProductId))
+                    .ToList();
+
+                if (!itemsToRemove.Any())
+                    return ServiceResult.Ok("No matching products found in cart.");
+
+                await cartItemRepo.DeleteRangeAsync(itemsToRemove);
+                await _unitofwork.SaveChangesAsync();
+
+                var deletedProductIds = itemsToRemove.Select(i => i.ProductId).ToList();
+
+                return ServiceResult.OkWithData(deletedProductIds);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult.Fail($"An error occurred while clearing purchased items from cart for user {userId}. Error: {ex.Message}");
+            }
+        }
+
+
     }
 }

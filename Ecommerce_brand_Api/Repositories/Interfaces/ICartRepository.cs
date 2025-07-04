@@ -2,6 +2,6 @@
 {
     public interface ICartRepository : IBaseRepository<Cart>
     {
-
+        Task<Cart?> GetCartByUserIdAsync(string userId);
     }
 }

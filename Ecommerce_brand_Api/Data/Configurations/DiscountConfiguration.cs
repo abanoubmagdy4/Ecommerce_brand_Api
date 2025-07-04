@@ -8,7 +8,7 @@ namespace Ecommerce_brand_Api.Data.Configurations
         {
             builder.HasKey(d => d.Id);
 
-            builder.Property(c => c.DicountValue).HasColumnType("decimal(18,2)");
+            builder.Property(c => c.DiscountValue).HasColumnType("decimal(18,2)");
         }
     }
 }
