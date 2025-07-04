@@ -92,8 +92,7 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
         [HttpPost("AdminRegister")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult> AdminRegister([FromForm] RegisterDto registerDTO)
+        public async Task<ActionResult> AdminRegister(RegisterDto registerDTO)
         {
             if (ModelState.IsValid)
             {

@@ -127,12 +127,15 @@ namespace Ecommerce_brand_Api.Services
                 {
                     return ServiceResult.Fail("User creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
-                var roleResult = await _userManager.AddToRoleAsync(newUser, "Customer");
-                if (!roleResult.Succeeded)
-                {
-                    return ServiceResult.Fail("Failed to assign role: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
-                }
                 user = newUser;
+                if (!await _roleManager.RoleExistsAsync("Customer"))
+                    await _roleManager.CreateAsync(new IdentityRole("Customer"));
+
+                var roleResult = await _userManager.AddToRoleAsync(user, "Customer");
+                if (!roleResult.Succeeded)
+                    return ServiceResult.Fail("Failed to assign role to user: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+
+     
             }
 
             var tokenExpiration = TimeSpan.FromHours(2);
