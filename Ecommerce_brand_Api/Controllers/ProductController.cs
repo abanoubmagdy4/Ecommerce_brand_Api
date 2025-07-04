@@ -1,5 +1,8 @@
-﻿using Ecommerce_brand_Api.Models.Dtos;
+﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Models;
+using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Entities.Pagination;
+using Newtonsoft.Json;
 
 namespace Ecommerce_brand_Api.Controllers
 {
@@ -34,11 +37,21 @@ namespace Ecommerce_brand_Api.Controllers
 
 
         [HttpPost]
+        [DisableRequestSizeLimit]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AddProduct([FromForm] ProductDto dto)
+        public async Task<IActionResult> AddProduct([FromForm] string productJson, [FromForm] List<IFormFile> files)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var dto = JsonConvert.DeserializeObject<ProductDto>(productJson);
+            if (dto == null) return BadRequest("Invalid product data.");
+
+            if (files.Count != dto.ProductImagesPaths.Count)
+                return BadRequest("Files count mismatch");
+
+            // اربط الصور بالـ DTO
+            for (int i = 0; i < dto.ProductImagesPaths.Count; i++)
+            {
+                dto.ProductImagesPaths[i].File = files[i];
+            }
 
             await _productService.AddAsync(dto);
             return Ok(new { message = "Product created successfully." });
@@ -46,7 +59,7 @@ namespace Ecommerce_brand_Api.Controllers
 
         [HttpPost]
         [Route("AddProductSizeToProduct")]
-        public async Task<IActionResult> AddProductSizeToProduct(List<ProductSizeDto> dto)
+        public async Task<IActionResult> AddProductSizeToProduct(List<ProductSizesDto> dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -61,22 +74,43 @@ namespace Ecommerce_brand_Api.Controllers
 
 
 
-        [HttpPut]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateProduct([FromForm] ProductDto dto)
+        [HttpPut("basic-update")]
+        public async Task<IActionResult> UpdateProductBasicData([FromBody] ProductBaseUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _productService.UpdateAsync(dto);
-            return updated
-                ? Ok(new { message = "Product updated successfully." })
-                : NotFound();
+            var updated = await _productService.UpdateBasicInfoAsync(dto);
+            if (!updated)
+                return NotFound(new { message = "Product not found." });
+
+            return Ok(new { message = "Product updated successfully." });
         }
+
+        [HttpPut("update-images")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProductImages([FromForm] string imagesDtoJson, [FromForm] List<IFormFile> files)
+        {
+            var dto = JsonConvert.DeserializeObject<ProductImagesUpdateDto>(imagesDtoJson);
+            if (dto == null)
+                return BadRequest("Invalid data");
+
+            if (files.Count != dto.ProductImagesPaths.Count)
+                return BadRequest("Mismatch between images and files");
+
+            for (int i = 0; i < dto.ProductImagesPaths.Count; i++)
+                dto.ProductImagesPaths[i].File = files[i];
+
+            var updated = await _productService.UpdateProductImagesAsync(dto);
+            return updated
+                ? Ok(new { message = "Product images updated successfully." })
+                : NotFound(new { message = "Product not found." });
+        }
+
 
         [HttpPut]
         [Route("UpdateProductSizes")]
-        public async Task<IActionResult> UpdateProductSizes(List<ProductSizeDto> dtoList)
+        public async Task<IActionResult> UpdateProductSizes(List<ProductSizesDto> dtoList)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -139,10 +173,9 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
         [HttpGet("paginated")]
-        public async Task<IActionResult> GetPagedProducts([FromQuery] PaginationParams pagination)
+        public async Task<IActionResult> GetPaginatedProducts([FromQuery] ProductFilterParams filter)
         {
-            var result = await _productService.GetPaginatedProductsAsync(pagination);
-
+            var result = await _productService.GetPaginatedProductsAsync(filter);
             return Ok(result);
         }
 

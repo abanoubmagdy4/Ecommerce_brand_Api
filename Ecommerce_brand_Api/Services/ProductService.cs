@@ -1,17 +1,19 @@
 ﻿using AutoMapper.QueryableExtensions;
+using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Models;
 using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Entities.Pagination;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class ProductService :BaseService<Product> ,IProductService
+    public class ProductService : BaseService<Product>, IProductService
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
 
 
-        public ProductService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env): base(unitOfWork.GetBaseRepository<Product>())
+        public ProductService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env) : base(unitOfWork.GetBaseRepository<Product>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -22,30 +24,65 @@ namespace Ecommerce_brand_Api.Services
         {
             var product = _mapper.Map<Product>(dto);
             product.ProductImagesPaths = new List<ProductImagesPaths>();
+            product.ProductSizes = new List<ProductSizes>();
 
             var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
-            foreach (var file in dto.Images)
+            // تأكيد إن الصور مش null ولا فاضية
+            if (dto.ProductImagesPaths != null && dto.ProductImagesPaths.Any())
             {
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                var fullPath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                foreach (var imageDto in dto.ProductImagesPaths)
                 {
-                    await file.CopyToAsync(stream);
+                    if (imageDto.File != null && imageDto.File.Length > 0)
+                    {
+                        var extension = Path.GetExtension(imageDto.File.FileName);
+                        var fileName = $"{Guid.NewGuid()}{extension}";
+                        var fullPath = Path.Combine(uploadsFolder, fileName);
+
+                        using (var stream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            await imageDto.File.CopyToAsync(stream);
+                        }
+
+                        product.ProductImagesPaths.Add(new ProductImagesPaths
+                        {
+                            ImagePath = $"/uploads/{fileName}".Replace("\\", "/"),
+                            Priority = imageDto.Priority
+                        });
+                    }
+                    else if (!string.IsNullOrEmpty(imageDto.ImagePath))
+                    {
+                        product.ProductImagesPaths.Add(new ProductImagesPaths
+                        {
+                            ImagePath = imageDto.ImagePath,
+                            Priority = imageDto.Priority
+                        });
+                    }
                 }
+            }
 
-                product.ProductImagesPaths.Add(new ProductImagesPaths
+            // تأكيد إن السايزات مش null ولا فاضية
+            if (dto.ProductSizes != null && dto.ProductSizes.Any())
+            {
+                foreach (var sizeDto in dto.ProductSizes)
                 {
-                    ImagePath = Path.Combine("uploads", fileName).Replace("\\", "/")
-                });
+                    if (!string.IsNullOrWhiteSpace(sizeDto.Size))
+                    {
+                        product.ProductSizes.Add(new ProductSizes
+                        {
+                            Size = sizeDto.Size,
+                            StockQuantity = sizeDto.StockQuantity
+                        });
+                    }
+                }
             }
 
             await _unitOfWork.Products.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {
@@ -75,24 +112,51 @@ namespace Ecommerce_brand_Api.Services
         public async Task<bool> UpdateAsync(ProductDto dto)
         {
             var product = await _unitOfWork.Products.GetByIdWithImagesAsync(dto.Id);
-            if (product == null) return false;
+            if (product == null)
+                return false;
 
+            // تحديث الخصائص العامة
             _mapper.Map(dto, product);
 
-            if (dto.Images != null && dto.Images.Any())
+            // مسح الصور القديمة من السيرفر
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+
+            foreach (var oldImage in product.ProductImagesPaths)
             {
-                string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
-                foreach (var file in dto.Images)
+                var fullPath = Path.Combine(_env.WebRootPath, oldImage.ImagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
+                if (System.IO.File.Exists(fullPath))
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    System.IO.File.Delete(fullPath);
+                }
+            }
+
+            // مسح الصور القديمة من قاعدة البيانات
+            product.ProductImagesPaths.Clear();
+
+            // إضافة الصور الجديدة
+            foreach (var imageDto in dto.ProductImagesPaths)
+            {
+                if (imageDto.File != null && imageDto.File.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageDto.File.FileName);
                     var fullPath = Path.Combine(uploadsFolder, fileName);
 
                     using var stream = new FileStream(fullPath, FileMode.Create);
-                    await file.CopyToAsync(stream);
+                    await imageDto.File.CopyToAsync(stream);
 
                     product.ProductImagesPaths.Add(new ProductImagesPaths
                     {
-                        ImagePath = Path.Combine("uploads", fileName).Replace("\\", "/")
+                        ImagePath = Path.Combine("uploads", fileName).Replace("\\", "/"),
+                        Priority = imageDto.Priority
+                    });
+                }
+                else if (!string.IsNullOrEmpty(imageDto.ImagePath))
+                {
+                    // احتياطي: لو جاي صورة قديمة مش هيمسحها (ده لو عايز تحتفظ ببعض الصور)
+                    product.ProductImagesPaths.Add(new ProductImagesPaths
+                    {
+                        ImagePath = imageDto.ImagePath,
+                        Priority = imageDto.Priority
                     });
                 }
             }
@@ -100,6 +164,7 @@ namespace Ecommerce_brand_Api.Services
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
+
 
 
         public async Task<bool> DecreaseStockAsync(int productSizeId, int quantity)
@@ -159,7 +224,7 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<ServiceResult> AddProductSizeToProductAsync(List<ProductSizeDto> dtoList)
+        public async Task<ServiceResult> AddProductSizeToProductAsync(List<ProductSizesDto> dtoList)
         {
             try
             {
@@ -182,7 +247,7 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<bool> UpdateProductSizes(List<ProductSizeDto> productsSizesDto)
+        public async Task<bool> UpdateProductSizes(List<ProductSizesDto> productsSizesDto)
         {
             try
             {
@@ -206,15 +271,58 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<PaginatedResult<ProductDto>> GetPaginatedProductsAsync(PaginationParams pagination)
+        public async Task<PaginatedResult<ProductDto>> GetPaginatedProductsAsync(ProductFilterParams filter)
         {
             var productRepo = _unitOfWork.GetBaseRepository<Product>();
 
-            var query = productRepo.GetQueryable().OrderBy(p => p.Id);
+            IQueryable<Product> query = productRepo.GetQueryable();
 
+            // Include العلاقات
+            query = query
+                .Include(p => p.ProductSizes)
+                .Include(p => p.ProductImagesPaths);
+
+            // فلترة حسب الكاتيجوري
+            if (filter.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+            }
+
+            // فلترة حسب الكلمة المفتاحية في الاسم أو الوصف
+            if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+            {
+                var keyword = filter.SearchTerm.Trim().ToLower();
+                query = query.Where(p =>
+                    p.Name.ToLower().Contains(keyword) ||
+                    p.Description.ToLower().Contains(keyword));
+            }
+
+            // فلترة حسب السعر الأدنى
+            if (filter.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= filter.MinPrice.Value);
+            }
+
+            // فلترة حسب السعر الأقصى
+            if (filter.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+            }
+
+            // فلترة حسب المنتجات الجديدة (هتحتاج تكون معرف حاجة زي IsNewArrival أو CreatedAt قريب)
+            if (filter.isNewArrival.HasValue && filter.isNewArrival.Value)
+            {
+                var recentDate = DateTime.UtcNow.AddDays(-7); // آخر 7 أيام مثلاً
+                query = query.Where(p => p.CreatedAt >= recentDate);
+            }
+
+            // ترتيب حسب الأحدث
+            query = query.OrderByDescending(p => p.CreatedAt);
+
+            // تحويل لـ DTO وتطبيق البيچينيشن
             var pagedResult = await query
                 .ProjectTo<ProductDto>(_mapper.ConfigurationProvider)
-                .ToPaginatedResultAsync(pagination.PageIndex, pagination.PageSize);
+                .ToPaginatedResultAsync(filter.PageIndex, filter.PageSize);
 
             return pagedResult;
         }
@@ -227,6 +335,113 @@ namespace Ecommerce_brand_Api.Services
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<ProductDto>(product);
         }
+
+
+        public async Task<bool> UpdateBasicInfoAsync(ProductBaseUpdateDto dto)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(dto.Id);
+            if (product == null)
+                return false;
+
+            product.Name = dto.Name;
+            product.Description = dto.Description;
+            product.Price = dto.Price;
+            product.DiscountPercentage = dto.DiscountPercentage;
+            product.CategoryId = dto.CategoryId;
+            product.IsDeleted = dto.IsDeleted;
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateProductImagesAsync(ProductImagesUpdateDto dto)
+        {
+            var product = await _unitOfWork.Products.GetByIdWithImagesAsync(dto.ProductId);
+            if (product == null) return false;
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            // IDs بتاعت الصور اللي جت مع الريكوست (ممكن تبقى جديدة أو قديمة)
+            var incomingImagePaths = dto.ProductImagesPaths
+                .Where(i => string.IsNullOrEmpty(i.ImagePath) == false)
+                .Select(i => i.ImagePath.Trim().ToLower())
+                .ToList();
+
+            // حذف الصور اللي مش موجودة في الريكوست (اتشالت من اليوزر)
+            var imagesToRemove = product.ProductImagesPaths
+                .Where(existing => !incomingImagePaths.Contains(existing.ImagePath.Trim().ToLower()))
+                .ToList();
+
+            foreach (var img in imagesToRemove)
+            {
+                var fullPath = Path.Combine(_env.WebRootPath, img.ImagePath.TrimStart('/').Replace("/", "\\"));
+                if (File.Exists(fullPath))
+                    File.Delete(fullPath);
+
+                product.ProductImagesPaths.Remove(img);
+            }
+
+            // إضافة الصور الجديدة (اللي معاها ملف)
+            foreach (var imageDto in dto.ProductImagesPaths)
+            {
+                if (imageDto.File != null && imageDto.File.Length > 0)
+                {
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageDto.File.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await imageDto.File.CopyToAsync(stream);
+
+                    product.ProductImagesPaths.Add(new ProductImagesPaths
+                    {
+                        ImagePath = $"/uploads/{fileName}".Replace("\\", "/"),
+                        Priority = imageDto.Priority
+                    });
+                }
+                else
+                {
+                    // صورة قديمة موجودة مسبقًا → ممكن تعدل الـ Priority
+                    var existingImage = product.ProductImagesPaths
+                        .FirstOrDefault(p => p.ImagePath.Trim().ToLower() == imageDto.ImagePath.Trim().ToLower());
+
+                    if (existingImage != null)
+                    {
+                        existingImage.Priority = imageDto.Priority;
+                    }
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<bool> UpdateProductSizesAsync(ProductSizesUpdateDto dto)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(dto.ProductId);
+            if (product == null)
+                return false;
+
+            product.ProductSizes.Clear();
+
+            foreach (var sizeDto in dto.ProductSizes)
+            {
+                if (!string.IsNullOrWhiteSpace(sizeDto.Size))
+                {
+                    product.ProductSizes.Add(new ProductSizes
+                    {
+                        Size = sizeDto.Size,
+                        StockQuantity = sizeDto.StockQuantity
+                    });
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
 
 
     }

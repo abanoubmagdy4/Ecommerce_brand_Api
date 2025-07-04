@@ -1,21 +1,32 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 {
-    
-        public class MappingProfile : Profile
+
+    public class MappingProfile : Profile
+    {
+        public MappingProfile()
         {
-            public MappingProfile()
-            {
-                CreateMap<CategoryDto, Category>();
-                CreateMap<Category, CategoryDto>();
+            CreateMap<CategoryDto, Category>();
+            CreateMap<Category, CategoryDto>();
 
-                CreateMap<GovernrateShippingCostDto, GovernorateShippingCost>();
-                CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
+            CreateMap<GovernrateShippingCostDto, GovernorateShippingCost>();
+            CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
 
-                CreateMap<ProductDto, Product>();
-                CreateMap<Product, ProductDto>();
+
+            CreateMap<Product, ProductDto>();
+            CreateMap<ProductDto, Product>();
+
+            // Sizes
+            CreateMap<ProductSizes, ProductSizesDto>().ReverseMap();
+
+            // Images
+            CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
+                .ForMember(dest => dest.File, opt => opt.Ignore());
+
+            CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
+                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
+
 
 
             CreateMap<Cart, CartDto>()
@@ -32,47 +43,37 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<Feedback, FavoriteDto>();
             CreateMap<FeedbackDto, Feedback>();
 
-            // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
-            CreateMap<Product, ProductDto>().ReverseMap();
-            CreateMap<ProductSizes, ProductSizeDto>().ReverseMap();
 
 
-                CreateMap<Feedback, FavoriteDto>();
-                CreateMap<FeedbackDto, Feedback>();
 
-                CreateMap<OrderDTO, Order>();
-                CreateMap<Order, OrderDTO>();
+            CreateMap<Feedback, FavoriteDto>();
+            CreateMap<FeedbackDto, Feedback>();
 
-                CreateMap<OrderItemDTO, OrderItem>();
-                CreateMap<OrderItem, OrderItemDTO>();
+            CreateMap<OrderDTO, Order>();
+            CreateMap<Order, OrderDTO>();
 
-                CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
-                    .ForMember(dest => dest.File, opt => opt.Ignore());
+            CreateMap<OrderItemDTO, OrderItem>();
+            CreateMap<OrderItem, OrderItemDTO>();
 
 
-                CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
-                    .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
-
-            CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
-                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
 
             CreateMap<Address, AddressDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
 
-                CreateMap<AddressDto, Address>()
-                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? 0))
-                    .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostId))
-                    .ForMember(dest => dest.GovernorateShippingCost, opt => opt.Ignore())
-                    .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                    .ForMember(dest => dest.User, opt => opt.Ignore())
-                    .ForMember(dest => dest.Order, opt => opt.Ignore());
+            CreateMap<AddressDto, Address>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? 0))
+                .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostId))
+                .ForMember(dest => dest.GovernorateShippingCost, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Order, opt => opt.Ignore());
 
-                CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
-            }
-
+            CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
         }
 
     }
+
+}
 

@@ -17,11 +17,11 @@
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
 
-        [Required]
-        public List<ProductSizeDto> ProductSizes { get; set; } = new List<ProductSizeDto>();
+        public List<ProductSizesDto>? ProductSizes { get; set; } = new List<ProductSizesDto>();
 
-        [Required(ErrorMessage = "Image file name is required")]
-        public List<IFormFile> Images { get; set; } = new();
+        [Required]
+        public List<ProductImagesPathsDto>? ProductImagesPaths { get; set; } = new();
+
 
         [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
         public decimal DiscountPercentage { get; set; }

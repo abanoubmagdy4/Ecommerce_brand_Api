@@ -3,7 +3,7 @@ using Ecommerce_brand_Api.Models.Dtos;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class CartServices : BaseService<Cart> ,ICartService
+    public class CartServices : BaseService<Cart>, ICartService
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
@@ -83,7 +83,7 @@ namespace Ecommerce_brand_Api.Services
             {
                 var cart = new Cart
                 {
-                    UserId = cartDto.UserId,
+                    UserId = _currentUserService.UserId,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     TotalBasePrice = cartDto.TotalBasePrice,

@@ -29,7 +29,6 @@ namespace Ecommerce_brand_Api
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                   
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -59,8 +58,8 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartServices>();
             builder.Services.AddScoped<IRefundRequestRepository, RefundRequestRepository>();
-            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();  
-            builder.Services.AddScoped<IRefundRequestService,RefundRequestService>();   
+            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();
+            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -90,8 +89,8 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddScoped<IPaymentService, PaymentService>();  
-            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();    
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IOrderService, OrderServices>();
