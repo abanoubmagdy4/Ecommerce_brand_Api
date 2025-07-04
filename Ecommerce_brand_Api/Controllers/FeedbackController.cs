@@ -16,9 +16,7 @@ namespace Ecommerce_brand_Api.Controllers
         [HttpPost("rate")]
         public async Task<IActionResult> RateProduct([FromBody] FeedbackDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+           
             var result = await _feedbackService.RateProductAsync(dto);
             if (!result)
                 return StatusCode(500, new { message = "Error while rating the product." });
