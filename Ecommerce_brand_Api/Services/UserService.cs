@@ -170,10 +170,8 @@ namespace Ecommerce_brand_Api.Services
                     City = address.City,
                     Country = address.Country,
                     Floor = address.Floor,
-
                     GovernorateShippingCostId = address.GovernrateShippingCostId,
-                    Street = address.Street,
-                    IsDeleted = address.IsDeleted,
+                    Street = address.Street
 
                 };
                 addresses.Add(add);
@@ -379,8 +377,8 @@ namespace Ecommerce_brand_Api.Services
         public async Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId)
         {
             Address address = _mapper.Map<Address>(addressDto);
-            address.UserId = UserId;    
-            address.GovernorateShippingCostId = addressDto.GovernrateShippingCostDto.Id;    
+            address.UserId = UserId;
+            address.GovernorateShippingCostId = addressDto.GovernrateShippingCostId;
             _context.Addresses.Add(address);
             await _context.SaveChangesAsync();
             return address;

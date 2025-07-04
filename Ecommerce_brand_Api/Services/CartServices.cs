@@ -10,7 +10,7 @@ namespace Ecommerce_brand_Api.Services
         private readonly ICurrentUserService _currentUserService;
 
 
-        public CartServices(IUnitofwork _unitofwork, IMapper mapper, ICurrentUserService currentUserService) : base(unitofwork.GetBaseRepository<Cart>())
+        public CartServices(IUnitofwork unitofwork, IMapper mapper, ICurrentUserService currentUserService) : base(unitofwork.GetBaseRepository<Cart>())
 
 
         {
@@ -267,7 +267,7 @@ namespace Ecommerce_brand_Api.Services
                 if (!itemsToRemove.Any())
                     return ServiceResult.Ok("No matching products found in cart.");
 
-                await cartItemRepo.DeleteRangeAsync(itemsToRemove);
+                await cartItemRepo.AddRangeAsync(itemsToRemove);
                 await _unitofwork.SaveChangesAsync();
 
                 var deletedProductIds = itemsToRemove.Select(i => i.ProductId).ToList();

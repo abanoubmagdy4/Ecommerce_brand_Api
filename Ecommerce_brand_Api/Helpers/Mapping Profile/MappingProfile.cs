@@ -58,13 +58,12 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                 .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
 
-                CreateMap<Address, AddressDto>()
-                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                    .ForMember(dest => dest.GovernrateShippingCostDto, opt => opt.MapFrom(src => src.GovernorateShippingCost));
+            CreateMap<Address, AddressDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
 
                 CreateMap<AddressDto, Address>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? 0))
-                    .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostDto.Id))
+                    .ForMember(dest => dest.GovernorateShippingCostId, opt => opt.MapFrom(src => src.GovernrateShippingCostId))
                     .ForMember(dest => dest.GovernorateShippingCost, opt => opt.Ignore())
                     .ForMember(dest => dest.UserId, opt => opt.Ignore())
                     .ForMember(dest => dest.User, opt => opt.Ignore())

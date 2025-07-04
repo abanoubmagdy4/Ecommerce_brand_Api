@@ -70,7 +70,7 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<INewArrivalsRepository, NewArrivalsRepository>();
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////
-            builder.Services.AddScoped<ICategoryService, CateogryService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICartService, CartServices>();
             builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
             builder.Services.AddScoped<IProductService, ProductService>();

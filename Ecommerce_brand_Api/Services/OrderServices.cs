@@ -305,7 +305,7 @@ namespace Ecommerce_brand_Api.Services
 
                 if (discount != null && totalOrderItemsPrice >= discount.Threshold)
                 {
-                    appliedDiscount = discount.DiscountValue;
+                    appliedDiscount = discount.DicountValue;
                 }
 
                 // Get shipping cost
