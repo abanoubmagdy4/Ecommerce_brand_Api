@@ -1,41 +1,58 @@
+# E-Commerce Brand API (.NET)
 
-This project is a full-stack e-commerce backend system developed using ASP.NET Core Web API.
-It was built as part of the Fawry Rise Internship Challenge, and also served as my graduation project at the ITI.
+This project is a full-stack e-commerce backend system developed using **ASP.NET Core Web API**.  
+It was built as part of the **Fawry Rise Internship Challenge**, and also served as my **graduation project at the ITI**.
 
-The system simulates a real-world shopping experience with cart handling, checkout, shipping, authentication, and payment integration via Paymob.
+The system simulates a real-world shopping experience with cart handling, checkout, shipping, authentication, and payment integration via **Paymob**.
 
- Features
- Product Management
+---
 
-Support for expirable and shippable products
+##  Features
 
-Stock control and validation
+- 🔹 **Product Management**
+  - Support for **expirable** and **shippable** products
+  - Stock control and quantity validation
+- 🛒 **Cart Management**
+  - Add products with quantity checks
+  - Remove or update items
+- 💳 **Checkout Process**
+  - Subtotal calculation
+  - Shipping fees based on weight
+  - Balance deduction from customer
+  - Integration with a `ShippingService` for shippable items
+- 🔐 **Authentication**
+  - JWT-based login/register system
+- 💰 **Payment Integration**
+  - Fully integrated with **Paymob** sandbox API
+- 📦 **Order Management**
+  - Admin dashboard logic to track and manage orders
 
-🛒 Cart Management
 
-Add products with quantity checks
+---
 
-Remove or update items
+## 🧰 Tech Stack
 
-💳 Checkout Process
+- ASP.NET Core 8 Web API
+- Entity Framework Core
+- SQL Server
+- JWT Authentication
+- Paymob Payment Gateway
+- Clean Code Architecture (Layered Structure)
 
-Subtotal calculation
+---
+## ▶️ How to Run
 
-Shipping fees based on weight
+Open the project in Visual Studio or VS Code
 
-Balance deduction from customer
+Configure your appsettings.json with your:
 
-ShippingService integration for physical items
+SQL Server connection string
 
-🔐 Authentication
+Paymob API key
 
-JWT-based login/register
+Run the application
 
-💰 Payment Integration
+Use Postman or Swagger to test the endpoints
 
-Fully integrated with Paymob sandbox API
 
-📦 Order Management
-
-Admin dashboard logic to track orders
 
