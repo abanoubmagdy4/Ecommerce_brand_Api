@@ -1,4 +1,7 @@
 ﻿using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Repositories;
+using Ecommerce_brand_Api.Repositories.Interfaces;
+using Ecommerce_brand_Api.Services.Interfaces;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -6,28 +9,45 @@ namespace Ecommerce_brand_Api.Services
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUserService;
 
-        public FeedbackService(IUnitofwork unitOfWork, IMapper mapper) : base(unitOfWork.GetBaseRepository<Feedback>())
+        public FeedbackService(IUnitofwork unitOfWork, IMapper mapper,ICurrentUserService currentUserService) : base(unitOfWork.GetBaseRepository<Feedback>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUserService = currentUserService;
         }
+
 
         public async Task<bool> RateProductAsync(FeedbackDto dto)
         {
             try
             {
+                var userId = _currentUserService.UserId;
+                if (userId == null)
+                {
+                   return false;    
+                }
                 var existing = await _unitOfWork.Feedbacks
-                    .GetByUserAndProductAsync(dto.UserId, dto.ProductId);
+                    .GetByUserAndProductAsync(userId, dto.ProductId);
 
                 if (existing != null)
                 {
                     existing.Rating = dto.Rating;
                     existing.CreatedAt = DateTime.UtcNow;
+                    existing.UserId = userId;   
+                    existing.ProductId = dto.ProductId; 
                 }
                 else
                 {
-                    var feedback = _mapper.Map<Feedback>(dto);
+                    var feedback = new Feedback()
+                    {
+                     ProductId = dto.ProductId, 
+                    UserId = userId,
+                   CreatedAt = DateTime.UtcNow,
+                   Rating = dto.Rating, 
+         
+                    };
                     await _unitOfWork.Feedbacks.AddAsync(feedback);
                 }
 
