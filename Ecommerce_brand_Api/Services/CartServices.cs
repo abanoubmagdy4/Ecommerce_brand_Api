@@ -1,7 +1,5 @@
 ﻿
 using Ecommerce_brand_Api.Models.Dtos;
-using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
-using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -9,15 +7,19 @@ namespace Ecommerce_brand_Api.Services
     {
         private readonly IUnitofwork _unitofwork;
         private readonly IMapper mapper;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CartServices(IUnitofwork unitofwork, IMapper mapper)
-        : base(unitofwork.GetBaseRepository<Cart>())
+
+        public CartServices(IUnitofwork _unitofwork, IMapper mapper, ICurrentUserService currentUserService) : base(unitofwork.GetBaseRepository<Cart>())
+
+
         {
             this._unitofwork = unitofwork;
             this.mapper = mapper;
+            this._currentUserService = currentUserService;
         }
 
-        public async Task<IEnumerable<CartDto>> GetCartAsync()
+        public async Task<IEnumerable<CartDto>> GetAllCartsAsync()
         {
             try
             {
@@ -31,17 +33,44 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<CartDto?> GetCartByIdAsync(int Id)
+        public async Task<CartDto?> GetCurrentUserCartAsync()
         {
             try
             {
                 var cartRepo = _unitofwork.GetBaseRepository<Cart>();
-                var carts = await cartRepo.GetByIdAsync(Id);
-                return carts == null ? null : mapper.Map<CartDto>(carts);
+
+                var cart = await cartRepo.GetFirstOrDefaultAsync(
+                    c => c.UserId == _currentUserService.UserId,
+                    include: q => q
+                        .Include(c => c.CartItems)
+                            .ThenInclude(ci => ci.Product)
+                );
+
+                if (cart == null)
+                {
+                    return null;
+                }
+
+                var cartDto = mapper.Map<CartDto>(cart);
+
+                var discount = await _unitofwork.GetBaseRepository<Discount>().GetFirstOrDefaultAsync();
+
+                if (discount == null)
+                {
+                    cartDto.Threshold = 0;
+                    cartDto.TotalDiscount = 0;
+                }
+                else
+                {
+                    cartDto.Threshold = discount.Threshold;
+                    cartDto.TotalDiscount = cartDto.TotalBasePrice * discount.DicountValue / 100;
+                }
+
+                return cartDto;
             }
             catch (Exception ex)
             {
-                throw new ApplicationException($"An error occurred while retrieving order with ID {Id}.", ex);
+                throw new ApplicationException("An error occurred while retrieving the cart.", ex);
             }
         }
 
@@ -52,12 +81,45 @@ namespace Ecommerce_brand_Api.Services
 
             try
             {
-                var cartEntity = mapper.Map<Cart>(cartDto);
-                var repo = _unitofwork.GetBaseRepository<Cart>();
+                var cart = new Cart
+                {
+                    UserId = cartDto.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    TotalBasePrice = cartDto.TotalBasePrice,
+                    TotalAmount = cartDto.TotalAmount,
+                    CartItems = cartDto.CartItems?.Select(ci => new CartItem
+                    {
+                        ProductId = ci.ProductId,
+                        Quantity = ci.Quantity,
+                        TotalPriceForOneItemType = ci.TotalPriceForOneItemType
+                    }).ToList() ?? new List<CartItem>()
+                };
 
-                await repo.AddAsync(cartEntity);
+                var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+                await cartRepo.AddAsync(cart);
                 await _unitofwork.SaveChangesAsync();
-                return mapper.Map<CartDto>(cartEntity);
+
+                var result = new CartDto
+                {
+                    Id = cart.Id,
+                    UserId = cart.UserId,
+                    CreatedAt = cart.CreatedAt,
+                    UpdatedAt = cart.UpdatedAt,
+                    TotalBasePrice = cart.TotalBasePrice,
+                    TotalAmount = cart.TotalAmount,
+                    CartItems = cart.CartItems?.Select(ci => new CartItemDto
+                    {
+                        Id = ci.Id,
+                        CartId = ci.CartId,
+                        ProductId = ci.ProductId,
+                        Quantity = ci.Quantity,
+                        UnitPrice = ci.Product.Price,
+                        TotalPriceForOneItemType = ci.TotalPriceForOneItemType
+                    }).ToList()
+                };
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -133,6 +195,55 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
+        public async Task<bool> ClearCurrentUserCart()
+        {
+            var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+            var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
+
+            var userId = _currentUserService.UserId;
+
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.UserId == userId,
+                include: q => q.Include(c => c.CartItems)
+            );
+
+            if (cart == null)
+                return false;
+
+            // احذف كل العناصر من الكارت
+            await cartItemRepo.DeleteRangeAsync(cart.CartItems);
+
+            // صفّر التوتال
+            cart.TotalBasePrice = 0;
+            cart.TotalAmount = 0;
+            cart.UpdatedAt = DateTime.UtcNow;
+
+            await cartRepo.UpdateAsync(cart);
+            await _unitofwork.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<CartDto?> GetUserCartAsyncById(string userId)
+        {
+            try
+            {
+                var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+
+                var cart = await cartRepo.GetFirstOrDefaultAsync(
+                    c => c.UserId == userId,
+                    include: q => q.Include(c => c.CartItems)
+                );
+
+                return cart == null ? null : mapper.Map<CartDto>(cart);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while retrieving the cart.", ex);
+            }
+        }
+
+
         public async Task<ServiceResult> RemovePurchasedProductsFromCartAsync(string userId, List<int> purchasedProductIds)
         {
             if (string.IsNullOrWhiteSpace(userId))
@@ -168,7 +279,6 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail($"An error occurred while clearing purchased items from cart for user {userId}. Error: {ex.Message}");
             }
         }
-
 
 
     }

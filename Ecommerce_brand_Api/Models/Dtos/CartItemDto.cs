@@ -10,6 +10,9 @@
         [Required]
         public int ProductId { get; set; }
 
+        [Required]
+        public int ProductSizeId { get; set; }
+
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1")]
         public int Quantity { get; set; }
 
@@ -17,6 +20,6 @@
         public decimal UnitPrice { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Discount cannot be negative")]
-        public decimal TotalPrice { get; set; }
+        public decimal TotalPriceForOneItemType { get; set; }
     }
 }

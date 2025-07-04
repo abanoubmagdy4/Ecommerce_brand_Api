@@ -50,7 +50,7 @@ namespace Ecommerce_brand_Api.Services
             if (existing == null) return false;
 
             _mapper.Map(dto, existing);
-            _unitOfWork.Categories.UpdateAsync(existing);
+            await _unitOfWork.Categories.UpdateAsync(existing);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

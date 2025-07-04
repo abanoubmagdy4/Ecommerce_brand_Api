@@ -64,17 +64,33 @@ namespace Ecommerce_brand_Api.Repositories
          _ServiceProvider.GetService<IProductRepository>()
          ?? throw new InvalidOperationException("No service registered for IProductRepository");
 
+        public IProductSizesRepository ProductsSizes =>
+        _ServiceProvider.GetService<IProductSizesRepository>()
+        ?? throw new InvalidOperationException("No service registered for IProductRepository");
+
+
         public ICartRepository Carts => _ServiceProvider.GetService<ICartRepository>()
             ?? throw new InvalidOperationException("No service registered for CartRepository");
+
+        public ICartItemRepository CartItem => _ServiceProvider.GetService<ICartItemRepository>()
+            ?? throw new InvalidOperationException("No service registered for CartItemRepository");
+
+
         public IFeedbackRepository Feedbacks =>
-             _ServiceProvider.GetRequiredService<IFeedbackRepository>() 
+             _ServiceProvider.GetRequiredService<IFeedbackRepository>()
             ?? throw new InvalidOperationException("No service registered for FeedbackRepository");
+
+
+        public INewArrivalsRepository NewArrivals =>
+             _ServiceProvider.GetRequiredService<INewArrivalsRepository>()
+            ?? throw new InvalidOperationException("No service registered for NewArrivalsRepository");
 
         public IDiscountRepository Discount => _ServiceProvider.GetRequiredService<IDiscountRepository> ();
         public IUserRepository User => _ServiceProvider.GetRequiredService<IUserRepository>();
         public IPaymentRepository Payment => _ServiceProvider.GetRequiredService<IPaymentRepository>();
 
         public IRefundRequestRepository RefundRequest => _ServiceProvider.GetRequiredService<IRefundRequestRepository>();
+
 
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
 
@@ -84,6 +100,7 @@ namespace Ecommerce_brand_Api.Repositories
         }
     }
 }
+
 
 
 

@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public decimal Threshold { get; set; }
-        public decimal DiscountValue { get; set; }
+        public decimal DicountValue { get; set; }
     }
 
 }

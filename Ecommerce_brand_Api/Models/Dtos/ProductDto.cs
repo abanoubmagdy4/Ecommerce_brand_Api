@@ -18,8 +18,7 @@
         public decimal Price { get; set; }
 
         [Required]
-        [Range(0, int.MaxValue)]
-        public int StockQuantity { get; set; }
+        public List<ProductSizeDto> ProductSizes { get; set; } = new List<ProductSizeDto>();
 
         [Required(ErrorMessage = "Image file name is required")]
         public List<IFormFile> Images { get; set; } = new();

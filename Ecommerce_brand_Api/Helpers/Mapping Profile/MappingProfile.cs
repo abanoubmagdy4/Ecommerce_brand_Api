@@ -17,11 +17,25 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                 CreateMap<ProductDto, Product>();
                 CreateMap<Product, ProductDto>();
 
-                CreateMap<CartDto, Cart>();
-                CreateMap<Cart, CartDto>();
 
-                CreateMap<CartItemDto, CartItem>();
-                CreateMap<CartItem, CartItemDto>();
+            CreateMap<Cart, CartDto>()
+                .ForMember(dest => dest.Threshold, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalDiscount, opt => opt.Ignore())
+                .ForSourceMember(dest => dest.User, opt => opt.DoNotValidate())
+                .ReverseMap();
+
+            CreateMap<CartItem, CartItemDto>()
+                .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.Product.Price))
+                .ReverseMap();
+
+
+            CreateMap<Feedback, FavoriteDto>();
+            CreateMap<FeedbackDto, Feedback>();
+
+            // Product ↔ ProductDto (نفترض إنك عامل ProductDto)
+            CreateMap<Product, ProductDto>().ReverseMap();
+            CreateMap<ProductSizes, ProductSizeDto>().ReverseMap();
+
 
                 CreateMap<Feedback, FavoriteDto>();
                 CreateMap<FeedbackDto, Feedback>();
@@ -35,8 +49,14 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                 CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
                     .ForMember(dest => dest.File, opt => opt.Ignore());
 
+
                 CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
                     .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
+
+
+            CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
+                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
+
 
                 CreateMap<Address, AddressDto>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -52,6 +72,7 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
 
                 CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
             }
+
         }
 
     }

@@ -11,6 +11,7 @@
         {
             return await _context.Products
                 .Include(p => p.ProductImagesPaths)
+                .Include(p => p.ProductSizes)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         }
 
@@ -18,6 +19,7 @@
         {
             return await _context.Products
                 .Include(p => p.ProductImagesPaths)
+                .Include(p => p.ProductSizes)
                 .Where(p => !p.IsDeleted)
                 .ToListAsync();
         }

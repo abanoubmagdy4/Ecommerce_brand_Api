@@ -170,8 +170,10 @@ namespace Ecommerce_brand_Api.Services
                     City = address.City,
                     Country = address.Country,
                     Floor = address.Floor,
-                    GovernorateShippingCostId = address.GovernrateShippingCostDto.Id,
-                    Street = address.Street
+
+                    GovernorateShippingCostId = address.GovernrateShippingCostId,
+                    Street = address.Street,
+                    IsDeleted = address.IsDeleted,
 
                 };
                 addresses.Add(add);

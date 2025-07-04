@@ -5,6 +5,5 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
     {
         Task<Product?> GetByIdWithImagesAsync(int id);
         Task<IEnumerable<Product>> GetAllWithImagesAsync();
-
     }
 }
