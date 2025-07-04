@@ -1,4 +1,4 @@
-# E-Commerce Brand API (.NET)
+# E-Commerce Brand API (.NET) -- Cashlock
 
 This project is a full-stack e-commerce backend system developed using **ASP.NET Core Web API**.  
 It was built as part of the **Fawry Rise Internship Challenge**, and also served as my **graduation project at the ITI**.
