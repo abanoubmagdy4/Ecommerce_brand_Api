@@ -20,12 +20,12 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var products = await _productService.GetAllAsync();
-            return Ok(products);
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetAll()
+        //{
+        //    var products = await _productService.GetAllAsync();
+        //    return Ok(products);
+        //}
 
 
         [HttpGet("{id}")]
@@ -134,22 +134,22 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
 
-        [HttpGet("ByCategory/{categoryId}")]
-        public async Task<IActionResult> GetByCategory(int categoryId)
-        {
-            try
-            {
-                var products = await _productService.GetByCategoryAsync(categoryId);
-                if (products == null || !products.Any())
-                    return NotFound(new { message = "No products found in this category." });
+        //[HttpGet("ByCategory/{categoryId}")]
+        //public async Task<IActionResult> GetByCategory(int categoryId)
+        //{
+        //    try
+        //    {
+        //        var products = await _productService.GetByCategoryAsync(categoryId);
+        //        if (products == null || !products.Any())
+        //            return NotFound(new { message = "No products found in this category." });
 
-                return Ok(products);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error while retrieving products by category.", details = ex.Message });
-            }
-        }
+        //        return Ok(products);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "Error while retrieving products by category.", details = ex.Message });
+        //    }
+        //}
 
 
         [HttpPost("decrease-stock")]

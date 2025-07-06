@@ -14,6 +14,17 @@ namespace Ecommerce_brand_Api
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowLocalhost4200", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200") // Angular port
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                             .AddEntityFrameworkStores<AppDbContext>()
                             .AddDefaultTokenProviders();
@@ -160,7 +171,7 @@ namespace Ecommerce_brand_Api
                 });
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowLocalhost4200");
             app.UseAuthentication();
             app.UseAuthorization();
 
