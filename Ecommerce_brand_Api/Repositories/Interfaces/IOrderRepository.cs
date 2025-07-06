@@ -1,5 +1,6 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
 using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Dtos.Payment.PaymentResponse;
 using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Repositories.Interfaces
@@ -12,6 +13,6 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         Task<IEnumerable<Order>> GetOrdersOverTotalAsync(decimal amount);
         Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
         Task<Order?> GetOrderWithPaymentAsync(int orderId);
-
+        Task<OrderItemWithStatusAndAmountAndQuantityDto?> GetOrderItemWithOrderStatusWithPaymentStatuAndAmmountAsync(int orderItemId);
     }
 }

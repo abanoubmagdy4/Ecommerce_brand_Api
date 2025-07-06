@@ -145,11 +145,11 @@ namespace Ecommerce_brand_Api.Controllers
 
 
 
-        [HttpPost("request-refund")]
+        [HttpPost("Request-order-refund")]
         //[Authorize]
-        public async Task<IActionResult> RequestRefund([FromBody] OrderRefundDto dto)
+        public async Task<IActionResult> RequestOrderRefund([FromBody] OrderRefundDto dto)
         {
-            ServiceResult serviceResult = await _paymentService.HandleRequestRefundAsync(dto);
+            ServiceResult serviceResult = await _paymentService.HandleOrderRequestRefundAsync(dto);
 
             if (serviceResult.Success)
             {
@@ -161,12 +161,28 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-      [HttpPost("admin/approve-refund")]
+        [HttpPost("Request-product-refund")]
+        //[Authorize]
+        public async Task<IActionResult> RequestProductRefund([FromBody] ProductRefundDto dto)
+        {
+            ServiceResult serviceResult = await _paymentService.HandleProductRequestRefundAsync(dto);
+
+            if (serviceResult.Success)
+            {
+                return Ok(serviceResult.SuccessMessage);
+            }
+            else
+            {
+                return BadRequest(serviceResult.ErrorMessage);
+            }
+        }
+
+        [HttpPost("admin/approve-Order-refund")]
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ApproveRefund(ApproveRefundDto dto)
+        public async Task<IActionResult> ApproveOrderRefund(ApproveOrderRefundDto dto)
         {
 
-            ServiceResult serviceResult = await _paymentService.HandleApproveRefund(dto);
+            ServiceResult serviceResult = await _paymentService.HandleApproveOrderRefund(dto);
             if (serviceResult.Success)
             {
                 return Ok(serviceResult.SuccessMessage);
@@ -177,22 +193,36 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+        //[HttpPost("admin/approve-Product-refund")]
+        ////[Authorize(Roles = "Admin")]
+        //public async Task<IActionResult> ApproveProductRefund(ApproveProductRefundDto dto)
+        //{
 
-            //public async Task<IActionResult> AdminOrderRefund(int transactionId, decimal ammount)
-            //{
-            //    amount_cent = ammount * 100 ,
-            //    var client = new HttpClient();
-            //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
-            //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
-            //    var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
-            //    request.Content = content;
-            //    var response = await client.SendAsync(request);
-            //    response.EnsureSuccessStatusCode();
-            //    Console.WriteLine(await response.Content.ReadAsStringAsync());
+        //    ServiceResult serviceResult = await _paymentService.HandleApproveProductRefund(dto);
+        //    if (serviceResult.Success)
+        //    {
+        //        return Ok(serviceResult.SuccessMessage);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(serviceResult.ErrorMessage);
+        //    }
+        //}
+        //public async Task<IActionResult> AdminOrderRefund(int transactionId, decimal ammount)
+        //{
+        //    amount_cent = ammount * 100 ,
+        //    var client = new HttpClient();
+        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
+        //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
+        //    var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
+        //    request.Content = content;
+        //    var response = await client.SendAsync(request);
+        //    response.EnsureSuccessStatusCode();
+        //    Console.WriteLine(await response.Content.ReadAsStringAsync());
 
-            //}
+        //}
 
 
-        }
+    }
 }
 

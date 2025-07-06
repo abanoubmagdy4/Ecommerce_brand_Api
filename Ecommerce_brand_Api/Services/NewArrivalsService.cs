@@ -15,7 +15,7 @@ namespace Ecommerce_brand_Api.Services
             this._mapper = mapper;
         }
 
-        public async Task<ProductDtoRequest> AddNewArrivalAsync(int productId)
+        public async Task<ProductDtoResponse> AddNewArrivalAsync(int productId)
         {
             var product = await _unitofwork.Products.GetByIdAsync(productId);
             if (product == null)
@@ -33,7 +33,7 @@ namespace Ecommerce_brand_Api.Services
                 ProductId = productId,
             };
             // Map the product to ProductDto
-            var productDto = _mapper.Map<ProductDtoRequest>(product);
+            var productDto = _mapper.Map<ProductDtoResponse>(product);
             await _unitofwork.NewArrivals.AddAsync(newArrival);
             await _unitofwork.SaveChangesAsync();
             return productDto;
@@ -53,7 +53,7 @@ namespace Ecommerce_brand_Api.Services
             return true;
         }
 
-        public async Task<PaginatedResult<ProductDtoRequest>> GetNewArrivalsAsync(PaginationParams pagination)
+        public async Task<PaginatedResult<ProductDtoResponse>> GetNewArrivalsAsync(PaginationParams pagination)
         {
             var newArrivalsRepo = _unitofwork.GetBaseRepository<NewArrivals>();
 
@@ -63,7 +63,7 @@ namespace Ecommerce_brand_Api.Services
                 .OrderBy(p => p.Id);
 
             var pagedResult = await query
-                .ProjectTo<ProductDtoRequest>(_mapper.ConfigurationProvider)
+                .ProjectTo<ProductDtoResponse>(_mapper.ConfigurationProvider)
                 .ToPaginatedResultAsync(pagination.PageIndex, pagination.PageSize);
 
             return pagedResult;

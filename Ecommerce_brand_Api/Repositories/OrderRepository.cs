@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Models.Dtos.Payment.PaymentResponse;
 using Ecommerce_brand_Api.Models.Entities;
 
 namespace Ecommerce_brand_Api.Repositories
@@ -30,6 +31,23 @@ namespace Ecommerce_brand_Api.Repositories
                 .ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
+        public async Task<OrderItemWithStatusAndAmountAndQuantityDto?> GetOrderItemWithOrderStatusWithPaymentStatuAndAmmountAsync(int orderItemId)
+        {
+            return await _context.OrderItems
+                .Where(o => o.OrderItemId == orderItemId)
+                .Select(o => new OrderItemWithStatusAndAmountAndQuantityDto
+                {
+                    OrderItemId = o.OrderItemId,
+                    OrderStatus = o.Order.OrderStatus,
+                    PaymentStatus = o.Order.Payment.Status,
+                    ShippingStatus = o.Order.ShippingStatus,
+                    TotalPrice = o.TotalPrice,
+                    Quantity = o.Quantity
+                    
+                })
+                .FirstOrDefaultAsync();
+        }
+
 
         public async Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId)
         {

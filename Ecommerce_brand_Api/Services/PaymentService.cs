@@ -1,6 +1,7 @@
 ﻿using Ecommerce_brand_Api.Helpers;
 using Ecommerce_brand_Api.Helpers.Enums;
 using Ecommerce_brand_Api.Models.Dtos;
+using Ecommerce_brand_Api.Models.Dtos.Payment.PaymentResponse;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
 using System.Net.Http;
@@ -21,10 +22,11 @@ namespace Ecommerce_brand_Api.Services
         private readonly IOrderRepository _orderRepository;
         private readonly ICartService _cartService;
         private readonly IOrderRefundRepository _OrderRefundRepository;
+        private readonly IBaseRepository<ProductRefund> _ProductRefundRepository;
         private readonly HttpClient _httpClient;
 
-        public PaymentService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env, 
-            IServiceUnitOfWork serviceUnitOfWork , IHttpClientFactory httpClientFactory) : base(unitOfWork.GetBaseRepository<Payment>())
+        public PaymentService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env,
+            IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory, IBaseRepository<ProductRefund> productRefundRepository) : base(unitOfWork.GetBaseRepository<Payment>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -35,10 +37,10 @@ namespace Ecommerce_brand_Api.Services
             _IUserService = _serviceUnitOfWork.Users;
             _IOrderService = _serviceUnitOfWork.Orders;
             _httpClient = httpClientFactory.CreateClient();
-            _orderRepository=unitOfWork.GetOrderRepository();
-            _cartService= _serviceUnitOfWork.Carts;
+            _orderRepository = unitOfWork.GetOrderRepository();
+            _cartService = _serviceUnitOfWork.Carts;
             _OrderRefundRepository = _unitOfWork.OrderRefund;
-
+            _ProductRefundRepository = productRefundRepository;
         }
 
         public async Task<Payment?> GetPaymentByTransactionIdAsync(long transactionId)
@@ -426,8 +428,7 @@ namespace Ecommerce_brand_Api.Services
 
         ///Refund Handling  <summary>
         /// Refund Handling 
-
-        public async Task<ServiceResult> HandleRequestRefundAsync(OrderRefundDto dto)
+        public async Task<ServiceResult> HandleOrderRequestRefundAsync(OrderRefundDto dto)
         {
 
             // Get the current user's ID from the token
@@ -470,9 +471,59 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail("Failed to submit refund request. Please try again.");
             }
         }
+        public async Task<ServiceResult> HandleProductRequestRefundAsync(ProductRefundDto dto)
+        {
+
+            // Get the current user's ID from the token
+            var userIdResult = _IUserService.GetCurrentUserId();
+            if (userIdResult == null)
+            {
+
+                return ServiceResult.Fail("Failed to retrieve user ID from the current context.");
+            }
+            // Load the order with the associated payment data
+            var orderItemWithStatus = await _orderRepository.GetOrderItemWithOrderStatusWithPaymentStatuAndAmmountAsync(dto.OrderItemId);
+            if (orderItemWithStatus == null)
+                return ServiceResult.Fail("order Item With Status not found or access denied.");
+            // Check if refund or cancel is allo wed based on current order, payment, and shipping statuses
+
+            bool canCancel = OrderActionsValidator.CanCancel(orderItemWithStatus.OrderStatus, orderItemWithStatus.PaymentStatus, orderItemWithStatus.ShippingStatus);
+            bool canRefund = OrderActionsValidator.CanRefund(orderItemWithStatus.OrderStatus, orderItemWithStatus.PaymentStatus, orderItemWithStatus.ShippingStatus);
+
+            if (!canCancel && !canRefund)
+            {
+                return ServiceResult.Fail("Refund or cancellation is not allowed for this order status.");
+            }
+
+            var productRefund = new ProductRefund
+            {
+                OrderItemId = dto.OrderItemId,
+                RefundedAmount = orderItemWithStatus.TotalPrice * orderItemWithStatus.Quantity,
+                Reason = dto.Reason,
+                RequestedByUserId = userIdResult,
+
+                RequestedAt = DateTime.UtcNow,
+                Status = RefundStatus.Pending,
+                ApprovedAt = null,
+                ApprovedByAdminId = null
+            };
+
+            await _ProductRefundRepository.AddAsync(productRefund);
+            var result = await _unitOfWork.SaveChangesAsync();
+
+            if (result > 0)
+            {
+                return ServiceResult.Ok("Refund request submitted successfully and is awaiting review.");
+            }
+            else
+            {
+                return ServiceResult.Fail("Failed to submit refund request. Please try again.");
+            }
+        }
 
 
-        public async Task<ServiceResult> HandleApproveRefund(ApproveRefundDto dto) {
+
+        public async Task<ServiceResult> HandleApproveOrderRefund(ApproveOrderRefundDto dto) {
 
             
             var OrderRefund = await _OrderRefundRepository.GetByIdWithOrderAndPaymentAsync(dto.OrderRefundId);
@@ -562,6 +613,8 @@ namespace Ecommerce_brand_Api.Services
 
 
 
+
+
         public async Task<string> ProcessTransactionCancellationOrRefund(long transactionId, int amountCents, bool canVoid, string secretKey)
         {
             using var client = new HttpClient();
@@ -608,9 +661,10 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-
-
-
+        public Task<ServiceResult> HandleApproveProductRefund(ApproveProductRefundDto dto)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

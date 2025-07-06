@@ -168,27 +168,60 @@ namespace Ecommerce_brand_Api.Controllers
 
             return Ok("Stock increased successfully.");
         }
-
         [HttpGet("paginated")]
         public async Task<IActionResult> GetPaginatedProducts([FromQuery] ProductFilterParams filter)
         {
-            var result = await _productService.GetPaginatedProductsAsync(filter);
-            return Ok(result);
+            try
+            {
+                var result = await _productService.GetPaginatedProductsAsync(filter);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while fetching paginated products.",
+                    error = ex.Message
+                });
+            }
         }
 
         [HttpPost("add-to-new-arrivals/{productId}")]
         public async Task<IActionResult> AddToNewArrivalsAsync(int productId)
         {
-            var result = await _newArrivalsService.AddNewArrivalAsync(productId);
-            return Ok();
+            try
+            {
+                await _newArrivalsService.AddNewArrivalAsync(productId);
+                return Ok(new { message = "Product added to new arrivals successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while adding the product to new arrivals.",
+                    error = ex.Message
+                });
+            }
         }
 
         [HttpGet("new-arrivals")]
         public async Task<IActionResult> GetNewArrivals([FromQuery] PaginationParams pagination)
         {
-            var newArrivals = await _newArrivalsService.GetNewArrivalsAsync(pagination);
-            return Ok(newArrivals);
+            try
+            {
+                var newArrivals = await _newArrivalsService.GetNewArrivalsAsync(pagination);
+                return Ok(newArrivals);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while fetching new arrivals.",
+                    error = ex.Message
+                });
+            }
         }
+
 
         [HttpDelete("delete-new-arrival/{productId}")]
         public async Task<IActionResult> DeleteNewArrival(int productId)

@@ -6,8 +6,12 @@ namespace Ecommerce_brand_Api.Services.Interfaces
     {
         Task<Payment?> GetPaymentByTransactionIdAsync(long transactionId);
         Task HandleIncomingTransactionAsync(Transaction transaction);
-        Task<ServiceResult> HandleRequestRefundAsync(OrderRefundDto dto);
+        Task<ServiceResult> HandleOrderRequestRefundAsync(OrderRefundDto dto);
+        Task<ServiceResult> HandleProductRequestRefundAsync(ProductRefundDto dto);
         Task<ServiceResult> HandleCheckoutAsync(OrderDTO orderDto);
-        Task<ServiceResult> HandleApproveRefund(ApproveRefundDto dto);
-    }
+        Task<ServiceResult> HandleApproveOrderRefund(ApproveOrderRefundDto dto);
+        Task<ServiceResult> HandleApproveProductRefund(ApproveProductRefundDto dto);
+
+
+            }
 }
