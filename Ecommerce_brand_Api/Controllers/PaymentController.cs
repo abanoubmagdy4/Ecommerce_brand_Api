@@ -35,7 +35,7 @@ namespace Ecommerce_brand_Api.Controllers
             _env = env;
         }
         [HttpPost("checkout")]
-        public async Task<IActionResult> Checkout([FromBody] OrderDTO orderDto)
+        public async Task<IActionResult> Checkout(OrderDTO orderDto)
         {
             if (!ModelState.IsValid)
             {
@@ -147,7 +147,7 @@ namespace Ecommerce_brand_Api.Controllers
 
         [HttpPost("request-refund")]
         //[Authorize]
-        public async Task<IActionResult> RequestRefund([FromBody] RefundRequestDto dto)
+        public async Task<IActionResult> RequestRefund([FromBody] OrderRefundDto dto)
         {
             ServiceResult serviceResult = await _paymentService.HandleRequestRefundAsync(dto);
 
@@ -161,10 +161,7 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-
-
-
-        [HttpPost("admin/approve-refund")]
+      [HttpPost("admin/approve-refund")]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveRefund(ApproveRefundDto dto)
         {
@@ -180,7 +177,8 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-            //public async Task<IActionResult> AdminRefundRequest(int transactionId, decimal ammount)
+
+            //public async Task<IActionResult> AdminOrderRefund(int transactionId, decimal ammount)
             //{
             //    amount_cent = ammount * 100 ,
             //    var client = new HttpClient();

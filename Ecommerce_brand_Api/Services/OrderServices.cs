@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Ecommerce_brand_Api.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -300,6 +301,24 @@ namespace Ecommerce_brand_Api.Services
                 var discount = await _discountRepository.GetActiveDiscountAsync();
 
                 // Calculate total
+                foreach (var order in orderDto.OrderItems)
+                {
+                    if (order.ProductId <= 0)
+                        throw new ArgumentException("Invalid Product ID");
+
+                    Product productDb = await _unitofwork.Products.GetByIdAsync(order.ProductId);
+                    if (productDb == null)
+                        throw new KeyNotFoundException($"Product with ID  not found");
+
+                    if (productDb.PriceAfterDiscount <= 0)
+                        throw new InvalidOperationException($"Product has invalid price after discount");
+
+                    if (order.Quantity <= 0)
+                        throw new ArgumentException($"Quantity must be greater than 0 for product");
+
+                    order.TotalPrice = productDb.PriceAfterDiscount;
+                }
+
                 decimal totalOrderItemsPrice = orderDto.OrderItems.Sum(i => i.TotalPrice * i.Quantity);
                 decimal appliedDiscount = 0;
 

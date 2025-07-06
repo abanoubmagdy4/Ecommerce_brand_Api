@@ -7,23 +7,19 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 {
     public interface IProductService : IBaseService<Product>
     {
-        Task<PaginatedResult<ProductDto>> GetPaginatedProductsAsync(ProductFilterParams pagination);
-        Task<IEnumerable<ProductDto>> GetAllAsync();
-        Task<ProductDto?> GetByIdAsync(int id);
-        Task AddAsync(ProductDto dto);
+        Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsAsync(ProductFilterParams pagination);
+        Task<IEnumerable<ProductDtoResponse>> GetAllAsync();
+        Task<ProductDtoResponse?> GetByIdAsync(int id);
+        Task<ServiceResult> AddProductAsync(ProductDtoRequest dto);
         Task<ServiceResult> AddProductSizeToProductAsync(List<ProductSizesDto> dtoList);
         Task<bool> UpdateBasicInfoAsync(ProductBaseUpdateDto dto);
-        Task<bool> UpdateProductImagesAsync(ProductImagesUpdateDto dto);
+        Task<bool> ReplaceImageByIdAsync(int imageId, IFormFile newImageFile);
         Task<bool> UpdateProductSizesAsync(ProductSizesUpdateDto dto);
-
-
-        Task<bool> UpdateAsync(ProductDto dto);
         Task<bool> UpdateProductSizes(List<ProductSizesDto> productsSizesDto);
         Task<bool> DeleteAsync(int id);
         Task<bool> DecreaseStockAsync(int productId, int quantity);
         Task<bool> IncreaseStockAsync(int productId, int quantity);
-        Task<IEnumerable<ProductDto>> GetByCategoryAsync(int categoryId);
-
-        Task<ProductDto> AddToNewArrivals(int Id);
+        Task<IEnumerable<ProductDtoResponse>> GetByCategoryAsync(int categoryId);
+        Task<ProductDtoResponse> AddToNewArrivals(int Id);
     }
 }

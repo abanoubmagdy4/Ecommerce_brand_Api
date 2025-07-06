@@ -20,7 +20,7 @@ namespace Ecommerce_brand_Api.Services
         private readonly IServiceUnitOfWork _serviceUnitOfWork;
         private readonly IOrderRepository _orderRepository;
         private readonly ICartService _cartService;
-        private readonly IRefundRequestRepository _refundRequestRepository;
+        private readonly IOrderRefundRepository _OrderRefundRepository;
         private readonly HttpClient _httpClient;
 
         public PaymentService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env, 
@@ -37,7 +37,7 @@ namespace Ecommerce_brand_Api.Services
             _httpClient = httpClientFactory.CreateClient();
             _orderRepository=unitOfWork.GetOrderRepository();
             _cartService= _serviceUnitOfWork.Carts;
-            _refundRequestRepository = _unitOfWork.RefundRequest;
+            _OrderRefundRepository = _unitOfWork.OrderRefund;
 
         }
 
@@ -427,7 +427,7 @@ namespace Ecommerce_brand_Api.Services
         ///Refund Handling  <summary>
         /// Refund Handling 
 
-        public async Task<ServiceResult> HandleRequestRefundAsync(RefundRequestDto dto)
+        public async Task<ServiceResult> HandleRequestRefundAsync(OrderRefundDto dto)
         {
 
             // Get the current user's ID from the token
@@ -450,7 +450,7 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail("Refund or cancellation is not allowed for this order status.");
             }
 
-            var refundRequest = new RefundRequest
+            var OrderRefund = new OrderRefund
             {
                 PaymentId = order.Payment.Id,
                 AmountCents = order.Payment.PaidAmountCents,
@@ -458,7 +458,7 @@ namespace Ecommerce_brand_Api.Services
                 RequestedByUserId = userIdResult,
             };
 
-            await _refundRequestRepository.AddAsync(refundRequest);
+            await _OrderRefundRepository.AddAsync(OrderRefund);
             var result = await _unitOfWork.SaveChangesAsync();
 
             if (result > 0)
@@ -475,44 +475,44 @@ namespace Ecommerce_brand_Api.Services
         public async Task<ServiceResult> HandleApproveRefund(ApproveRefundDto dto) {
 
             
-            var refundRequest = await _refundRequestRepository.GetByIdWithOrderAndPaymentAsync(dto.RefundRequestId);
-            if (refundRequest == null)
+            var OrderRefund = await _OrderRefundRepository.GetByIdWithOrderAndPaymentAsync(dto.OrderRefundId);
+            if (OrderRefund == null)
                 return ServiceResult.Fail("Refund request not found.");
 
-            if (refundRequest.Status != RefundStatus.Pending)
+            if (OrderRefund.Status != RefundStatus.Pending)
                 return ServiceResult.Fail("Refund request has already been processed.");
 
             if (dto.Approve)
             {
-                refundRequest.Status = RefundStatus.Approved;
-                refundRequest.ApprovedAt = DateTime.UtcNow;
-                refundRequest.ApprovedByAdminId = _IUserService.GetCurrentUserId();
-                await _refundRequestRepository.UpdateAsync(refundRequest);
+                OrderRefund.Status = RefundStatus.Approved;
+                OrderRefund.ApprovedAt = DateTime.UtcNow;
+                OrderRefund.ApprovedByAdminId = _IUserService.GetCurrentUserId();
+                await _OrderRefundRepository.UpdateAsync(OrderRefund);
                 await _unitOfWork.SaveChangesAsync();
 
             }
             else
             {
-                refundRequest.Status = RefundStatus.Rejected;
-                await _refundRequestRepository.UpdateAsync(refundRequest);
+                OrderRefund.Status = RefundStatus.Rejected;
+                await _OrderRefundRepository.UpdateAsync(OrderRefund);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ServiceResult
                 {
                     Success = true,
                     SuccessMessage = "Refund request Rejected.",
-                    Data = refundRequest
+                    Data = OrderRefund
                 };
             }
 
 
-            var payment = refundRequest.Payment;
+            var payment = OrderRefund.Payment;
             if (payment == null)
                 return ServiceResult.Fail("Associated payment not found.");
 
-            var orderStatus = refundRequest.Payment.Order.OrderStatus;
+            var orderStatus = OrderRefund.Payment.Order.OrderStatus;
             var paymentStatus = payment.Status;
-            var shippingStatus = refundRequest.Payment.Order.ShippingStatus;
+            var shippingStatus = OrderRefund.Payment.Order.ShippingStatus;
 
             bool canCancel = OrderActionsValidator.CanCancel(orderStatus, paymentStatus, shippingStatus);
             bool canRefund = OrderActionsValidator.CanRefund(orderStatus, paymentStatus, shippingStatus);
@@ -526,7 +526,7 @@ namespace Ecommerce_brand_Api.Services
 
             bool doCancel = canCancel; 
 
-            var resultMessage = await ProcessTransactionCancellationOrRefund(payment.TransactionId, refundRequest.AmountCents, doCancel, secretKey);
+            var resultMessage = await ProcessTransactionCancellationOrRefund(payment.TransactionId, OrderRefund.AmountCents, doCancel, secretKey);
 
             if (resultMessage.StartsWith("Void failed") || resultMessage.StartsWith("Refund failed"))
             {
@@ -536,19 +536,19 @@ namespace Ecommerce_brand_Api.Services
             if (doCancel)
             {
                 payment.Status = PaymentStatus.Canceled;  
-                refundRequest.Status = RefundStatus.Completed;
-                refundRequest.Payment.Order.OrderStatus = OrderStatus.Cancelled;
+                OrderRefund.Status = RefundStatus.Completed;
+                OrderRefund.Payment.Order.OrderStatus = OrderStatus.Cancelled;
             }
             else
             {
                 payment.Status = PaymentStatus.Refunded;
-                refundRequest.Status = RefundStatus.Completed;
-                refundRequest.Payment.Order.OrderStatus = OrderStatus.Returned;
+                OrderRefund.Status = RefundStatus.Completed;
+                OrderRefund.Payment.Order.OrderStatus = OrderStatus.Returned;
             }
 
             await _paymentRepository.UpdateAsync(payment);
-            await _orderRepository.UpdateAsync(refundRequest.Payment.Order);
-            await _refundRequestRepository.UpdateAsync(refundRequest);
+            await _orderRepository.UpdateAsync(OrderRefund.Payment.Order);
+            await _OrderRefundRepository.UpdateAsync(OrderRefund);
             await _unitOfWork.SaveChangesAsync();
 
 
@@ -556,7 +556,7 @@ namespace Ecommerce_brand_Api.Services
             {
                 Success = true,
                 SuccessMessage = "Refund request Compelete.",
-                Data = refundRequest
+                Data = OrderRefund
             };
         }
 
@@ -587,17 +587,17 @@ namespace Ecommerce_brand_Api.Services
             else
             {
                 // عملية الاسترجاع (Refund)
-                var refundRequest = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
-                refundRequest.Headers.Add("Authorization", $"Token {secretKey}");
+                var OrderRefund = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
+                OrderRefund.Headers.Add("Authorization", $"Token {secretKey}");
 
                 var refundPayload = JsonSerializer.Serialize(new
                 {
                     transaction_id = transactionId,
                     amount_cents = amountCents.ToString()
                 });
-                refundRequest.Content = new StringContent(refundPayload, Encoding.UTF8, "application/json");
+                OrderRefund.Content = new StringContent(refundPayload, Encoding.UTF8, "application/json");
 
-                var refundResponse = await client.SendAsync(refundRequest);
+                var refundResponse = await client.SendAsync(OrderRefund);
                 if (!refundResponse.IsSuccessStatusCode)
                 {
                     var error = await refundResponse.Content.ReadAsStringAsync();

@@ -2,7 +2,7 @@
 {
     public class ApproveRefundDto
     {
-        public int RefundRequestId { get; set; }
+        public int OrderRefundId { get; set; }
         public bool Approve { get; set; }
     }
 }

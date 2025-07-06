@@ -1,7 +1,7 @@
 ﻿namespace Ecommerce_brand_Api.Models.Dtos
 {
 
-    public class ProductDto
+    public class ProductDtoResponse
     {
         public int Id { get; set; }
 
@@ -28,7 +28,6 @@
         public double AverageRating { get; set; }
 
 
-        [Required]
         public decimal PriceAfterDiscount
         {
             get

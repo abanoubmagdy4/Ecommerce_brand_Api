@@ -3,31 +3,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Services
 {
-    public class RefundRequestService : BaseService<RefundRequest>,IRefundRequestService   
+    public class OrderRefundService : BaseService<OrderRefund>, IOrderRefundService
     {
         private readonly IUnitofwork _unitOfWork;
-        private readonly IRefundRequestRepository _refundRequestRepository;
+        private readonly IOrderRefundRepository _OrderRefundRepository;
         private readonly IMapper _mapper;
 
-        public RefundRequestService(IUnitofwork unitOfWork, IMapper mapper) : base(unitOfWork.GetBaseRepository<RefundRequest>())
+        public OrderRefundService(IUnitofwork unitOfWork, IMapper mapper) : base(unitOfWork.GetBaseRepository<OrderRefund>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _refundRequestRepository = _unitOfWork.RefundRequest;
+            _OrderRefundRepository = _unitOfWork.OrderRefund;
         }
 
-        public async Task<ServiceResult> GetRefundRequestWithOrderAndPaymentAsync(int refundRequestId)
+        public async Task<ServiceResult> GetOrderRefundWithOrderAndPaymentAsync(int OrderRefundId)
         {
-            var refundRequest = await _refundRequestRepository.GetByIdWithOrderAndPaymentAsync(refundRequestId);
+            var OrderRefund = await _OrderRefundRepository.GetByIdWithOrderAndPaymentAsync(OrderRefundId);
 
-            if (refundRequest == null)
+            if (OrderRefund == null)
                 return ServiceResult.Fail("Refund request not found.");
 
             return new ServiceResult
             {
                 Success = true,
                 SuccessMessage = "Refund request found.",
-                Data = refundRequest
+                Data = OrderRefund
             };
         }
 

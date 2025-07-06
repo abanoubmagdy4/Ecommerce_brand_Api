@@ -61,16 +61,20 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            builder.Services.AddScoped(typeof(BaseRepository<>)); 
+            builder.Services.AddScoped<IBaseRepository<ProductImagesPaths>, BaseRepository<ProductImagesPaths>>(); 
+
             builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+
             builder.Services.AddScoped<IUnitofwork, Unitofwork>();
             builder.Services.AddScoped<IServiceUnitOfWork, ServiceUnitOfWork>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartServices>();
-            builder.Services.AddScoped<IRefundRequestRepository, RefundRequestRepository>();
-            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();
-            builder.Services.AddScoped<IRefundRequestService, RefundRequestService>();
+            builder.Services.AddScoped<IOrderRefundRepository, OrderRefundRepository>();
+            builder.Services.AddScoped<IOrderRefundService, OrderRefundService>();
+            builder.Services.AddScoped<IOrderRefundService, OrderRefundService>();
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();

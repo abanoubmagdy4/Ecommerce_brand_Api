@@ -47,8 +47,8 @@ namespace Ecommerce_brand_Api.Services
         public IUserService Users => _users ??= _serviceProvider.GetRequiredService<IUserService>();
 
 
-        private IRefundRequestService _refundRequest;
-        public IRefundRequestService refundRequest => _refundRequest ??= _serviceProvider.GetRequiredService<IRefundRequestService>();
+        private IOrderRefundService _OrderRefund;
+        public IOrderRefundService OrderRefund => _OrderRefund ??= _serviceProvider.GetRequiredService<IOrderRefundService>();
 
         public Task<int> SaveChangesAsync()
         {

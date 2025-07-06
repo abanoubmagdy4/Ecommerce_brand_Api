@@ -37,7 +37,11 @@ namespace Ecommerce_brand_Api.Repositories
         {
             await _dbSet.AddAsync(entity);
         }
-
+        public async Task<T> AddAsyncWithReturnObject(T entity)
+        {
+            var entry = await _dbSet.AddAsync(entity);
+            return entry.Entity;
+        }
         public async Task DeleteAsync(int id)
         {
             var entity = await _dbSet.FindAsync(id);

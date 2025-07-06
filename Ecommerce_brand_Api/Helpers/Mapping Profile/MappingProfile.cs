@@ -13,21 +13,26 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<GovernrateShippingCostDto, GovernorateShippingCost>();
             CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>();
 
-
-            CreateMap<Product, ProductDto>();
-            CreateMap<ProductDto, Product>();
-
             // Sizes
-            CreateMap<ProductSizes, ProductSizesDto>().ReverseMap();
+            CreateMap<ProductSizes, ProductSizesDto>(); // من الكيان للـ DTO (عرض البيانات)
 
+            CreateMap<ProductSizesDto, ProductSizes>()  // من DTO للكيان (إضافة أو تعديل)
+                .ForMember(dest => dest.Id, opt => opt.Ignore()); // تجاهل الـ Id
             // Images
-            CreateMap<ProductImagesPaths, ProductImagesPathsDto>()
-                .ForMember(dest => dest.File, opt => opt.Ignore());
+            // From Entity to DTO (Response)
+            CreateMap<ProductImagesPaths, ProductImagesPathsDto>();
 
+            // From DTO (Request) to Entity
             CreateMap<ProductImagesPathsDto, ProductImagesPaths>()
                 .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath ?? ""));
 
+            CreateMap<ProductDtoRequest, Product>()
+             .ForMember(dest => dest.ProductImagesPaths, opt => opt.Ignore()) // هندخل الصور يدويًا
+             .ForMember(dest => dest.PriceAfterDiscount, opt => opt.MapFrom(src =>
+                 src.Price - (src.Price * src.DiscountPercentage / 100)))
+                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now));
 
+            CreateMap<Product, ProductDtoResponse>();
 
             CreateMap<Cart, CartDto>()
                 .ForMember(dest => dest.Threshold, opt => opt.Ignore())
