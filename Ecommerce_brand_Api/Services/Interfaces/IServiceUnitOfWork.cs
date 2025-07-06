@@ -13,7 +13,7 @@
         ITokenService Tokens { get; }
         IUserService Users { get; }
         IPaymentService Payment { get; }
-        IRefundRequestService refundRequest { get; }
+        IOrderRefundService OrderRefund { get; }
 
 
         Task<int> SaveChangesAsync();

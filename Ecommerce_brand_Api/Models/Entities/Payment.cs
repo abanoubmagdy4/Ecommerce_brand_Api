@@ -56,7 +56,7 @@ namespace Ecommerce_brand_Api.Models.Entities
             public DateTime UpdatedAt { get; set; }
 
 
-        public List<RefundRequest> RefundRequests { get; set; } = new();
+        public List<OrderRefund> OrderRefunds { get; set; } = new();
         public List<PaymentItem> Items { get; set; } = new();
              public Order Order { get; set; }
 

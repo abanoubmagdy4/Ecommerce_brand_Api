@@ -35,27 +35,30 @@ namespace Ecommerce_brand_Api.Controllers
             return product is null ? NotFound() : Ok(product);
         }
 
-
         [HttpPost]
         [DisableRequestSizeLimit]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AddProduct([FromForm] string productJson, [FromForm] List<IFormFile> files)
+        public async Task<IActionResult> AddProduct([FromForm] ProductDtoRequest productDtoRequest)
         {
-            var dto = JsonConvert.DeserializeObject<ProductDto>(productJson);
-            if (dto == null) return BadRequest("Invalid product data.");
+            var result = await _productService.AddProductAsync(productDtoRequest);
 
-            if (files.Count != dto.ProductImagesPaths.Count)
-                return BadRequest("Files count mismatch");
-
-            // اربط الصور بالـ DTO
-            for (int i = 0; i < dto.ProductImagesPaths.Count; i++)
-            {
-                dto.ProductImagesPaths[i].File = files[i];
+            if (result.Success)
+            { 
+                return Ok(new
+                {
+                    success = true,
+                    message = result.SuccessMessage
+                });
             }
-
-            await _productService.AddAsync(dto);
-            return Ok(new { message = "Product created successfully." });
+            else { 
+            return BadRequest(new
+            {
+                success = false,
+                error = result.ErrorMessage
+            });
+            }
         }
+
 
         [HttpPost]
         [Route("AddProductSizeToProduct")]
@@ -73,7 +76,6 @@ namespace Ecommerce_brand_Api.Controllers
 
 
 
-
         [HttpPut("basic-update")]
         public async Task<IActionResult> UpdateProductBasicData([FromBody] ProductBaseUpdateDto dto)
         {
@@ -87,25 +89,20 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(new { message = "Product updated successfully." });
         }
 
-        [HttpPut("update-images")]
+        [HttpPut("update-image")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateProductImages([FromForm] string imagesDtoJson, [FromForm] List<IFormFile> files)
+        public async Task<IActionResult> UpdateSingleImage(UpdateProductImageDto updateProductImageDto)
         {
-            var dto = JsonConvert.DeserializeObject<ProductImagesUpdateDto>(imagesDtoJson);
-            if (dto == null)
-                return BadRequest("Invalid data");
+            if (updateProductImageDto.ImageFile == null || updateProductImageDto.ImageFile.Length == 0)
+                return BadRequest(new { message = "No file uploaded." });
 
-            if (files.Count != dto.ProductImagesPaths.Count)
-                return BadRequest("Mismatch between images and files");
+            var updated = await _productService.ReplaceImageByIdAsync(updateProductImageDto.ImageId, updateProductImageDto.ImageFile);
 
-            for (int i = 0; i < dto.ProductImagesPaths.Count; i++)
-                dto.ProductImagesPaths[i].File = files[i];
-
-            var updated = await _productService.UpdateProductImagesAsync(dto);
             return updated
-                ? Ok(new { message = "Product images updated successfully." })
-                : NotFound(new { message = "Product not found." });
+                ? Ok(new { message = "Image updated successfully." })
+                : NotFound(new { message = "Image not found." });
         }
+
 
 
         [HttpPut]

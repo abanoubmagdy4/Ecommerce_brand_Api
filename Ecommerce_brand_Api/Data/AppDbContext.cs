@@ -18,8 +18,9 @@ namespace Ecommerce_brand_Api.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PaymentItem> PaymentItems { get; set; }
         public DbSet<Cancelation> Cancellations { get; set; }
-        public DbSet<RefundRequest> RefundRequest { get; set; }
-        public DbSet<Cart> Carts { get; set; }
+        public DbSet<OrderRefund> OrderRefund { get; set; }
+        public DbSet<ProductRefund> ProductRefund { get; set; }
+         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }

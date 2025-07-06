@@ -5,8 +5,8 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 {
     public interface INewArrivalsService
     {
-        public Task<ProductDto> AddNewArrivalAsync(int Id);
-        public Task<PaginatedResult<ProductDto>> GetNewArrivalsAsync(PaginationParams pagination);
+        public Task<ProductDtoRequest> AddNewArrivalAsync(int Id);
+        public Task<PaginatedResult<ProductDtoRequest>> GetNewArrivalsAsync(PaginationParams pagination);
         public Task<bool> DeleteNewArrival(int Id);
     }
 }

@@ -37,7 +37,7 @@ namespace Ecommerce_brand_Api.Data.configurations
             .OnDelete(DeleteBehavior.NoAction);
 
             builder
-                .HasMany(p => p.RefundRequests)
+                .HasMany(p => p.OrderRefunds)
                 .WithOne(r => r.Payment)
                 .HasForeignKey(r => r.PaymentId)
                 .OnDelete(DeleteBehavior.Cascade);

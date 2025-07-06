@@ -1,6 +1,6 @@
 ﻿namespace Ecommerce_brand_Api.Models.Entities
 {
-    public class RefundRequest
+    public class OrderRefund
     {
         public int Id { get; set; }
 

@@ -21,6 +21,6 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         );
         IQueryable<T?> GetQueryable();
         Task<T> GetByStringIdAsync(string id);
-
+        Task<T> AddAsyncWithReturnObject(T entity);
     }
 }
