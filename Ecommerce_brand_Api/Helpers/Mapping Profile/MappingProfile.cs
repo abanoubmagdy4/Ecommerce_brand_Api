@@ -32,6 +32,8 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                  src.Price - (src.Price * src.DiscountPercentage / 100)))
                  .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now));
 
+            //CreateMap<Product, ProductDtoRequest>();
+
             CreateMap<Product, ProductDtoResponse>();
 
             CreateMap<Cart, CartDto>()
@@ -48,7 +50,7 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
             CreateMap<Feedback, FavoriteDto>();
             CreateMap<FeedbackDto, Feedback>();
 
-
+            CreateMap<Product, ProductDtoRequest>();
 
 
             CreateMap<Feedback, FavoriteDto>();
