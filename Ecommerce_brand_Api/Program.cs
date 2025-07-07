@@ -19,7 +19,7 @@ namespace Ecommerce_brand_Api
             {
                 options.AddPolicy("AllowLocalhost4200", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200") // Angular port
+                    policy.WithOrigins("http://localhost:4200")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -61,8 +61,8 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddControllers();
             builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-            builder.Services.AddScoped(typeof(BaseRepository<>)); 
-            builder.Services.AddScoped<IBaseRepository<ProductImagesPaths>, BaseRepository<ProductImagesPaths>>(); 
+            builder.Services.AddScoped(typeof(BaseRepository<>));
+            builder.Services.AddScoped<IBaseRepository<ProductImagesPaths>, BaseRepository<ProductImagesPaths>>();
 
             builder.Services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
 
@@ -164,16 +164,19 @@ namespace Ecommerce_brand_Api
 
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
             var app = builder.Build();
-            app.UseStaticFiles();
 
+            // 🟢 أول حاجة نخليها: static files
+            app.UseStaticFiles(); // serve wwwroot
+
+            // 🟡 بعد كده SWAGGER
             app.UseSwagger(options => options.OpenApiVersion =
-            Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
+                Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
             app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
+            });
 
-                });
-
+            // 🔵 باقي الحاجات عادي
             app.UseHttpsRedirection();
             app.UseCors("AllowLocalhost4200");
             app.UseAuthentication();

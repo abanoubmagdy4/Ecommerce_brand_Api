@@ -1,6 +1,4 @@
-﻿using Ecommerce_brand_Api.Models.Dtos;
-
-namespace Ecommerce_brand_Api.Models
+﻿namespace Ecommerce_brand_Api.Models.Dtos
 {
     public class ProductSizesUpdateDto
     {
