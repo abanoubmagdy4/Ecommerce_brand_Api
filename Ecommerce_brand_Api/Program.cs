@@ -72,9 +72,8 @@ namespace Ecommerce_brand_Api
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
             builder.Services.AddScoped<ICartService, CartServices>();
-            builder.Services.AddScoped<IOrderRefundRepository, OrderRefundRepository>();
-            builder.Services.AddScoped<IOrderRefundService, OrderRefundService>();
-            builder.Services.AddScoped<IOrderRefundService, OrderRefundService>();
+            builder.Services.AddScoped<IRefundRepository, RefundRepository>();
+            builder.Services.AddScoped<IRefundService, RefundService>();
             builder.Services.AddScoped<IGovernrateShippingCostRepository, GovernrateShippingCostRepository>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();

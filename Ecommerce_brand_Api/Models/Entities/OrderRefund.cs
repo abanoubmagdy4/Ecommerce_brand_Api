@@ -7,7 +7,7 @@
         public int PaymentId { get; set; }
         public Payment Payment { get; set; }
 
-        public int AmountCents { get; set; }
+        public decimal AmountCents { get; set; }
         public string Reason { get; set; } = string.Empty;
         public RefundStatus Status { get; set; } = RefundStatus.Pending;
 
