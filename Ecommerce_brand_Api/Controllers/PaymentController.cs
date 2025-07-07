@@ -193,34 +193,24 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-        //[HttpPost("admin/approve-Product-refund")]
-        ////[Authorize(Roles = "Admin")]
-        //public async Task<IActionResult> ApproveProductRefund(ApproveProductRefundDto dto)
-        //{
+        [HttpPost("admin/approve-Product-refund")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApproveProductRefund(ApproveProductRefundDto dto)
+        {
 
-        //    ServiceResult serviceResult = await _paymentService.HandleApproveProductRefund(dto);
-        //    if (serviceResult.Success)
-        //    {
-        //        return Ok(serviceResult.SuccessMessage);
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(serviceResult.ErrorMessage);
-        //    }
-        //}
-        //public async Task<IActionResult> AdminOrderRefund(int transactionId, decimal ammount)
-        //{
-        //    amount_cent = ammount * 100 ,
-        //    var client = new HttpClient();
-        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
-        //    request.Headers.Add("Authorization", "Token egy_sk_test_1ab1bc5322ab7aacbd7f24d4656158090110eceb3637028cd5ffc57ea1f5ab4c");
-        //    var content = new StringContent("{\"transaction_id\": \"308942574\", \"amount_cents\": \"400\"}", null, "application/json");
-        //    request.Content = content;
-        //    var response = await client.SendAsync(request);
-        //    response.EnsureSuccessStatusCode();
-        //    Console.WriteLine(await response.Content.ReadAsStringAsync());
+            ServiceResult serviceResult = await _paymentService.HandleApproveProductRefund(dto);
+            if (serviceResult.Success)
+            {
+                return Ok(serviceResult.SuccessMessage);
+            }
+            else
+            {
+                return BadRequest(serviceResult.ErrorMessage);
+            }
+        }
 
-        //}
+
+
 
 
     }

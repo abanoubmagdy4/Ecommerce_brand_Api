@@ -21,7 +21,7 @@
         IDiscountRepository Discount { get; }
         IUserRepository User { get; }
         IPaymentRepository Payment { get; }
-        IOrderRefundRepository OrderRefund { get; }
+        IRefundRepository Refund { get; }
 
 
 

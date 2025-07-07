@@ -89,7 +89,7 @@ namespace Ecommerce_brand_Api.Repositories
         public IUserRepository User => _ServiceProvider.GetRequiredService<IUserRepository>();
         public IPaymentRepository Payment => _ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        public IOrderRefundRepository OrderRefund => _ServiceProvider.GetRequiredService<IOrderRefundRepository>();
+        public IRefundRepository Refund => _ServiceProvider.GetRequiredService<IRefundRepository>();
 
 
         public Task<int> SaveChangesAsync() => _Context.SaveChangesAsync();
