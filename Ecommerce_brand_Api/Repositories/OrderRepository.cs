@@ -41,7 +41,7 @@ namespace Ecommerce_brand_Api.Repositories
                     OrderStatus = o.Order.OrderStatus,
                     PaymentStatus = o.Order.Payment.Status,
                     ShippingStatus = o.Order.ShippingStatus,
-                     CreatedAt = o.Order.CreatedAt,
+                    CreatedAt = o.Order.CreatedAt,
                     TotalPrice = o.TotalPrice,
                     Quantity = o.Quantity
                     

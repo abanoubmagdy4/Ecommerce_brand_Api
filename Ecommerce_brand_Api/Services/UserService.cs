@@ -67,23 +67,32 @@ namespace Ecommerce_brand_Api.Services
 
             // Remember Me !!!!!!!!!!
         }
-        public async Task SaveCodeAsync(string email, string code)
+        public async Task<ServiceResult> SaveCodeAsync(string email, string code)
         {
-            // امسح الأكواد القديمة لنفس الإيميل (لو عايز تخلي كود واحد فعال)
-            var oldCodes = _context.OtpCodes.Where(x => x.Email == email);
-            _context.OtpCodes.RemoveRange(oldCodes);
-
-            var otp = new OtpCode
+            try
             {
-                Email = email,
-                Code = code,
-                CreatedAt = DateTime.UtcNow,
-                ExpireAt = DateTime.UtcNow.AddMinutes(2)
-            };
+                var oldCodes = _context.OtpCodes.Where(x => x.Email == email);
+                _context.OtpCodes.RemoveRange(oldCodes);
 
-            _context.OtpCodes.Add(otp);
-            await _context.SaveChangesAsync();
+                var otp = new OtpCode
+                {
+                    Email = email,
+                    Code = code,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpireAt = DateTime.UtcNow.AddMinutes(2)
+                };
+
+                _context.OtpCodes.Add(otp);
+                await _context.SaveChangesAsync();
+
+                return ServiceResult.Ok("Code generated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult.Fail("An error occurred while saving the OTP code.");
+            }
         }
+
 
         public async Task<bool> VerifyCodeAsync(CustomerLoginDto customerDto)
         {
@@ -322,29 +331,39 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        public async Task<ServiceResult> SendEmailAsync(string toEmail, string subject, string body)
         {
-            if (string.IsNullOrWhiteSpace(toEmail))
-                throw new ArgumentException("Recipient email is required.", nameof(toEmail));
-
-            var smtpClient = new SmtpClient(_emailSettings.SmtpServer)
+            try
             {
-                Port = _emailSettings.SmtpPort,
-                Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password),
-                EnableSsl = true
-            };
+                if (string.IsNullOrWhiteSpace(toEmail))
+                    return ServiceResult.Fail("Recipient email is required.");
 
-            var mailMessage = new MailMessage
+                var smtpClient = new SmtpClient(_emailSettings.SmtpServer)
+                {
+                    Port = _emailSettings.SmtpPort,
+                    Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password),
+                    EnableSsl = true
+                };
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
+                    Subject = string.IsNullOrWhiteSpace(subject) ? "(No Subject)" : subject,
+                    Body = string.IsNullOrWhiteSpace(body) ? "(No Body)" : body,
+                    IsBodyHtml = false
+                };
+
+                mailMessage.To.Add(toEmail);
+
+                await smtpClient.SendMailAsync(mailMessage);
+
+                return ServiceResult.Ok("Email sent successfully.");
+            }
+            catch (Exception ex)
             {
-                From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
-                Subject = string.IsNullOrWhiteSpace(subject) ? "(No Subject)" : subject,
-                Body = string.IsNullOrWhiteSpace(body) ? "(No Body)" : body,
-                IsBodyHtml = false
-            };
-
-            mailMessage.To.Add(toEmail);
-
-            await smtpClient.SendMailAsync(mailMessage);
+              
+                return ServiceResult.Fail("Failed to send the email. Please try again later.");
+            }
         }
 
 

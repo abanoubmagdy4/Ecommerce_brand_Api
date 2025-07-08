@@ -59,22 +59,27 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
         [HttpPost("SendVerificationCodeAsync")]
-
-        public async Task<ActionResult> SendVerificationCodeAsync([FromBody] string email)
+        public async Task<ActionResult<ServiceResult>> SendVerificationCodeAsync([FromBody] string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest(ServiceResult.Fail("Email is required."));
 
             var code = new Random().Next(100000, 999999).ToString();
-            await _userService.SaveCodeAsync(email, code);
+
+            var saveResult = await _userService.SaveCodeAsync(email, code);
+            if (!saveResult.Success)
+                return StatusCode(500, saveResult); // Internal Error in DB
 
             var subject = "Login Code";
             var body = $"Your login code is: {code}";
 
-            await _userService.SendEmailAsync(email, subject, body);
+            var emailResult = await _userService.SendEmailAsync(email, subject, body);
+            if (!emailResult.Success)
+                return StatusCode(500, emailResult); // Email failed
 
-            return Ok(new { message = "A reset code has been sent to your email." });
-
-
+            return Ok(ServiceResult.Ok("A verification code has been sent to your email."));
         }
+
 
 
         [HttpPost("CustomerAccountLogin")]
