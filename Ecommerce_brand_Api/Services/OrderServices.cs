@@ -1,4 +1,6 @@
-﻿using Ecommerce_brand_Api.Models.Entities;
+﻿using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Models.Entities;
+using Ecommerce_brand_Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Services
@@ -355,8 +357,30 @@ namespace Ecommerce_brand_Api.Services
             var repo = _unitofwork.GetOrderRepository();
             return await repo.GetOrderByPaymobOrderIdAsync(paymobOrderId);
         }
+        private bool CanUpdateShippingStatus(OrderStatus status)
+        {
+            return status == OrderStatus.Processing
+                || status == OrderStatus.AwaitingPayment; 
+        }
+
+        public async Task<ServiceResult?> UpdateOrderWithShippingStatus(UpdateShippingStatusDto dto)
+        {
+            Order order = await _unitofwork.GetOrderRepository().GetByIdAsync(dto.OrderId);
+
+            if (order == null)
+                return ServiceResult.Fail("Order not found.");
+
+         
+            if (!CanUpdateShippingStatus(order.OrderStatus))
+                return ServiceResult.Fail("Cannot update shipping status for the current order state.");
+
+            order.ShippingStatus = dto.NewShippingStatus;
 
 
+            await _unitofwork.SaveChangesAsync();
+
+            return ServiceResult.OkWithData(order);
+        }
 
     }
 }

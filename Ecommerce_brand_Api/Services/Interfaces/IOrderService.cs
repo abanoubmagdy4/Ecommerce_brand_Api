@@ -59,6 +59,9 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<ServiceResult> BuildOrderDto(OrderDTO orderDto);
 
         Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
+        Task<ServiceResult?> UpdateOrderWithShippingStatus(UpdateShippingStatusDto dto);
+
 
             }
+
 }
