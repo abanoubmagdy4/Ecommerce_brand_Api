@@ -121,7 +121,7 @@ namespace Ecommerce_brand_Api.Controllers
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             await _userService.SaveCodeAndTokenAsync(dto.Email, code, token);
-            await _userService.SendEmailAsync(dto.Email, "Password Reset Code", $"Your reset code is: {code}");
+            await _userService.SendEmailAsync(dto.Email, "Password  Reset Code", $"Your reset code is: {code}");
 
             return Ok("A reset code has been sent to your email.");
         }
