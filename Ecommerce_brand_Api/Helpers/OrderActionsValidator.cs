@@ -5,60 +5,61 @@
         /// <summary>
         /// Determines whether the order can be cancelled based on order, payment, and shipping status.
         /// </summary>
-        public static bool CanCancel(OrderStatus orderStatus, PaymentStatus paymentStatus, ShippingStatus shippingStatus)
+
+        public static bool CanCancel(PaymentStatus paymentStatus, ShippingStatus shippingStatus, DateTime orderDate)
         {
-            // Case 1: Order just created and not yet processed or paid
-            if (orderStatus == OrderStatus.Created)
+            // مش هينفع نلغي لو خلاص حصل Refund أو Cancel
+            if (paymentStatus == PaymentStatus.Refunded || paymentStatus == PaymentStatus.Canceled)
+                return false;
+
+            // Authorized but not captured → ينفع نعمل Void (لو في نفس اليوم ولسه مش متشحن)
+            if (paymentStatus == PaymentStatus.Authorized
+                && orderDate.Date == DateTime.Now.Date
+                && shippingStatus == ShippingStatus.NotShipped)
                 return true;
 
-            // Case 2: Awaiting payment and the payment is still pending
-            if (orderStatus == OrderStatus.AwaitingPayment && paymentStatus == PaymentStatus.Pending)
-                return true;
-
-            // Case 3: Order is being processed, payment is authorized but not captured yet, and shipment hasn't gone out
-            if (orderStatus == OrderStatus.Processing
-                && paymentStatus == PaymentStatus.Authorized
+            // Captured → ينفع نعمل Refund لو لسه مش متشحن
+            if (paymentStatus == PaymentStatus.Success
                 && (shippingStatus == ShippingStatus.NotShipped
                     || shippingStatus == ShippingStatus.ReadyToShip
-                    || shippingStatus == ShippingStatus.NotApplicable)) 
+                    || shippingStatus == ShippingStatus.NotApplicable))
                 return true;
 
-            // If none of the above, the order cannot be cancelled
+            // Pending → لسه تحت الانتظار، ينفع نلغي
+            if (paymentStatus == PaymentStatus.Pending)
+                return true;
+
+            // Declined أو أي حاجة تانية → منلغيهاش
             return false;
         }
 
         /// <summary>
         /// Determines whether the order can be refunded based on order, payment, and shipping status.
+        /// Refunds are only allowed if the payment was captured (Success) and the order is not already returned or cancelled.
         /// </summary>
         public static bool CanRefund(OrderStatus orderStatus, PaymentStatus paymentStatus, ShippingStatus shippingStatus)
         {
-            // Refund is only allowed if the payment was successful
+            // Refund only applies to captured payments
             if (paymentStatus != PaymentStatus.Success)
                 return false;
 
-            // Case 1: Order is processing and has not shipped yet or is ready to ship
-            if (orderStatus == OrderStatus.Processing &&
-                (shippingStatus == ShippingStatus.NotShipped || shippingStatus == ShippingStatus.ReadyToShip))
-                return true;
-
-            // Case 2: Order is processing and already shipped or out for delivery
-            if (orderStatus == OrderStatus.Processing &&
-                (shippingStatus == ShippingStatus.Shipped || shippingStatus == ShippingStatus.OutForDelivery))
-                return true;
-
-            // Case 3: Cannot refund if already returned or cancelled
+            // Cannot refund if order is already returned or cancelled
             if (orderStatus == OrderStatus.Returned || orderStatus == OrderStatus.Cancelled)
                 return false;
 
-            // Case 4: Order delivered and not marked as returned yet
-            if (shippingStatus == ShippingStatus.Delivered && orderStatus != OrderStatus.Returned)
+            // Refund allowed if order is processing (regardless of shipping status)
+            if (orderStatus == OrderStatus.Processing)
                 return true;
 
-            // Case 5: Delivery failed
+            // Refund allowed if the order was delivered but not marked as returned yet
+            if (shippingStatus == ShippingStatus.Delivered)
+                return true;
+
+            // Refund allowed if delivery failed
             if (shippingStatus == ShippingStatus.DeliveryFailed)
                 return true;
 
-            // If none of the above conditions are met, refund is not allowed
+            // In all other cases, refund is not allowed
             return false;
         }
     }

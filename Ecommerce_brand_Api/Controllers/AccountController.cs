@@ -71,7 +71,7 @@ namespace Ecommerce_brand_Api.Controllers
 
             await _userService.SendEmailAsync(email, subject, body);
 
-            return Ok("A reset code has been sent to your email.");
+            return Ok(new { message = "A reset code has been sent to your email." });
 
 
         }

@@ -20,7 +20,7 @@ namespace Ecommerce_brand_Api.Data
         public DbSet<Cancelation> Cancellations { get; set; }
         public DbSet<OrderRefund> OrderRefund { get; set; }
         public DbSet<ProductRefund> ProductRefund { get; set; }
-         public DbSet<Cart> Carts { get; set; }
+        public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
@@ -33,8 +33,8 @@ namespace Ecommerce_brand_Api.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderConfiguration).Assembly);
+            AppDbSeed.Seed(modelBuilder); // ✅ دي اللي ضفناها
             base.OnModelCreating(modelBuilder);
         }
 

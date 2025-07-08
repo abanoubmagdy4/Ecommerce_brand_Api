@@ -14,5 +14,8 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
         Task<Order?> GetOrderWithPaymentAsync(int orderId);
         Task<OrderItemWithStatusAndAmountAndQuantityDto?> GetOrderItemWithOrderStatusWithPaymentStatuAndAmmountAsync(int orderItemId);
+        Task<Order?> GetOrderByTransactionIdAsync(long transactionId);
+
+
     }
 }
