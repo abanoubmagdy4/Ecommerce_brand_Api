@@ -41,6 +41,7 @@ namespace Ecommerce_brand_Api.Repositories
                     OrderStatus = o.Order.OrderStatus,
                     PaymentStatus = o.Order.Payment.Status,
                     ShippingStatus = o.Order.ShippingStatus,
+                     CreatedAt = o.Order.CreatedAt,
                     TotalPrice = o.TotalPrice,
                     Quantity = o.Quantity
                     
@@ -63,7 +64,15 @@ namespace Ecommerce_brand_Api.Repositories
                 .Include(o => o.Payment)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
-
+        
+        public async Task<Order?> GetOrderByTransactionIdAsync(long transactionId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .Include(o => o.ShippingAddress)
+                .Include(o => o.Customer)
+                .FirstOrDefaultAsync(o => o.PaymobOrderId == transactionId && !o.IsDeleted);
+        }
     }
 
 }

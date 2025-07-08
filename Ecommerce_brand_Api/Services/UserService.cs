@@ -78,7 +78,7 @@ namespace Ecommerce_brand_Api.Services
                 Email = email,
                 Code = code,
                 CreatedAt = DateTime.UtcNow,
-                ExpireAt = DateTime.UtcNow.AddMinutes(5)
+                ExpireAt = DateTime.UtcNow.AddMinutes(2)
             };
 
             _context.OtpCodes.Add(otp);
@@ -288,7 +288,7 @@ namespace Ecommerce_brand_Api.Services
                 Email = email,
                 Code = code,
                 Token = token,
-                ExpirationTime = DateTime.Now.AddMinutes(15),
+                ExpirationTime = DateTime.Now.AddMinutes(2),
                 IsUsed = false
             };
 

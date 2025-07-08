@@ -8,5 +8,6 @@
         public ShippingStatus ShippingStatus { get; set; }
         public decimal TotalPrice { get; set; }
         public int Quantity {  get; set; }  
+        public DateTime CreatedAt {  get; set; }    
     }
 }

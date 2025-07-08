@@ -22,6 +22,7 @@ namespace Ecommerce_brand_Api.Services
         private readonly IOrderRepository _orderRepository;
         private readonly ICartService _cartService;
         private readonly IRefundRepository _RefundRepository;
+        private readonly IProductSizesRepository _productSizesRepository;
         private readonly HttpClient _httpClient;
 
         public PaymentService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env,
@@ -39,6 +40,7 @@ namespace Ecommerce_brand_Api.Services
             _orderRepository = unitOfWork.GetOrderRepository();
             _cartService = _serviceUnitOfWork.Carts;
             _RefundRepository = _unitOfWork.Refund;
+            _productSizesRepository = _unitOfWork.ProductsSizes;
         }
 
         public async Task<Payment?> GetPaymentByTransactionIdAsync(long transactionId)
@@ -164,7 +166,6 @@ namespace Ecommerce_brand_Api.Services
                     Details = errorBody
                 };
                 return ServiceResult.FailWithData(errorDetails);
-
             }
 
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -180,17 +181,31 @@ namespace Ecommerce_brand_Api.Services
                 if (root.TryGetProperty("intention_order_id", out JsonElement orderIdElement))
                 {
                     paymobOrderId = orderIdElement.GetInt32();
-
                 }
 
                 if (paymobOrderId > 0)
                 {
                     orderCreated.PaymobOrderId = paymobOrderId;
 
-                    await _orderRepository.UpdateAsync(orderCreated);
-                    await _unitOfWork.SaveChangesAsync();
+                    foreach (var item in orderCreated.OrderItems)
+                    {
+                        var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(p => p.Id == item.ProductSizeId);
 
+                        if (productSize == null)
+                            throw new Exception($"Product size not found for ProductSizeId {item.ProductSizeId}");
+
+                        if (productSize.StockQuantity < item.Quantity)
+                            throw new Exception($"Not enough stock for ProductId {item.ProductId}, SizeId: {item.ProductSizeId}. Available: {productSize.StockQuantity}, Requested: {item.Quantity}");
+
+                        productSize.StockQuantity -= item.Quantity;
+                        await _productSizesRepository.UpdateAsync(productSize);
+
+                    }
+                    await _orderRepository.UpdateAsync(orderCreated);
+                    await _unitOfWork.SaveChangesAsync(); 
                 }
+
+
                 var publicKey = "egy_pk_test_zLrPn85LuwoQSPS4WBigcxB0wVNIHsiC";
                 ///add payment model to db
                 var checkoutUrl = $"https://accept.paymob.com/unifiedcheckout/?publicKey={publicKey}&clientSecret={clientSecret}";
@@ -441,7 +456,7 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail("Order not found or access denied.");
             // Check if refund or cancel is allowed based on current order, payment, and shipping statuses
 
-            bool canCancel = OrderActionsValidator.CanCancel(order.OrderStatus, order.Payment.Status, order.ShippingStatus);
+            bool canCancel = OrderActionsValidator.CanCancel( order.Payment.Status,order.ShippingStatus, order.CreatedAt);
             bool canRefund = OrderActionsValidator.CanRefund(order.OrderStatus, order.Payment.Status, order.ShippingStatus);
 
             if (!canCancel && !canRefund)
@@ -485,7 +500,7 @@ namespace Ecommerce_brand_Api.Services
                 return ServiceResult.Fail("order Item With Status not found or access denied.");
             // Check if refund or cancel is allo wed based on current order, payment, and shipping statuses
 
-            bool canCancel = OrderActionsValidator.CanCancel(orderItemWithStatus.OrderStatus, orderItemWithStatus.PaymentStatus, orderItemWithStatus.ShippingStatus);
+            bool canCancel = OrderActionsValidator.CanCancel(orderItemWithStatus.PaymentStatus, orderItemWithStatus.ShippingStatus,orderItemWithStatus.CreatedAt);
             bool canRefund = OrderActionsValidator.CanRefund(orderItemWithStatus.OrderStatus, orderItemWithStatus.PaymentStatus, orderItemWithStatus.ShippingStatus);
 
             if (!canCancel && !canRefund)
@@ -563,9 +578,8 @@ namespace Ecommerce_brand_Api.Services
             var paymentStatus = payment.Status;
             var shippingStatus = orderRefund.Payment.Order.ShippingStatus;
 
-            bool canCancel = OrderActionsValidator.CanCancel(orderStatus, paymentStatus, shippingStatus);
+            bool canCancel = OrderActionsValidator.CanCancel(paymentStatus, shippingStatus, orderRefund.Payment.Order.CreatedAt);
             bool canRefund = OrderActionsValidator.CanRefund(orderStatus, paymentStatus, shippingStatus);
-
             if (!canCancel && !canRefund)
             {
                 return ServiceResult.Fail("Refund or cancellation is not allowed for this order status.");
@@ -614,7 +628,7 @@ namespace Ecommerce_brand_Api.Services
             if (canVoid)
             {
                 // عملية الإلغاء (Void)
-                var voidRequest = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/refund");
+                var voidRequest = new HttpRequestMessage(HttpMethod.Post, "https://accept.paymob.com/api/acceptance/void_refund/void");
                 voidRequest.Headers.Add("Authorization", $"Token {secretKey}");
 
                 var voidPayload = JsonSerializer.Serialize(new { transaction_id = transactionId });
@@ -626,6 +640,7 @@ namespace Ecommerce_brand_Api.Services
                     var error = await voidResponse.Content.ReadAsStringAsync();
                     return $"Void failed: {error}";
                 }
+                await RestoreStockAsync(transactionId);
 
                 return $"Transaction {transactionId} voided successfully.";
             }
@@ -648,6 +663,7 @@ namespace Ecommerce_brand_Api.Services
                     var error = await refundResponse.Content.ReadAsStringAsync();
                     return $"Refund failed: {error}";
                 }
+                await RestoreStockAsync(transactionId);
 
                 return $"Transaction {transactionId} refunded successfully.";
             }
@@ -695,7 +711,7 @@ public async Task<ServiceResult> HandleApproveProductRefund(ApproveProductRefund
     var paymentStatus = payment.Status;
     var shippingStatus = order.ShippingStatus;
 
-    bool canCancel = OrderActionsValidator.CanCancel(orderStatus, paymentStatus, shippingStatus);
+    bool canCancel = OrderActionsValidator.CanCancel(paymentStatus, shippingStatus, order.CreatedAt);
     bool canRefund = OrderActionsValidator.CanRefund(orderStatus, paymentStatus, shippingStatus);
 
     if (!canCancel && !canRefund)
@@ -729,6 +745,7 @@ public async Task<ServiceResult> HandleApproveProductRefund(ApproveProductRefund
         Data = productRefund
     };
 }
+
         public async Task<string> ProductPartialRefund(long transactionId, decimal amountCents, string secretKey)
         {
             using var client = new HttpClient();
@@ -750,9 +767,36 @@ public async Task<ServiceResult> HandleApproveProductRefund(ApproveProductRefund
                 var error = await refundResponse.Content.ReadAsStringAsync();
                 return $"Refund failed: {error}";
             }
-
+            try
+            {
+                await RestoreStockAsync(transactionId);
+            }
+            catch (Exception ex)
+            {
+   
+                return $"Refund succeeded but restoring stock failed: {ex.Message}";
+            }
             return $"Transaction {transactionId} refunded  Product successfully.";
         }
+
+        private async Task RestoreStockAsync(long transactionId)
+        {
+            var order = await _orderRepository.GetOrderByTransactionIdAsync(transactionId);
+
+            foreach (var item in order.OrderItems)
+            {
+                var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(p => p.Id == item.ProductSizeId);
+
+                if (productSize != null)
+                {
+                    productSize.StockQuantity += item.Quantity;
+                    await _productSizesRepository.UpdateAsync(productSize);
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
 
     }
 
