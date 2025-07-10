@@ -1,5 +1,6 @@
 ﻿using Ecommerce_brand_Api.Controllers.ResponseWrapper;
 using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Controllers
 {
@@ -290,6 +291,35 @@ namespace Ecommerce_brand_Api.Controllers
                     Success = false
                 });
             }
+        }
+
+        [HttpPut("update-shipping-cost")]
+        public async Task<IActionResult> UpdateShippingCost([FromBody] UpdateShippingStatusDto dto)
+        {
+            var result = await _orderService.UpdateOrderWithShippingStatus(dto);
+
+            if (!result.Success)
+                return NotFound(new { message = result.ErrorMessage });
+
+            return Ok(new
+            {
+                message = "Shipping cost updated successfully.",
+                order = result.Data
+            });
+        }
+
+        [HttpGet("Shipping-Status")]
+        public IActionResult GetOrderStatuses()
+        {
+            var statuses = Enum.GetValues(typeof(ShippingStatus))
+                .Cast<ShippingStatus>()
+                .Select(s => new
+                {
+                    Id = (int)s,
+                    Name = s.ToString()
+                });
+
+            return Ok(statuses);
         }
 
 
