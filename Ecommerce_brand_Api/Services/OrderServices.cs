@@ -1,7 +1,9 @@
-﻿using Ecommerce_brand_Api.Helpers.Enums;
+﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Helpers.Enums;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -380,6 +382,11 @@ namespace Ecommerce_brand_Api.Services
             await _unitofwork.SaveChangesAsync();
 
             return ServiceResult.OkWithData(order);
+        }
+        public async Task<PagedResult<OrderSummaryDto>> GetOrderSummariesAsync(OrderFilterDto filter)
+        {
+            var result = await _unitofwork.GetOrderRepository().GetOrderSummariesAsync(filter);
+            return result;  
         }
 
     }

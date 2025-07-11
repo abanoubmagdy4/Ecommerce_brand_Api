@@ -21,5 +21,9 @@
 
         [Range(0, double.MaxValue, ErrorMessage = "Discount cannot be negative")]
         public decimal TotalPriceForOneItemType { get; set; }
+
+        public string ProductName { get; set; }
+        public string ProductImageUrl { get; set; }
+        public string ProductSizeName { get; set; }
     }
 }

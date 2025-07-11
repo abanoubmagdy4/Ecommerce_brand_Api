@@ -9,7 +9,7 @@
         public int OrderId { get; set; }
         public int ProductSizeId { get; set; }
 
-
+        public ProductSizes productSize { get; set; }
         public Product Product { get; set; }
         public Order Order { get; set; }
     }

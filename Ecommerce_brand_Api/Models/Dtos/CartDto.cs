@@ -12,9 +12,7 @@ namespace Ecommerce_brand_Api.Models.Dtos
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        //Total Price After Each Item's Discount => Not Including Any Other Special Discounts
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? ShippingCost { get; set; }
+
         [Required]
         public decimal TotalBasePrice { get; set; }
         public decimal Threshold { get; set; }

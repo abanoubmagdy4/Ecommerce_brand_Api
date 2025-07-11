@@ -7,14 +7,17 @@ namespace Ecommerce_brand_Api.Services
     {
         private readonly IUnitofwork _unitOfWork;
         private readonly IRefundRepository _RefundRepository;
-
+        private readonly IBaseRepository<ProductRefund> _productRefundBaseRepository;
+        private readonly IBaseRepository<OrderRefund> _OrderRefundBaseRepository;
         private readonly IMapper _mapper;
 
-        public RefundService(IUnitofwork unitOfWork, IMapper mapper) 
+        public RefundService(IUnitofwork unitOfWork, IMapper mapper, IBaseRepository<OrderRefund> orderRefundBaseRepository, IBaseRepository<ProductRefund> productRefundBaseRepository)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _RefundRepository = _unitOfWork.Refund;
+            _OrderRefundBaseRepository = orderRefundBaseRepository;
+            _productRefundBaseRepository = productRefundBaseRepository;
         }
 
         public async Task<ServiceResult> GetOrderRefundWithOrderAndPaymentAsync(int orderRefundId)
@@ -44,6 +47,30 @@ namespace Ecommerce_brand_Api.Services
                 SuccessMessage = "Refund request found.",
                 Data = productRefund
             };
+        }
+
+        public async Task<ServiceResult> GetAllOrderRefund()
+        {
+            List<OrderRefund> orderRefunds = await _OrderRefundBaseRepository.GetAllAsync();
+             if (orderRefunds == null) {
+                return ServiceResult.Fail("NO Product Exist");
+            }
+
+            return ServiceResult.OkWithData(orderRefunds);
+
+        }
+
+        public async Task<ServiceResult> GetAllProductRefund()
+        {
+
+            List<ProductRefund> productRefunds = await _productRefundBaseRepository.GetAllAsync();
+            if (productRefunds == null)
+            {
+                return ServiceResult.Fail("NO Product Exist");
+            }
+
+            return ServiceResult.OkWithData(productRefunds);
+
         }
 
     }

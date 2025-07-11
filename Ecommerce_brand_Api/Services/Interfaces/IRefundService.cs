@@ -7,6 +7,9 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 {
     public interface IRefundService
     {
-       
+        Task<ServiceResult> GetOrderRefundWithOrderAndPaymentAsync(int orderRefundId);
+        Task<ServiceResult> GetProductRefundWithOrderAndPaymentAsync(int productRefundId);
+        Task<ServiceResult> GetAllOrderRefund();
+        Task<ServiceResult> GetAllProductRefund();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
+﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Models.Dtos.OrdersDTO;
 
 namespace Ecommerce_brand_Api.Services.Interfaces
 {
@@ -60,7 +61,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 
         Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
         Task<ServiceResult?> UpdateOrderWithShippingStatus(UpdateShippingStatusDto dto);
-
+        Task<PagedResult<OrderSummaryDto>> GetOrderSummariesAsync(OrderFilterDto filter);
 
             }
 

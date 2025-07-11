@@ -19,11 +19,12 @@ namespace Ecommerce_brand_Api.Controllers
         private readonly IServiceUnitOfWork _serviceunitOfWork;
         private readonly IBaseService<Address> _AddressbaseService;
         private readonly IUserService _userService;
-        private readonly IPaymentService _paymentService;   
+        private readonly IPaymentService _paymentService; 
+        private readonly IRefundService _refundService;
         private readonly HttpClient _httpClient;
         private readonly ILogger<PaymentController> _logger;
         private readonly IWebHostEnvironment _env;
-        public PaymentController(IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory, ILogger<PaymentController> logger, IWebHostEnvironment env)
+        public PaymentController(IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory, ILogger<PaymentController> logger, IWebHostEnvironment env )
         {
             _serviceunitOfWork = serviceUnitOfWork;
             _orderService = _serviceunitOfWork.Orders;
@@ -33,6 +34,7 @@ namespace Ecommerce_brand_Api.Controllers
             _paymentService = serviceUnitOfWork.Payment;
             _logger = logger;
             _env = env;
+            _refundService = serviceUnitOfWork.Refund;
         }
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout(OrderDTO orderDto)
@@ -209,6 +211,30 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+
+        [HttpGet("get-order-refund")]
+        public async Task<IActionResult> GetOrderRefund()
+        {
+            ServiceResult serviceResult = await _refundService.GetAllOrderRefund();
+
+            if (serviceResult.Success)
+                return Ok(serviceResult);
+            else
+                return BadRequest(serviceResult);
+        }
+
+        [HttpGet("get-product-refund")]
+        public async Task<IActionResult> GetProductRefund()
+        {
+            ServiceResult serviceResult = await _refundService.GetAllProductRefund();
+
+            if (serviceResult.Success)
+                return Ok(serviceResult);
+            else
+                return BadRequest(serviceResult);
+        }
+
+     
 
 
 

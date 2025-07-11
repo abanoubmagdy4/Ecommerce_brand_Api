@@ -379,5 +379,13 @@ namespace Ecommerce_brand_Api.Controllers
                 });
             }
         }
+
+        [HttpGet("pagination-summaries")]
+        public async Task<IActionResult> GetSummaries([FromQuery] OrderFilterDto filter)
+        {
+            var result = await _orderService.GetOrderSummariesAsync(filter);
+            return Ok(result);
+        }
+
     }
 }
