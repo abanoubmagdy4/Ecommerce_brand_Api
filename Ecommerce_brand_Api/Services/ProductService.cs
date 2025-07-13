@@ -69,6 +69,8 @@ namespace Ecommerce_brand_Api.Services
                         product.ProductSizes.Add(new ProductSizes
                         {
                             Size = sizeDto.Size,
+                            Width =sizeDto.Width,   
+                            Height =sizeDto.Height,
                             StockQuantity = sizeDto.StockQuantity
                         });
                     }
