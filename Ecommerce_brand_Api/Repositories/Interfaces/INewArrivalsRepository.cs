@@ -4,6 +4,7 @@
     {
         //check if this product is already a new arrival
         Task<bool> IsProductNewArrivalAsync(int productId);
-
+        Task<Product> GetNewArrivalByProductId(int productId);
+        Task DeleteProductFromAsync(int productId);
     }
 }

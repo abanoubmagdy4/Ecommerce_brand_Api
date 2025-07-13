@@ -104,6 +104,7 @@ namespace Ecommerce_brand_Api.Services
                     {
                         ProductId = dto.ProductId,
                         Quantity = dto.Quantity,
+                        ProductSizeId = dto.ProductSizeId,  
                         TotalPrice = dto.TotalPrice
                     };
 

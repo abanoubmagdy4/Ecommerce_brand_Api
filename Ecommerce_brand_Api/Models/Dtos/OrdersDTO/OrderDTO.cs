@@ -32,6 +32,9 @@ namespace Ecommerce_brand_Api.Models.Dtos.OrdersDTO
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalOrderPrice { get; set; }
 
+        [Required]
+        [EnumDataType(typeof(PaymentMethods), ErrorMessage = "Invalid PaymentMethods Status")]
+        public PaymentMethods paymentMethod { get; set; }
 
 
         [Required]

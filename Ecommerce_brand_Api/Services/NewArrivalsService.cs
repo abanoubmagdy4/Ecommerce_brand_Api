@@ -41,14 +41,14 @@ namespace Ecommerce_brand_Api.Services
 
         public async Task<bool> DeleteNewArrival(int Id)
         {
-            var product = await _unitofwork.NewArrivals.GetByIdAsync(Id);
+            var product = await _unitofwork.NewArrivals.GetNewArrivalByProductId(Id);
 
             if (product == null)
             {
                 throw new Exception("New Arrival not found");
             }
             //var productDto = mapper.Map<ProductDto>(product);
-            await _unitofwork.NewArrivals.DeleteAsync(Id);
+            await _unitofwork.NewArrivals.DeleteProductFromAsync(Id);
             await _unitofwork.SaveChangesAsync();
             return true;
         }

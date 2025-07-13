@@ -43,8 +43,23 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                 .ReverseMap();
 
             CreateMap<CartItem, CartItemDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                .ForMember(dest => dest.ProductImageUrl,
+                    opt => opt.MapFrom(src => src.Product.ProductImagesPaths
+                        .Where(img => img.Priority == 1)
+                        .Select(img => img.ImagePath)
+                        .FirstOrDefault()))
+                .ForMember(dest => dest.ProductSizeName, opt => opt.MapFrom(src => src.ProductSize.Size))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.Product.Price))
-                .ReverseMap();
+                .ForMember(dest => dest.TotalPriceForOneItemType, opt => opt.MapFrom(src => src.TotalPriceForOneItemType)); // ← ممكن تضيف دي للتأكيد
+
+
+
+            CreateMap<CartItemDto, CartItem>()
+            .ForMember(dest => dest.Product, opt => opt.Ignore())
+            .ForMember(dest => dest.Cart, opt => opt.Ignore())
+            .ForMember(dest => dest.ProductSize, opt => opt.Ignore());
+
 
 
             CreateMap<Feedback, FavoriteDto>();
@@ -78,6 +93,14 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                 .ForMember(dest => dest.Order, opt => opt.Ignore());
 
             CreateMap<GovernorateShippingCost, GovernrateShippingCostDto>().ReverseMap();
+
+
+
+     
+
+
+
+
         }
 
     }

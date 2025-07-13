@@ -45,7 +45,8 @@ namespace Ecommerce_brand_Api.Data.configurations
                 .Property(o => o.OrderStatus)
                 .HasConversion<string>();
 
-
+            builder.Property(o => o.paymentMethod)
+                .HasConversion<string>();
 
         }
     }

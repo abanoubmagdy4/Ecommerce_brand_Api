@@ -4,6 +4,7 @@ using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.Payment.PaymentResponse;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
+using System.Diagnostics.Eventing.Reader;
 using System.Net.Http;
 using static Ecommerce_brand_Api.Models.Dtos.Payment.WebhookRequestDto;
 
@@ -54,44 +55,53 @@ namespace Ecommerce_brand_Api.Services
 
         public async Task<ServiceResult> HandleCheckoutAsync(OrderDTO orderDto)
         {
+            
+                ApplicationUser existingUser = await _userRepository.FindByEmailAsync(orderDto.CustomerInfo.Email);
+                if (existingUser == null)
+                    return ServiceResult.Fail("Please Complete Your Information !");
 
 
-            ApplicationUser existingUser = await _userRepository.FindByEmailAsync(orderDto.CustomerInfo.Email);
-            if (existingUser == null)
-                return ServiceResult.Fail("Please Complete Your Information !");
+                existingUser = await _IUserService.UpdatedUserAsync(existingUser, orderDto.CustomerInfo);
+                Address newAddress = new Address();
+
+                if (orderDto.AddressInfo.Id == 0)
+                {
+                    newAddress = await _IUserService.AddNewAddressAsync(orderDto.AddressInfo, existingUser.Id);
+                }
+                else
+                {
+                    ServiceResult addressResult = await _IUserService.UpdatedAddressAsync(orderDto.AddressInfo);
+                    if (addressResult.Success == false)
+                        return ServiceResult.Fail("Please Complete Your information !");
+                    newAddress = (Address)addressResult.Data;
+                }
+
+                ServiceResult orderDtoServiceResult = await _IOrderService.BuildOrderDto(orderDto);
+                if (!orderDtoServiceResult.Success)
+                    return ServiceResult.Fail(orderDtoServiceResult.ErrorMessage);
+                if (orderDtoServiceResult.Data == null)
+                    return ServiceResult.Fail("Order preparation failed: no data returned.");
+                OrderDTO orderDTOAfterPrepare = (OrderDTO)orderDtoServiceResult.Data;
 
 
-            existingUser = await _IUserService.UpdatedUserAsync(existingUser, orderDto.CustomerInfo);
-            Address newAddress = new Address();
+                Order orderCreated = await _IOrderService.AddNewOrderAsync(orderDTOAfterPrepare, newAddress, existingUser);
+                if (orderCreated == null)
+                    return ServiceResult.Fail("An error occurred while creating the order.");
 
-            if (orderDto.AddressInfo.Id == 0)
+
+            if (orderDto.paymentMethod  != PaymentMethods.COD)
             {
-                newAddress = await _IUserService.AddNewAddressAsync(orderDto.AddressInfo, existingUser.Id);
+
+                var paymentResult = await CreatePaymobPaymentIntentionAsync(orderCreated);
+
+                return paymentResult;
             }
-            else
-            {
-                ServiceResult addressResult = await _IUserService.UpdatedAddressAsync(orderDto.AddressInfo);
-                if (addressResult.Success == false)
-                    return ServiceResult.Fail("Please Complete Your information !");
-                newAddress = (Address)addressResult.Data;
-            }
-
-            ServiceResult orderDtoServiceResult = await _IOrderService.BuildOrderDto(orderDto);
-            if (!orderDtoServiceResult.Success)
-                return ServiceResult.Fail(orderDtoServiceResult.ErrorMessage);
-            if (orderDtoServiceResult.Data == null)
-                return ServiceResult.Fail("Order preparation failed: no data returned.");
-            OrderDTO orderDTOAfterPrepare = (OrderDTO)orderDtoServiceResult.Data;
+            return ServiceResult.OkWithData(orderCreated);
 
 
-            Order orderCreated = await _IOrderService.AddNewOrderAsync(orderDTOAfterPrepare, newAddress, existingUser);
-            if (orderCreated == null)
-                return ServiceResult.Fail("An error occurred while creating the order.");
-            var paymentResult = await CreatePaymobPaymentIntentionAsync(orderCreated);
-     
-            return paymentResult; 
         }
-
+    
+      
         private async Task<ServiceResult> CreatePaymobPaymentIntentionAsync(Order orderCreated) {
 
             var url = "https://accept.paymob.com/v1/intention/";

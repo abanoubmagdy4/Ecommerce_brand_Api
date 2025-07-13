@@ -21,7 +21,7 @@
         public string PhoneNumber { get; set; }
         //Address info for single order
         public string OrderAddressInfo { get; set; }
-
+        public PaymentMethods paymentMethod { get; set; }
         //NavigationProperty  
         public Payment Payment { get; set; }
         public Cancelation? Cancelation { get; set; }
