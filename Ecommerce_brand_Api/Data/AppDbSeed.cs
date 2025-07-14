@@ -55,5 +55,9 @@
         modelBuilder.Entity<NewArrivals>().HasData(
             new NewArrivals { Id = 1, ProductId = 6 }
         );
+
+        modelBuilder.Entity<Discount>().HasData(
+                new Discount { Id = 1, Threshold = 0, DicountValue = 0 }
+            );
     }
 }
