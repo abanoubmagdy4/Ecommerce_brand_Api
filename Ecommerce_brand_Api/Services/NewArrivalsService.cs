@@ -23,7 +23,7 @@ namespace Ecommerce_brand_Api.Services
                 throw new Exception("Product not found");
             }
             product.isNewArrival = true;
-           await _unitofwork.Products.UpdateAsync(product);  
+            await _unitofwork.Products.UpdateAsync(product);
 
             // Check if the product is already a new arrival
             var existingNewArrival = await _unitofwork.NewArrivals.IsProductNewArrivalAsync(productId);
@@ -51,7 +51,7 @@ namespace Ecommerce_brand_Api.Services
                 throw new Exception("New Arrival not found");
             }
             product.isNewArrival = false;
-           await _unitofwork.Products.UpdateAsync(product);
+            await _unitofwork.Products.UpdateAsync(product);
             //var productDto = mapper.Map<ProductDto>(product);
             await _unitofwork.NewArrivals.DeleteProductFromAsync(Id);
             await _unitofwork.SaveChangesAsync();
@@ -64,6 +64,7 @@ namespace Ecommerce_brand_Api.Services
 
             var query = newArrivalsRepo.GetQueryable()
                 .Include(na => na.Product)
+                .Where(na => na.Product != null && !na.Product.IsDeleted)
                 .Select(na => na.Product)
                 .OrderBy(p => p.Id);
 
@@ -73,5 +74,7 @@ namespace Ecommerce_brand_Api.Services
 
             return pagedResult;
         }
+
     }
 }
+

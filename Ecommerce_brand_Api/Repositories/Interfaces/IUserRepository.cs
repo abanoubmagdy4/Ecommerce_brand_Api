@@ -6,5 +6,7 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         Task<ApplicationUser> FindByEmailAsync(string email);
         Task<List<Address>> GetListOfAddressesByCustomerIdAsync(string customerId);
         Task<CustomerDto?> GetOneCustomerAsync(string customerId);
+        Task<ProfileDto?> GetProfileAsync(string customerId);
+
             }
 }

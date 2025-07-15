@@ -452,6 +452,7 @@ namespace Ecommerce_brand_Api.Services
         {
             try
             {
+
                 var customerDto = await _userRepository.GetOneCustomerAsync(customerId);
 
                 if (customerDto == null)
@@ -471,7 +472,29 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
+        public async Task<ProfileDto> GetProfileAsync(string customerId)
+        {
+            try
+            {
 
+                var profileDto = await _userRepository.GetProfileAsync(customerId);
+
+                if (profileDto == null)
+                {
+                    throw new KeyNotFoundException($"Customer was not found.");
+                }
+
+                return profileDto;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An unexpected error occurred while retrieving the customer.", ex);
+            }
+        }
 
 
     }

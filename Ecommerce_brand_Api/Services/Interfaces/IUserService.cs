@@ -22,5 +22,6 @@
         string GetCurrentUserId();
         Task<ServiceResult> GetListOfAddressesByCustomerIdAsync(string customerId);
         Task<CustomerDto?> GetOneCustomerAsync(string customerId);
-    }
+        Task<ProfileDto> GetProfileAsync(string customerId); 
+            }
 }

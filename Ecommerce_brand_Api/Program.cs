@@ -172,6 +172,7 @@ using System.Text.Json.Serialization;
                                 app.UseSwaggerUI(c =>
                                     {
                                         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce Brand API V1");
+                                        c.RoutePrefix = "swagger"; // مهم علشان مايحاولش يوجه للـ root
 
                                     });
 

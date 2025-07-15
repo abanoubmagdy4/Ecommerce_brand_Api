@@ -186,6 +186,42 @@ namespace Ecommerce_brand_Api.Controllers
                 return StatusCode(500, new { message = "Unexpected error occurred." });
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> GetProfileById()
+        {
+            try
+            {
+                var userId = _userService.GetCurrentUserId();
+
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new { message = "User is not authenticated or token is invalid." });
+                }
+
+                var customer = await _userService.GetProfileAsync(userId);
+
+                if (customer == null)
+                {
+                    return NotFound(new { message = $"Customer not found." });
+                }
+
+                return Ok(customer);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Customer not found." });
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, new { message = $"Application error: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Unexpected error occurred: {ex.Message}" });
+            }
+        }
+
+
 
     }
 }
