@@ -18,7 +18,9 @@
         Task<ServiceResult> HandleCustomerLoginAsync(CustomerLoginDto customerLoginDto);//Task<bool> CheckEmailExistAsync(string email);
         Task<ApplicationUser> UpdatedUserAsync(ApplicationUser user, CustomerDto customerDto);
         Task<Address> AddNewAddressAsync(AddressDto addressDto, string UserId);
-        Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto);
+        Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto ,string userId);
         string GetCurrentUserId();
+        Task<ServiceResult> GetListOfAddressesByCustomerIdAsync(string customerId);
+        Task<CustomerDto?> GetOneCustomerAsync(string customerId);
     }
 }

@@ -2,8 +2,7 @@
 {
     public enum PaymentMethods
     {
-        OnlineCard,
-        MobileWallet,    
-        COD
+        Online = 0,
+        COD = 1
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Models.Dtos.Authentication;
+using Ecommerce_brand_Api.Models.Entities;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
@@ -144,7 +146,7 @@ namespace Ecommerce_brand_Api.Services
                 if (!roleResult.Succeeded)
                     return ServiceResult.Fail("Failed to assign role to user: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
 
-     
+
             }
 
             var tokenExpiration = TimeSpan.FromHours(2);
@@ -361,7 +363,7 @@ namespace Ecommerce_brand_Api.Services
             }
             catch (Exception ex)
             {
-              
+
                 return ServiceResult.Fail("Failed to send the email. Please try again later.");
             }
         }
@@ -406,12 +408,13 @@ namespace Ecommerce_brand_Api.Services
             return address;
         }
 
-        public async Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto)
+        public async Task<ServiceResult> UpdatedAddressAsync(AddressDto addressDto , string userId)
         {
             if (addressDto == null)
                 return ServiceResult.Fail("Address Not Found");
 
             Address address = _mapper.Map<Address>(addressDto);
+            address.UserId = userId;
             _context.Addresses.Update(address);
             await _context.SaveChangesAsync();
             return ServiceResult.OkWithData(address);
@@ -426,6 +429,49 @@ namespace Ecommerce_brand_Api.Services
 
             return userIdClaim.Value;
         }
+
+        public async Task<ServiceResult> GetListOfAddressesByCustomerIdAsync(string customerId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return ServiceResult.Fail("Customer ID is required.");
+            }
+
+            List<Address> addresses = await _userRepository.GetListOfAddressesByCustomerIdAsync(customerId);
+
+            if (addresses == null || !addresses.Any())
+            {
+                return ServiceResult.Fail("No addresses found for the given customer ID.");
+            }
+
+            List<AddressDto> addressDtos = _mapper.Map<List<AddressDto>>(addresses);
+
+            return ServiceResult.OkWithData(addressDtos);
+        }
+        public async Task<CustomerDto> GetOneCustomerAsync(string customerId)
+        {
+            try
+            {
+                var customerDto = await _userRepository.GetOneCustomerAsync(customerId);
+
+                if (customerDto == null)
+                {
+                    throw new KeyNotFoundException($"Customer with ID '{customerId}' was not found.");
+                }
+
+                return customerDto;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An unexpected error occurred while retrieving the customer.", ex);
+            }
+        }
+
+
 
 
     }

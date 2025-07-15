@@ -17,6 +17,7 @@
         public decimal PriceAfterDiscount { get; set; }
         public double AverageRating { get; set; } = 0;
         public bool IsDeleted { get; set; } = false;
+        public bool isNewArrival { get; set; } = false;
         public int CategoryId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public Category Category { get; set; } = null!;

@@ -151,5 +151,41 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok("Password has been reset successfully.");
         }
 
+
+        [HttpGet("{customerId}/addresses")]
+        public async Task<ActionResult> GetListOfAddressesByCustomerIdAsync(string customerId)
+        {
+            var result = await _userService.GetListOfAddressesByCustomerIdAsync(customerId);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.ErrorMessage); 
+            }
+
+            return Ok(result.Data); 
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCustomerById(string id)
+        {
+            try
+            {
+                var customer = await _userService.GetOneCustomerAsync(id);
+                return Ok(customer);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = $"Customer with ID '{id}' not found." });
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Unexpected error occurred." });
+            }
+        }
+
     }
 }

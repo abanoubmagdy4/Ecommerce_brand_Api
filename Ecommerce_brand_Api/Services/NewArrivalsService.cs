@@ -22,6 +22,9 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new Exception("Product not found");
             }
+            product.isNewArrival = true;
+           await _unitofwork.Products.UpdateAsync(product);  
+
             // Check if the product is already a new arrival
             var existingNewArrival = await _unitofwork.NewArrivals.IsProductNewArrivalAsync(productId);
             if (existingNewArrival)
@@ -47,6 +50,8 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new Exception("New Arrival not found");
             }
+            product.isNewArrival = false;
+           await _unitofwork.Products.UpdateAsync(product);
             //var productDto = mapper.Map<ProductDto>(product);
             await _unitofwork.NewArrivals.DeleteProductFromAsync(Id);
             await _unitofwork.SaveChangesAsync();

@@ -70,7 +70,7 @@ namespace Ecommerce_brand_Api.Services
                 }
                 else
                 {
-                    ServiceResult addressResult = await _IUserService.UpdatedAddressAsync(orderDto.AddressInfo);
+                    ServiceResult addressResult = await _IUserService.UpdatedAddressAsync(orderDto.AddressInfo, existingUser.Id);
                     if (addressResult.Success == false)
                         return ServiceResult.Fail("Please Complete Your information !");
                     newAddress = (Address)addressResult.Data;

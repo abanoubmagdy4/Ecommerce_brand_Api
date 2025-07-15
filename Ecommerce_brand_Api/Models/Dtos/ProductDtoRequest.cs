@@ -13,7 +13,7 @@
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
 
-       
+
         public List<ProductSizesDto>? ProductSizes { get; set; } = new List<ProductSizesDto>();
 
         [Required]
@@ -21,9 +21,9 @@
 
 
         [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
-        public decimal DiscountPercentage {get;set;}
-        public double AverageRating {get;set;}
-       
+        public decimal DiscountPercentage { get; set; }
+        public double AverageRating { get; set; }
+
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
@@ -37,8 +37,9 @@
         }
 
         public bool IsDeleted { get; set; } = false;
+        public bool isNewArrival { get; set; }=false;
 
-        [Required]
+       [Required]
         public int CategoryId { get; set; }
     }
 }
