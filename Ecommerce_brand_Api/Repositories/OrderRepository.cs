@@ -150,7 +150,51 @@ namespace Ecommerce_brand_Api.Repositories
             return result;
         }
 
+        public async Task<List<PreviousOrderDto>> GetListOfPreviousOrderByUserIdAsync(string userId)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.CustomerId == userId && !o.IsDeleted)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductImagesPaths)
+                .AsNoTracking() 
+                .Select(o => new PreviousOrderDto
+                {
+                    OrderId = o.OrderId,
+                    OrderNumber = o.OrderNumber,
+                    CreatedAt = o.CreatedAt,
+                    DeliveredAt = o.DeliveredAt,
+                    ShippingCost = o.ShippingCost,
+                    DiscountValue = o.DiscountValue,
+                    TotalOrderPrice = o.TotalOrderPrice,
+                    paymentMethod = o.paymentMethod.ToString(),
+                    OrderStatus = o.OrderStatus.ToString(),
+                    ShippingStatus = o.ShippingStatus.ToString(),
+                    OrderAddressInfo = o.OrderAddressInfo,
+                    RefundStatuses = o.Payment.OrderRefunds
+                         .Select(r => r.Status.ToString())
+                         .ToList(),
 
+                    OrderItems = o.OrderItems.Select(oi => new PreviousOrderItemDto
+                    {
+                        OrderItemId = oi.OrderItemId,
+                        ProductId = oi.ProductId,
+                        Quantity = oi.Quantity,
+                        Size = oi.productSize.Size,
+                        width = oi.productSize.Width,
+                        Height = oi.productSize.Height,
+                        RefundStatus = oi.productRefund.Status.ToString(),
+                        TotalPrice = oi.TotalPrice,
+                        ImagePath = oi.Product.ProductImagesPaths
+                                        .Select(im => im.ImagePath)
+                                        .FirstOrDefault() ?? string.Empty
+                    }).ToList()
+                })
+                .ToListAsync();
+
+       
+            return orders;
+        }
 
 
     }

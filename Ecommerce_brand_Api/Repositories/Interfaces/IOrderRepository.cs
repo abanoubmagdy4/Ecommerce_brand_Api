@@ -17,6 +17,7 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         Task<OrderItemWithStatusAndAmountAndQuantityDto?> GetOrderItemWithOrderStatusWithPaymentStatuAndAmmountAsync(int orderItemId);
         Task<Order?> GetOrderByTransactionIdAsync(long transactionId);
         Task<PagedResult<OrderSummaryDto>> GetOrderSummariesAsync(OrderFilterDto filter);
+        Task<List<PreviousOrderDto>> GetListOfPreviousOrderByUserIdAsync(string userId);
 
     }
 }

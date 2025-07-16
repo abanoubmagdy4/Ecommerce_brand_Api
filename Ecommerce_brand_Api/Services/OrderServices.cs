@@ -389,6 +389,29 @@ namespace Ecommerce_brand_Api.Services
             var result = await _unitofwork.GetOrderRepository().GetOrderSummariesAsync(filter);
             return result;  
         }
+        public  async Task<ServiceResult> GetListOfPreviousOrderByUserId(string userId)
+        {
+            try
+            {
+                List<PreviousOrderDto> previousOrderDtos =
+                    await _unitofwork.GetOrderRepository().GetListOfPreviousOrderByUserIdAsync(userId);
+
+                return new ServiceResult
+                {
+                    Success = true,
+                    Data = previousOrderDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResult
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
 
     }
 }

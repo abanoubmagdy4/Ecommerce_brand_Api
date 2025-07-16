@@ -62,6 +62,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId);
         Task<ServiceResult?> UpdateOrderWithShippingStatus(UpdateShippingStatusDto dto);
         Task<PagedResult<OrderSummaryDto>> GetOrderSummariesAsync(OrderFilterDto filter);
+        Task<ServiceResult> GetListOfPreviousOrderByUserId(string userId);
 
             }
 

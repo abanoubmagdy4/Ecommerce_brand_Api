@@ -25,15 +25,16 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result);
         }
 
-        ///// <summary>
-        ///// إضافة منتج إلى الكارت
-        ///// </summary>
-        //[HttpPost]
-        //public async Task<IActionResult> AddToCurrentCart([FromBody] CartItemDto cartItemDto)
-        //{
-        //    var result = await _cartItemService.AddCartItemToCart(cartItemDto);
-        //    return Ok(result);
-        //}
+        /// <summary>
+        /// إضافة منتج إلى الكارت
+        /// </summary>
+
+        [HttpPost("AddCartItems")]
+        public async Task<IActionResult> AddToCart([FromBody] List<CartItemDto> cartItemDtos)
+        {
+            var result = await _cartItemService.AddCartItemsToCurrentCart(cartItemDtos);
+            return Ok(result);
+        }
 
 
         /// <summary>

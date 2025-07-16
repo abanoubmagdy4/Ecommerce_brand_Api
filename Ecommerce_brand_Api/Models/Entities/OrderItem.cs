@@ -12,5 +12,6 @@
         public ProductSizes productSize { get; set; }
         public Product Product { get; set; }
         public Order Order { get; set; }
+        public ProductRefund productRefund { get; set; }    
     }
 }

@@ -386,6 +386,21 @@ namespace Ecommerce_brand_Api.Controllers
             var result = await _orderService.GetOrderSummariesAsync(filter);
             return Ok(result);
         }
+        [HttpGet("previous-orders")]
+        public async Task<IActionResult> GetPreviousOrders()
+        { 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { message = "Invalid or missing token." });
+
+            var result = await _orderService.GetListOfPreviousOrderByUserId(userId);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok(result.Data);
+        }
 
     }
 }

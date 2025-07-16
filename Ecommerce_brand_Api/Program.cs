@@ -16,17 +16,20 @@ using System.Text.Json.Serialization;
                                     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
                                 });
 
-                                builder.Services.AddCors(options =>
-                                {
-                                    options.AddPolicy("AllowLocalhost4200", policy =>
-                                    {
-                                        policy.WithOrigins("http://localhost:4200") // Angular port
-                                              .AllowAnyHeader()
-                                              .AllowAnyMethod();
-                                    });
-                                });
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowLocalhost4200", policy =>
+                {
+                    policy
+                        .WithOrigins("http://localhost:4200") // Angular origin
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials(); // ✨ ضروري لو Angular بيبعت JWT
+                });
+            });
 
-                                builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                                                 .AddEntityFrameworkStores<AppDbContext>()
                                                 .AddDefaultTokenProviders();
 

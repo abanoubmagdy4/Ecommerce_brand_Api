@@ -44,7 +44,6 @@ namespace Ecommerce_brand_Api.Services
             // ✅ جلب أول خصم
             var discount = await _db.Discounts.FirstOrDefaultAsync();
             var discountValue = discount.DicountValue;
-
             var cart = await _cartService.GetCurrentUserCartAsync();
 
             if (cart == null)
@@ -55,17 +54,23 @@ namespace Ecommerce_brand_Api.Services
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     TotalBasePrice = itemTotal,
-                    TotalAmount = itemTotal - (itemTotal * discountValue),
+                    TotalAmount = itemTotal - discountValue,
                     CartItems = new List<CartItem>()
                 };
 
                 await cartRepo.AddAsync(NewCart);
                 await _unitofwork.SaveChangesAsync();
+                if (cart == null)
+                {
+                    cart = new CartDto();
+                    cart.Id = NewCart.Id;
+                }
             }
+
 
             var cartWithItems = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.Id == cart.Id,
-                include: q => q.Include(c => c.CartItems)
+                include: q => q.Include(c => c.CartItems).ThenInclude(X => X.Product).ThenInclude(X => X.Category)
             );
 
             var existingItem = cartWithItems.CartItems.FirstOrDefault(ci =>
@@ -77,6 +82,7 @@ namespace Ecommerce_brand_Api.Services
                 existingItem.Quantity += cartItemDto.Quantity;
                 existingItem.TotalPriceForOneItemType = existingItem.Product.PriceAfterDiscount * existingItem.Quantity;
                 await cartItemRepo.UpdateAsync(existingItem);
+
             }
             else
             {
@@ -100,6 +106,102 @@ namespace Ecommerce_brand_Api.Services
             );
 
             return _mapper.Map<CartItemDto>(finalItem);
+        }
+
+
+        public async Task<CartItemDto> AddCartItemsToCurrentCart(List<CartItemDto> cartItemDtos)
+        {
+            if (cartItemDtos == null || !cartItemDtos.Any())
+                throw new ArgumentException("Cart items cannot be null or empty.");
+
+            var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+            var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
+            var userId = _currentUserService.UserId;
+
+            var discount = await _db.Discounts.FirstOrDefaultAsync();
+            var discountValue = discount?.DicountValue ?? 0;
+
+            var cart = await _cartService.GetCurrentUserCartAsync();
+
+            if (cart == null)
+            {
+                var newCart = new Cart
+                {
+                    UserId = userId,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    TotalBasePrice = 0,
+                    TotalAmount = 0,
+                    CartItems = new List<CartItem>()
+                };
+
+                await cartRepo.AddAsync(newCart);
+                await _unitofwork.SaveChangesAsync();
+
+                cart = _mapper.Map<CartDto>(newCart);
+            }
+
+            var cartWithItems = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.Id == cart.Id,
+                include: q => q.Include(c => c.CartItems)
+                               .ThenInclude(ci => ci.Product)
+                               .ThenInclude(p => p.Category)
+            );
+
+            decimal totalNewItemsPrice = 0;
+
+            foreach (var itemDto in cartItemDtos)
+            {
+                var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(
+                    ps => ps.Id == itemDto.ProductSizeId,
+                    include: q => q.Include(ps => ps.Product)
+                );
+
+                if (productSize == null || productSize.Product == null)
+                    throw new Exception("Product size or linked product not found");
+
+                if (productSize.StockQuantity < itemDto.Quantity)
+                    throw new Exception($"Insufficient quantity for product {productSize.Product.Name}");
+
+                var unitPrice = productSize.Product.PriceAfterDiscount;
+                var itemTotal = unitPrice * itemDto.Quantity;
+                totalNewItemsPrice += itemTotal;
+
+                var existingItem = cartWithItems.CartItems.FirstOrDefault(ci =>
+                    ci.ProductId == itemDto.ProductId &&
+                    ci.ProductSizeId == itemDto.ProductSizeId);
+
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += itemDto.Quantity;
+                    existingItem.TotalPriceForOneItemType = unitPrice * existingItem.Quantity;
+                    await cartItemRepo.UpdateAsync(existingItem);
+                }
+                else
+                {
+                    itemDto.UnitPrice = unitPrice;
+                    itemDto.TotalPriceForOneItemType = unitPrice * itemDto.Quantity;
+
+                    var newCartItem = _mapper.Map<CartItem>(itemDto);
+                    newCartItem.CartId = cart.Id;
+                    await cartItemRepo.AddAsync(newCartItem);
+                }
+            }
+
+            cartWithItems.TotalBasePrice += totalNewItemsPrice;
+            cartWithItems.TotalAmount = cartWithItems.TotalBasePrice - discountValue;
+            cartWithItems.UpdatedAt = DateTime.Now;
+
+            await cartRepo.UpdateAsync(cartWithItems);
+            await _unitofwork.SaveChangesAsync();
+
+            var finalItems = await cartItemRepo.GetQueryable()
+                .Where(i => i.CartId == cart.Id &&
+                            cartItemDtos.Select(dto => dto.ProductId).Contains(i.ProductId) &&
+                            cartItemDtos.Select(dto => dto.ProductSizeId).Contains(i.ProductSizeId))
+                .ToListAsync();
+
+            return _mapper.Map<List<CartItemDto>>(finalItems).FirstOrDefault() ?? throw new InvalidOperationException("No cart items were added.");
         }
 
 
@@ -197,6 +299,4 @@ namespace Ecommerce_brand_Api.Services
         }
 
     }
-
-
 }

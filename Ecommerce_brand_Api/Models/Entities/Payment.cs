@@ -33,7 +33,7 @@ namespace Ecommerce_brand_Api.Models.Entities
             public int CommissionFees { get; set; }
         public int refunded_amount_cents { get; set; } = 0;
         // وسيلة الدفع
-        public string PaymentMethod { get; set; } = "wallet";
+            public string PaymentMethod { get; set; } = "wallet";
             public string PhoneNumber { get; set; } = string.Empty;
             public string SourceType { get; set; } = "wallet";
 
