@@ -21,6 +21,9 @@
         public int CategoryId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public Category Category { get; set; } = null!;
+        public bool IsPublished { get; set; } = false;
+        public DateTime? PublishAt { get; set; }
+
 
     }
 }

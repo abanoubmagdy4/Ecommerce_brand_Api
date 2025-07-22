@@ -95,13 +95,19 @@ namespace Ecommerce_brand_Api.Services
                 var paymentResult = await CreatePaymobPaymentIntentionAsync(orderCreated);
 
                 return paymentResult;
+
+
             }
-            return ServiceResult.OkWithData(orderCreated);
+
+            return ServiceResult.OkWithData(new
+            {
+                message = "Your order has been placed successfully 🎉"
+            });
 
 
         }
-    
-      
+
+
         private async Task<ServiceResult> CreatePaymobPaymentIntentionAsync(Order orderCreated) {
 
             var url = "https://accept.paymob.com/v1/intention/";
