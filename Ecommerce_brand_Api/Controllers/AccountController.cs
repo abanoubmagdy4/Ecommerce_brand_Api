@@ -152,10 +152,12 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
 
-        [HttpGet("{customerId}/addresses")]
-        public async Task<ActionResult> GetListOfAddressesByCustomerIdAsync(string customerId)
+        [HttpGet("addresses")]
+        public async Task<ActionResult> GetListOfAddressesByCustomerIdAsync()
         {
-            var result = await _userService.GetListOfAddressesByCustomerIdAsync(customerId);
+            var userId = _userService.GetCurrentUserId();
+
+            var result = await _userService.GetListOfAddressesByCustomerIdAsync(userId);
 
             if (!result.Success)
             {
@@ -165,17 +167,20 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result.Data); 
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCustomerById(string id)
+        [HttpGet("GetCustomerBaseData")]
+        public async Task<IActionResult> GetCustomerById()
         {
             try
             {
-                var customer = await _userService.GetOneCustomerAsync(id);
+
+                var userId = _userService.GetCurrentUserId();
+
+                var customer = await _userService.GetOneCustomerAsync(userId);
                 return Ok(customer);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new { message = $"Customer with ID '{id}' not found." });
+                return NotFound(new { message = $"Customer not found." });
             }
             catch (ApplicationException ex)
             {
