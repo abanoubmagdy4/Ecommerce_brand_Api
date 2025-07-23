@@ -1,9 +1,13 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Helpers.Builders;
 using Ecommerce_brand_Api.Helpers.Enums;
+using Ecommerce_brand_Api.Helpers.Hubs;
 using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Dtos.Payment.PaymentResponse;
 using Ecommerce_brand_Api.Models.Entities;
 using Ecommerce_brand_Api.Services.Interfaces;
+using Hangfire.Server;
+using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics.Eventing.Reader;
 using System.Net.Http;
 using static Ecommerce_brand_Api.Models.Dtos.Payment.WebhookRequestDto;
@@ -25,9 +29,9 @@ namespace Ecommerce_brand_Api.Services
         private readonly IRefundRepository _RefundRepository;
         private readonly IProductSizesRepository _productSizesRepository;
         private readonly HttpClient _httpClient;
-
+        private readonly IHubContext<OrderHub> _hubContext;
         public PaymentService(IUnitofwork unitOfWork, IMapper mapper, IWebHostEnvironment env,
-            IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory) : base(unitOfWork.GetBaseRepository<Payment>())
+            IServiceUnitOfWork serviceUnitOfWork, IHttpClientFactory httpClientFactory, IHubContext<OrderHub> hubContext) : base(unitOfWork.GetBaseRepository<Payment>())
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -42,6 +46,7 @@ namespace Ecommerce_brand_Api.Services
             _cartService = _serviceUnitOfWork.Carts;
             _RefundRepository = _unitOfWork.Refund;
             _productSizesRepository = _unitOfWork.ProductsSizes;
+            _hubContext = hubContext;
         }
 
         public async Task<Payment?> GetPaymentByTransactionIdAsync(long transactionId)
@@ -93,12 +98,17 @@ namespace Ecommerce_brand_Api.Services
             {
 
                 var paymentResult = await CreatePaymobPaymentIntentionAsync(orderCreated);
+              
+                OrderSummaryDto orderSummaryDto = OrderSummaryDtoBuilder.PrepareOrderSummary(orderCreated, orderCreated.Payment);
+                await _hubContext.Clients.All.SendAsync("NewOrderArrived", orderSummaryDto);
 
                 return paymentResult;
 
 
             }
 
+            var dto = OrderSummaryDtoBuilder.PrepareOrderSummary(orderCreated, orderCreated.Payment);
+            await _hubContext.Clients.All.SendAsync("NewOrderArrived", dto);
             return ServiceResult.OkWithData(new
             {
                 message = "Your order has been placed successfully 🎉"
@@ -301,7 +311,11 @@ namespace Ecommerce_brand_Api.Services
                 await _cartService.RemovePurchasedProductsFromCartAsync(order.CustomerId, cartProductIds);
 
             }
-
+            if (order != null && payment != null)
+            {
+                var dto = OrderSummaryDtoBuilder.PrepareOrderSummary(order, payment);
+                await _hubContext.Clients.All.SendAsync("NewOrderArrived", dto);
+            }
         }
 
         private bool ShouldClearCart(PaymentStatus status) =>

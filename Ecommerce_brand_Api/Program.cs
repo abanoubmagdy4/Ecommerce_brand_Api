@@ -197,6 +197,7 @@ namespace Ecommerce_brand_Api
             app.UseAuthorization();
             app.UseHangfireDashboard("/hangfire");
             app.MapHub<ProductHub>("/ProductHub");
+            app.MapHub<OrderHub>("/OrderHub");
 
             app.UseHttpsRedirection();
 
