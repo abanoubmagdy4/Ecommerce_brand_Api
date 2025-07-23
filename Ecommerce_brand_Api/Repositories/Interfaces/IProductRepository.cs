@@ -7,5 +7,6 @@ namespace Ecommerce_brand_Api.Repositories.Interfaces
         Task<IEnumerable<Product>> GetAllWithImagesAsync();
         IQueryable<Product> GetAllDeletedProductsQueryable();
         Task<Product?> GetProductById(int id);
+        IQueryable<Product> GetAllProductsForAdminDashboardQueryable();
     }
 }

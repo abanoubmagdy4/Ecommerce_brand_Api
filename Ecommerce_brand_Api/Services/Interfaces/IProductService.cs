@@ -7,7 +7,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
 {
     public interface IProductService : IBaseService<Product>
     {
-        Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsAsync(ProductFilterParams pagination);
+        Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsForCustomerAsync(ProductFilterParams pagination);
         Task<IEnumerable<ProductDtoResponse>> GetAllAsync();
         Task<ProductDtoResponse?> GetByIdAsync(int id);
         Task<ServiceResult> AddProductAsync(ProductDtoRequest dto);
@@ -23,5 +23,6 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<IEnumerable<ProductDtoResponse>> GetByCategoryAsync(int categoryId);
         Task<ProductDtoResponse> AddToNewArrivals(int Id);
         Task<PaginatedResult<ProductDtoResponse>> GetPaginatedDeletedProductsAsync(ProductFilterParams filter);
+        Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsForAdminDashboardAsync(ProductFilterParams filter);
     }
 }

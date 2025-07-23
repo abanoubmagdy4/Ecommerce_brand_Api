@@ -36,9 +36,17 @@ namespace Ecommerce_brand_Api.Repositories
                       .Where(p => p.IsDeleted == true);
 
             return query;
-
         }
+        public IQueryable<Product> GetAllProductsForAdminDashboardQueryable()
+        {
+            IQueryable<Product> query = _context.Set<Product>().AsQueryable()
+                  .IgnoreQueryFilters()
+                     .Include(p => p.ProductSizes)
+                     .Include(p => p.ProductImagesPaths)
+                      .Where(p => p.IsDeleted == true || p.IsDeleted == false);
 
+            return query;
+        }
         public async Task<Product?> GetProductById(int id)
         {
             Product? product = _context.Products.IgnoreQueryFilters().FirstOrDefault(p => p.Id == id);

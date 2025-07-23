@@ -283,7 +283,7 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsAsync(ProductFilterParams filter)
+        public async Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsForCustomerAsync(ProductFilterParams filter)
         {
             var productRepo = _unitOfWork.GetBaseRepository<Product>();
             IQueryable<Product> query = productRepo.GetQueryable();
@@ -294,6 +294,64 @@ namespace Ecommerce_brand_Api.Services
                 .Include(p => p.ProductImagesPaths).Where(p=>p.IsPublished);
 
             // فلترة حسب الكاتيجوري
+            if (filter.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+            }
+
+            // فلترة حسب الكلمة المفتاحية في الاسم أو الوصف
+            if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+            {
+                var keyword = filter.SearchTerm.Trim().ToLower();
+                query = query.Where(p =>
+                    p.Name.ToLower().Contains(keyword) ||
+                    p.Description.ToLower().Contains(keyword));
+            }
+
+            // فلترة حسب السعر الأدنى
+            if (filter.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= filter.MinPrice.Value);
+            }
+
+            // فلترة حسب السعر الأقصى
+            if (filter.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+            }
+
+            // فلترة حسب المنتجات الجديدة (هتحتاج تكون معرف حاجة زي IsNewArrival أو CreatedAt قريب)
+            if (filter.isNewArrival.HasValue && filter.isNewArrival.Value)
+            {
+                var recentDate = DateTime.UtcNow.AddDays(-7); // آخر 7 أيام مثلاً
+                query = query.Where(p => p.CreatedAt >= recentDate);
+            }
+
+            // ترتيب حسب الأحدث
+            query = query.OrderByDescending(p => p.CreatedAt);
+
+            // تنفيذ الاستعلام وتحويل لـ DTO
+            var pagedResult = await query
+                .ProjectTo<ProductDtoResponse>(_mapper.ConfigurationProvider)
+                .ToPaginatedResultAsync(filter.PageIndex, filter.PageSize);
+
+            // تحويل PublishAt لكل منتج لتوقيت مصر
+            var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            foreach (var item in pagedResult.Items)
+            {
+                if (item.PublishAt.HasValue)
+                {
+                    item.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(item.PublishAt.Value, egyptTimeZone);
+                }
+            }
+
+            return pagedResult;
+        }
+
+        public async Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsForAdminDashboardAsync(ProductFilterParams filter)
+        {
+            var query = _unitOfWork.Products.GetAllProductsForAdminDashboardQueryable();
+             // فلترة حسب الكاتيجوري
             if (filter.CategoryId.HasValue)
             {
                 query = query.Where(p => p.CategoryId == filter.CategoryId.Value);

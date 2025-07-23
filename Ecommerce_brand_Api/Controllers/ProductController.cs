@@ -178,12 +178,12 @@ namespace Ecommerce_brand_Api.Controllers
 
             return Ok("Stock increased successfully.");
         }
-        [HttpGet("paginated")]
-        public async Task<IActionResult> GetPaginatedProducts([FromQuery] ProductFilterParams filter)
+        [HttpGet("Custpaginated")]
+        public async Task<IActionResult> GetPaginatedCustomerProducts([FromQuery] ProductFilterParams filter)
         {
             try
             {
-                var result = await _productService.GetPaginatedProductsAsync(filter);
+                var result = await _productService.GetPaginatedProductsForCustomerAsync(filter);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -195,6 +195,24 @@ namespace Ecommerce_brand_Api.Controllers
                 });
             }
         }
+        [HttpGet("AdDashpaginated")]
+        public async Task<IActionResult> GetPaginatedAdminDashboardProducts([FromQuery] ProductFilterParams filter)
+        {
+            try
+            {
+                var result = await _productService.GetPaginatedProductsForAdminDashboardAsync(filter);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while fetching paginated products.",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpGet("paginatedDeleted")]
         public async Task<IActionResult> GetPaginatedDeletedProducts([FromQuery] ProductFilterParams filter)
         {
