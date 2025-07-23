@@ -259,29 +259,33 @@ namespace Ecommerce_brand_Api.Services
             }
         }
 
-        public async Task<bool> UpdateProductSizes(List<ProductSizesDto> productsSizesDto)
+        public async Task<List<ProductSizesDto>> UpdateProductSizes(List<ProductSizesDto> productsSizesDto)
         {
-            try
+            var ids = productsSizesDto.Select(x => x.Id).ToList();
+
+            var existingSizes = await _unitOfWork.ProductsSizes
+                .GetQueryable()
+                .Where(x => ids.Contains(x.Id))
+                .ToListAsync();
+
+            var existingDict = existingSizes.ToDictionary(x => x.Id);
+            var updatedDtos = new List<ProductSizesDto>();
+
+            foreach (var dto in productsSizesDto)
             {
-                foreach (var dto in productsSizesDto)
-                {
-                    var existingProductSize = await _unitOfWork.ProductsSizes.GetByIdAsync(dto.Id);
-                    if (existingProductSize == null)
-                        throw new KeyNotFoundException($"Product size with ID {dto.Id} not found.");
+                if (!existingDict.TryGetValue(dto.Id, out var existing))
+                    continue; // أو throw حسب المطلوب
 
-                    _mapper.Map(dto, existingProductSize);
-
-                    await _unitOfWork.ProductsSizes.UpdateAsync(existingProductSize);
-                    await _unitOfWork.SaveChangesAsync();
-                }
-
-                return true;
+                _mapper.Map(dto, existing);
+                updatedDtos.Add(_mapper.Map<ProductSizesDto>(existing));
             }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("Error while updating product sizes.", ex);
-            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return updatedDtos;
         }
+
+
 
         public async Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsForCustomerAsync(ProductFilterParams filter)
         {

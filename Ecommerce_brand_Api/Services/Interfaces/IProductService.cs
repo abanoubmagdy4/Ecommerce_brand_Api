@@ -15,7 +15,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<bool> UpdateBasicInfoAsync(ProductBaseUpdateDto dto);
         Task<bool> ReplaceImageByIdAsync(int imageId, IFormFile newImageFile);
         Task<bool> UpdateProductSizesAsync(ProductSizesUpdateDto dto);
-        Task<bool> UpdateProductSizes(List<ProductSizesDto> productsSizesDto);
+        Task<List<ProductSizesDto>> UpdateProductSizes(List<ProductSizesDto> productsSizesDto);
         Task<bool> DeleteAsync(int id);
         Task<bool> RestoreProduct(int id);
         Task<bool> DecreaseStockAsync(int productId, int quantity);

@@ -114,10 +114,16 @@ namespace Ecommerce_brand_Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _productService.UpdateProductSizes(dtoList);
-            return updated
-                ? Ok(new { message = "Product Sizes Updated successfully." })
-                : NotFound();
+            var result = await _productService.UpdateProductSizes(dtoList);
+
+            if (result == null || result.Count == 0)
+                return NotFound(new { message = "No product sizes were updated." });
+
+            return Ok(new
+            {
+                message = "Product sizes updated successfully.",
+                data = result
+            });
         }
 
 
