@@ -118,7 +118,7 @@ namespace Ecommerce_brand_Api.Services
 
         public async Task<bool> RestoreProduct(int id)
         {
-            var product = await _unitOfWork.Products.GetByIdAsync(id);
+            var product = await _unitOfWork.Products.GetProductById(id);
             if (product == null) return false;
 
             product.IsDeleted = false;
@@ -289,7 +289,7 @@ namespace Ecommerce_brand_Api.Services
             IQueryable<Product> query = productRepo.GetQueryable();
 
             // Include العلاقات
-            query = query
+            query = query   
                 .Include(p => p.ProductSizes)
                 .Include(p => p.ProductImagesPaths).Where(p=>p.IsPublished);
 

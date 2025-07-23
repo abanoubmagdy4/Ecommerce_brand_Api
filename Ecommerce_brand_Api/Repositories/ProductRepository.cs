@@ -39,7 +39,11 @@ namespace Ecommerce_brand_Api.Repositories
 
         }
 
-
+        public async Task<Product?> GetProductById(int id)
+        {
+            Product? product = _context.Products.IgnoreQueryFilters().FirstOrDefault(p => p.Id == id);
+            return product;
+        }
 
     }
 }
