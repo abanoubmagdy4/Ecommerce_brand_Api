@@ -22,6 +22,7 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new Exception("Product not found");
             }
+
             product.isNewArrival = true;
             await _unitofwork.Products.UpdateAsync(product);
 
@@ -31,16 +32,28 @@ namespace Ecommerce_brand_Api.Services
             {
                 throw new Exception("Product is already a new arrival");
             }
+
             var newArrival = new NewArrivals
             {
                 ProductId = productId,
             };
+
             // Map the product to ProductDto
             var productDto = _mapper.Map<ProductDtoResponse>(product);
+
+            // تحويل توقيت PublishAt لتوقيت مصر لو موجود
+            if (productDto.PublishAt.HasValue)
+            {
+                var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+                productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
+            }
+
             await _unitofwork.NewArrivals.AddAsync(newArrival);
             await _unitofwork.SaveChangesAsync();
+
             return productDto;
         }
+
 
         public async Task<bool> DeleteNewArrival(int Id)
         {
@@ -72,8 +85,19 @@ namespace Ecommerce_brand_Api.Services
                 .ProjectTo<ProductDtoResponse>(_mapper.ConfigurationProvider)
                 .ToPaginatedResultAsync(pagination.PageIndex, pagination.PageSize);
 
+            // تحويل PublishAt لتوقيت مصر
+            var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            foreach (var productDto in pagedResult.Items)
+            {
+                if (productDto.PublishAt.HasValue)
+                {
+                    productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
+                }
+            }
+
             return pagedResult;
         }
+
 
     }
 }

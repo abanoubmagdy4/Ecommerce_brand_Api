@@ -39,7 +39,11 @@
         public bool IsDeleted { get; set; } = false;
         public bool isNewArrival { get; set; }=false;
 
-       [Required]
+        public bool IsPublished { get; set; } = false;
+        [Required]
+        public DateTime PublishAt { get; set; }
+
+        [Required]
         public int CategoryId { get; set; }
     }
 }

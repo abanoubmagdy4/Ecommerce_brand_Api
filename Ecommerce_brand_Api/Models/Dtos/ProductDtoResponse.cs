@@ -40,5 +40,8 @@
 
         [Required]
         public int CategoryId { get; set; }
+
+        public bool IsPublished { get; set; }
+        public DateTime? PublishAt { get; set; }
     }
 }

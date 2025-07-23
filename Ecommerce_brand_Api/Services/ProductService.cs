@@ -1,8 +1,10 @@
 ﻿using AutoMapper.QueryableExtensions;
 using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Helpers.BackgroundServices;
 using Ecommerce_brand_Api.Models;
 using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Entities.Pagination;
+using Hangfire;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -76,9 +78,23 @@ namespace Ecommerce_brand_Api.Services
                     }
                 }
             }
+            var egyptZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            var localDateTime = dto.PublishAt; 
+            var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, egyptZone);
+
+            product.PublishAt = utcDateTime;
 
             await _unitOfWork.Products.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
+
+            var delay = product.PublishAt - DateTime.UtcNow;
+
+            if (delay < TimeSpan.Zero)
+                delay = TimeSpan.Zero;
+
+            BackgroundJob.Schedule<ProductPublisherJob>(
+                job => job.PublishProduct(product.Id),
+                delay.Value);
 
             var productResponsedto = _mapper.Map<ProductDtoResponse>(product);
 
@@ -104,15 +120,40 @@ namespace Ecommerce_brand_Api.Services
         public async Task<IEnumerable<ProductDtoResponse>> GetAllAsync()
         {
             var products = await _unitOfWork.Products.GetAllWithImagesAsync();
-            return _mapper.Map<IEnumerable<ProductDtoResponse>>(products);
+
+            var productDtos = _mapper.Map<IEnumerable<ProductDtoResponse>>(products);
+
+            var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            foreach (var productDto in productDtos)
+            {
+                if (productDto.PublishAt.HasValue)
+                {
+                    productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
+                }
+            }
+
+            return productDtos;
         }
+
 
 
         public async Task<ProductDtoResponse?> GetByIdAsync(int id)
         {
             var product = await _unitOfWork.Products.GetByIdWithImagesAsync(id);
-            return product == null ? null : _mapper.Map<ProductDtoResponse>(product);
+            if (product == null)
+                return null;
+
+            var productDto = _mapper.Map<ProductDtoResponse>(product);
+
+            if (productDto.PublishAt.HasValue)
+            {
+                var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+                productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
+            }
+
+            return productDto;
         }
+
 
 
 
@@ -165,13 +206,25 @@ namespace Ecommerce_brand_Api.Services
                 var filtered = products
                     .Where(p => p.CategoryId == categoryId && !p.IsDeleted);
 
-                return _mapper.Map<IEnumerable<ProductDtoResponse>>(filtered);
+                var productDtos = _mapper.Map<IEnumerable<ProductDtoResponse>>(filtered);
+
+                var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+                foreach (var productDto in productDtos)
+                {
+                    if (productDto.PublishAt.HasValue)
+                    {
+                        productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
+                    }
+                }
+
+                return productDtos;
             }
             catch (Exception ex)
             {
                 throw new ApplicationException("Error while retrieving products by category.", ex);
             }
         }
+
 
         public async Task<ServiceResult> AddProductSizeToProductAsync(List<ProductSizesDto> dtoList)
         {
@@ -223,7 +276,6 @@ namespace Ecommerce_brand_Api.Services
         public async Task<PaginatedResult<ProductDtoResponse>> GetPaginatedProductsAsync(ProductFilterParams filter)
         {
             var productRepo = _unitOfWork.GetBaseRepository<Product>();
-
             IQueryable<Product> query = productRepo.GetQueryable();
 
             // Include العلاقات
@@ -268,10 +320,81 @@ namespace Ecommerce_brand_Api.Services
             // ترتيب حسب الأحدث
             query = query.OrderByDescending(p => p.CreatedAt);
 
-            // تحويل لـ DTO وتطبيق البيچينيشن
+            // تنفيذ الاستعلام وتحويل لـ DTO
             var pagedResult = await query
                 .ProjectTo<ProductDtoResponse>(_mapper.ConfigurationProvider)
                 .ToPaginatedResultAsync(filter.PageIndex, filter.PageSize);
+
+            // تحويل PublishAt لكل منتج لتوقيت مصر
+            var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            foreach (var item in pagedResult.Items)
+            {
+                if (item.PublishAt.HasValue)
+                {
+                    item.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(item.PublishAt.Value, egyptTimeZone);
+                }
+            }
+
+            return pagedResult;
+        }
+        public async Task<PaginatedResult<ProductDtoResponse>> GetPaginatedDeletedProductsAsync(ProductFilterParams filter)
+        {
+            var query = _unitOfWork.Products.GetAllDeletedProductsQueryable();    
+
+        
+       
+
+            // فلترة حسب الكاتيجوري
+            if (filter.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+            }
+
+            // فلترة حسب الكلمة المفتاحية في الاسم أو الوصف
+            if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+            {
+                var keyword = filter.SearchTerm.Trim().ToLower();
+                query = query.Where(p =>
+                    p.Name.ToLower().Contains(keyword) ||
+                    p.Description.ToLower().Contains(keyword));
+            }
+
+            // فلترة حسب السعر الأدنى
+            if (filter.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= filter.MinPrice.Value);
+            }
+
+            // فلترة حسب السعر الأقصى
+            if (filter.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+            }
+
+            // فلترة حسب المنتجات الجديدة (هتحتاج تكون معرف حاجة زي IsNewArrival أو CreatedAt قريب)
+            if (filter.isNewArrival.HasValue && filter.isNewArrival.Value)
+            {
+                var recentDate = DateTime.UtcNow.AddDays(-7); // آخر 7 أيام مثلاً
+                query = query.Where(p => p.CreatedAt >= recentDate);
+            }
+
+            // ترتيب حسب الأحدث
+            query = query.OrderByDescending(p => p.CreatedAt);
+
+            // تنفيذ الاستعلام وتحويل لـ DTO
+            var pagedResult = await query
+                .ProjectTo<ProductDtoResponse>(_mapper.ConfigurationProvider)
+                .ToPaginatedResultAsync(filter.PageIndex, filter.PageSize);
+
+            // تحويل PublishAt لكل منتج لتوقيت مصر
+            var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            foreach (var item in pagedResult.Items)
+            {
+                if (item.PublishAt.HasValue)
+                {
+                    item.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(item.PublishAt.Value, egyptTimeZone);
+                }
+            }
 
             return pagedResult;
         }
@@ -281,9 +404,20 @@ namespace Ecommerce_brand_Api.Services
             var product = await _unitOfWork.Products.GetByIdAsync(Id);
             if (product == null)
                 throw new KeyNotFoundException("Product not found.");
+
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<ProductDtoResponse>(product);
+
+            var productDto = _mapper.Map<ProductDtoResponse>(product);
+
+            if (productDto.PublishAt.HasValue)
+            {
+                var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+                productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
+            }
+
+            return productDto;
         }
+
 
 
         public async Task<bool> UpdateBasicInfoAsync(ProductBaseUpdateDto dto)

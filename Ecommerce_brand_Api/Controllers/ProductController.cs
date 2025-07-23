@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Helpers.BackgroundServices;
 using Ecommerce_brand_Api.Models;
 using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Entities.Pagination;
@@ -13,10 +14,11 @@ namespace Ecommerce_brand_Api.Controllers
         private readonly IProductService _productService;
         private readonly INewArrivalsService _newArrivalsService;
 
-        public ProductsController(IProductService productService, INewArrivalsService newArrivalsService)
+        public ProductsController(IProductService productService, INewArrivalsService newArrivalsService )
         {
             _productService = productService;
             _newArrivalsService = newArrivalsService;
+
         }
 
 
@@ -185,7 +187,23 @@ namespace Ecommerce_brand_Api.Controllers
                 });
             }
         }
-
+        [HttpGet("paginatedDeleted")]
+        public async Task<IActionResult> GetPaginatedDeletedProducts([FromQuery] ProductFilterParams filter)
+        {
+            try
+            {
+                var result = await _productService.GetPaginatedDeletedProductsAsync(filter);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while fetching paginated products.",
+                    error = ex.Message
+                });
+            }
+        }
         [HttpPost("add-to-new-arrivals/{productId}")]
         public async Task<IActionResult> AddToNewArrivalsAsync(int productId)
         {
@@ -239,5 +257,6 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+      
     }
 }
