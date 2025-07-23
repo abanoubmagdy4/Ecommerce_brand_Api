@@ -116,6 +116,16 @@ namespace Ecommerce_brand_Api.Services
             return true;
         }
 
+        public async Task<bool> RestoreProduct(int id)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(id);
+            if (product == null) return false;
+
+            product.IsDeleted = false;
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
 
         public async Task<IEnumerable<ProductDtoResponse>> GetAllAsync()
         {

@@ -132,6 +132,14 @@ namespace Ecommerce_brand_Api.Controllers
                 : NotFound();
         }
 
+        [HttpPut("RestoreProduct{id}")]
+        public async Task<IActionResult> RestoreProduct(int id)
+        {
+            var deleted = await _productService.RestoreProduct(id);
+            return deleted
+                ? Ok(new { message = "Product Restored successfully." })
+                : BadRequest();
+        }
 
         //[HttpGet("ByCategory/{categoryId}")]
         //public async Task<IActionResult> GetByCategory(int categoryId)

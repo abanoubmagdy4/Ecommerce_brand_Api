@@ -17,6 +17,7 @@ namespace Ecommerce_brand_Api.Services.Interfaces
         Task<bool> UpdateProductSizesAsync(ProductSizesUpdateDto dto);
         Task<bool> UpdateProductSizes(List<ProductSizesDto> productsSizesDto);
         Task<bool> DeleteAsync(int id);
+        Task<bool> RestoreProduct(int id);
         Task<bool> DecreaseStockAsync(int productId, int quantity);
         Task<bool> IncreaseStockAsync(int productId, int quantity);
         Task<IEnumerable<ProductDtoResponse>> GetByCategoryAsync(int categoryId);

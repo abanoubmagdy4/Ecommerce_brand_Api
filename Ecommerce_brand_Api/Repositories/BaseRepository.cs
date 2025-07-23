@@ -25,7 +25,7 @@ namespace Ecommerce_brand_Api.Repositories
 
         public async Task<T> GetByIdAsync(int id)
         {
-            return await _dbSet.FindAsync(id);
+                return await _dbSet.FindAsync(id);
         }
 
         public async Task UpdateAsync(T entity)
