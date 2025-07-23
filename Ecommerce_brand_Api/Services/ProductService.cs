@@ -291,7 +291,7 @@ namespace Ecommerce_brand_Api.Services
             // Include العلاقات
             query = query
                 .Include(p => p.ProductSizes)
-                .Include(p => p.ProductImagesPaths);
+                .Include(p => p.ProductImagesPaths).Where(p=>p.IsPublished);
 
             // فلترة حسب الكاتيجوري
             if (filter.CategoryId.HasValue)
