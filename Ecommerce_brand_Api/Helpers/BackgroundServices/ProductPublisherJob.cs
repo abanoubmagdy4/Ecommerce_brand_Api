@@ -28,7 +28,7 @@ namespace Ecommerce_brand_Api.Helpers.BackgroundServices
 
         public async Task PublishProduct(int productId)
         {
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdWithImagesAsync(productId);
             if (product == null || product.IsPublished)
                 return;
 
