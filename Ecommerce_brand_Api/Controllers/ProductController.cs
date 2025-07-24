@@ -1,4 +1,5 @@
 ﻿using Ecommerce_brand_Api.Helpers;
+using Ecommerce_brand_Api.Helpers.BackgroundServices;
 using Ecommerce_brand_Api.Models;
 using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Entities.Pagination;
@@ -13,10 +14,11 @@ namespace Ecommerce_brand_Api.Controllers
         private readonly IProductService _productService;
         private readonly INewArrivalsService _newArrivalsService;
 
-        public ProductsController(IProductService productService, INewArrivalsService newArrivalsService)
+        public ProductsController(IProductService productService, INewArrivalsService newArrivalsService )
         {
             _productService = productService;
             _newArrivalsService = newArrivalsService;
+
         }
 
 
@@ -112,10 +114,16 @@ namespace Ecommerce_brand_Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _productService.UpdateProductSizes(dtoList);
-            return updated
-                ? Ok(new { message = "Product Sizes Updated successfully." })
-                : NotFound();
+            var result = await _productService.UpdateProductSizes(dtoList);
+
+            if (result == null || result.Count == 0)
+                return NotFound(new { message = "No product sizes were updated." });
+
+            return Ok(new
+            {
+                message = "Product sizes updated successfully.",
+                data = result
+            });
         }
 
 
@@ -130,6 +138,14 @@ namespace Ecommerce_brand_Api.Controllers
                 : NotFound();
         }
 
+        [HttpPut("RestoreProduct/{id}")]
+        public async Task<IActionResult> RestoreProduct(int id)
+        {
+            var deleted = await _productService.RestoreProduct(id);
+            return deleted
+                ? Ok(new { message = "Product Restored successfully." })
+                : BadRequest();
+        }
 
         //[HttpGet("ByCategory/{categoryId}")]
         //public async Task<IActionResult> GetByCategory(int categoryId)
@@ -168,12 +184,29 @@ namespace Ecommerce_brand_Api.Controllers
 
             return Ok("Stock increased successfully.");
         }
-        [HttpGet("paginated")]
-        public async Task<IActionResult> GetPaginatedProducts([FromQuery] ProductFilterParams filter)
+        [HttpGet("Custpaginated")]
+        public async Task<IActionResult> GetPaginatedCustomerProducts([FromQuery] ProductFilterParams filter)
         {
             try
             {
-                var result = await _productService.GetPaginatedProductsAsync(filter);
+                var result = await _productService.GetPaginatedProductsForCustomerAsync(filter);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while fetching paginated products.",
+                    error = ex.Message
+                });
+            }
+        }
+        [HttpGet("AdDashpaginated")]
+        public async Task<IActionResult> GetPaginatedAdminDashboardProducts([FromQuery] ProductFilterParams filter)
+        {
+            try
+            {
+                var result = await _productService.GetPaginatedProductsForAdminDashboardAsync(filter);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -186,6 +219,23 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+        [HttpGet("paginatedDeleted")]
+        public async Task<IActionResult> GetPaginatedDeletedProducts([FromQuery] ProductFilterParams filter)
+        {
+            try
+            {
+                var result = await _productService.GetPaginatedDeletedProductsAsync(filter);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while fetching paginated products.",
+                    error = ex.Message
+                });
+            }
+        }
         [HttpPost("add-to-new-arrivals/{productId}")]
         public async Task<IActionResult> AddToNewArrivalsAsync(int productId)
         {
@@ -239,5 +289,6 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+      
     }
 }

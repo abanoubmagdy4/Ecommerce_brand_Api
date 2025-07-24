@@ -390,6 +390,7 @@ namespace Ecommerce_brand_Api.Services
 
             user.FirstName = customerDto.FirstName;
             user.LastName = customerDto.LastName;
+            user.Gender = customerDto.Gender;   
             user.PhoneNumber = customerDto.PhoneNumber;
             user.DateOfBirth = customerDto.DateOfBirth;
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Controllers
 {
@@ -152,10 +153,12 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
 
-        [HttpGet("{customerId}/addresses")]
-        public async Task<ActionResult> GetListOfAddressesByCustomerIdAsync(string customerId)
+        [HttpGet("addresses")]
+        public async Task<ActionResult> GetListOfAddressesByCustomerIdAsync()
         {
-            var result = await _userService.GetListOfAddressesByCustomerIdAsync(customerId);
+            var userId = _userService.GetCurrentUserId();
+
+            var result = await _userService.GetListOfAddressesByCustomerIdAsync(userId);
 
             if (!result.Success)
             {
@@ -165,17 +168,20 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok(result.Data); 
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCustomerById(string id)
+        [HttpGet("GetCustomerBaseData")]
+        public async Task<IActionResult> GetCustomerById()
         {
             try
             {
-                var customer = await _userService.GetOneCustomerAsync(id);
+
+                var userId = _userService.GetCurrentUserId();
+
+                var customer = await _userService.GetOneCustomerAsync(userId);
                 return Ok(customer);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new { message = $"Customer with ID '{id}' not found." });
+                return NotFound(new { message = $"Customer not found." });
             }
             catch (ApplicationException ex)
             {
@@ -221,7 +227,41 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<IActionResult> UpdateProfile([FromBody] CustomerDto customerDto)
+        {
+            try
+            {
+                var userId = _userService.GetCurrentUserId();
 
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new { message = "User is not authenticated or token is invalid." });
+                }
+
+                var user = await _userService.GetByStringIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = $"Customer not found." });
+                }
+
+                var updatedUser = await _userService.UpdatedUserAsync(user, customerDto);
+
+                return Ok(customerDto);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Customer not found." });
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, new { message = $"Application error: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Unexpected error occurred: {ex.Message}" });
+            }
+        }
 
     }
 }
