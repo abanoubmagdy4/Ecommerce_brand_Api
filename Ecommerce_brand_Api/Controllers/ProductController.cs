@@ -138,7 +138,7 @@ namespace Ecommerce_brand_Api.Controllers
                 : NotFound();
         }
 
-        [HttpPut("RestoreProduct{id}")]
+        [HttpPut("RestoreProduct/{id}")]
         public async Task<IActionResult> RestoreProduct(int id)
         {
             var deleted = await _productService.RestoreProduct(id);
