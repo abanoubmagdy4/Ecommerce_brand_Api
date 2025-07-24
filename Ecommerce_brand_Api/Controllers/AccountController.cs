@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_brand_Api.Controllers
 {
@@ -226,7 +227,41 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<IActionResult> UpdateProfile([FromBody] CustomerDto customerDto)
+        {
+            try
+            {
+                var userId = _userService.GetCurrentUserId();
 
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new { message = "User is not authenticated or token is invalid." });
+                }
+
+                var user = await _userService.GetByStringIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = $"Customer not found." });
+                }
+
+                var updatedUser = await _userService.UpdatedUserAsync(user, customerDto);
+
+                return Ok(customerDto);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Customer not found." });
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, new { message = $"Application error: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Unexpected error occurred: {ex.Message}" });
+            }
+        }
 
     }
 }
