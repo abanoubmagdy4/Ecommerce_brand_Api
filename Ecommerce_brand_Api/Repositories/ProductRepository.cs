@@ -40,10 +40,10 @@ namespace Ecommerce_brand_Api.Repositories
         public IQueryable<Product> GetAllProductsForAdminDashboardQueryable()
         {
             IQueryable<Product> query = _context.Set<Product>().AsQueryable()
-                  .IgnoreQueryFilters()
+                      .IgnoreQueryFilters()
                      .Include(p => p.ProductSizes)
                      .Include(p => p.ProductImagesPaths)
-                      .Where(p => p.IsDeleted == true || p.IsDeleted == false);
+                     .Where(p => p.IsDeleted == false);
 
             return query;
         }
