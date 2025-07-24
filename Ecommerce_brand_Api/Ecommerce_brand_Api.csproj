@@ -28,7 +28,4 @@
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="9.0.0" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="wwwroot\uploads\" />
-    </ItemGroup>
 </Project>
