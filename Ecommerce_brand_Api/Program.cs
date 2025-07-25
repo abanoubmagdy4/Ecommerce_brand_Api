@@ -101,7 +101,6 @@ namespace Ecommerce_brand_Api
             ///////////////////////////////////////////////////////////////////////////////////////////////////
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICartService, CartServices>();
-            builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
             builder.Services.AddScoped<IUserService, UserService>();
@@ -113,12 +112,8 @@ namespace Ecommerce_brand_Api
             builder.Services.AddHttpContextAccessor();
 
 
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IGovernrateShippingCostService, GovernrateShippingCostService>();
-            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
