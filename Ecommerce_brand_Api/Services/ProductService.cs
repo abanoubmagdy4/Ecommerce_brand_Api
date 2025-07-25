@@ -123,6 +123,8 @@ namespace Ecommerce_brand_Api.Services
 
             product.IsDeleted = false;
             await _unitOfWork.SaveChangesAsync();
+
+  
             return true;
         }
 
@@ -282,7 +284,7 @@ namespace Ecommerce_brand_Api.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            return updatedDtos;
+            return productsSizesDto;
         }
 
 
@@ -504,8 +506,20 @@ namespace Ecommerce_brand_Api.Services
             product.DiscountPercentage = dto.DiscountPercentage;
             product.CategoryId = dto.CategoryId;
             product.IsDeleted = dto.IsDeleted;
+            product.IsPublished = dto.IsPublished;
+            product.PublishAt= dto.PublishAt;
 
             await _unitOfWork.SaveChangesAsync();
+
+            var delay = product.PublishAt - DateTime.UtcNow;
+
+            if (delay < TimeSpan.Zero)
+                delay = TimeSpan.Zero;
+
+            BackgroundJob.Schedule<ProductPublisherJob>(
+                job => job.PublishProduct(product.Id),
+                delay.Value);
+
             return true;
         }
 

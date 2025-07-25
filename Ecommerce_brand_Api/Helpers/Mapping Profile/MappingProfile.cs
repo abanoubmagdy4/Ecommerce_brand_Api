@@ -49,6 +49,7 @@ namespace Ecommerce_brand_Api.Helpers.Mapping_Profile
                         .Where(img => img.Priority == 1)
                         .Select(img => img.ImagePath)
                         .FirstOrDefault()))
+
                 .ForMember(dest => dest.ProductSizeName, opt => opt.MapFrom(src => src.ProductSize.Size))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.Product.Price))
                 .ForMember(dest => dest.TotalPriceForOneItemType, opt => opt.MapFrom(src => src.TotalPriceForOneItemType)); // ← ممكن تضيف دي للتأكيد

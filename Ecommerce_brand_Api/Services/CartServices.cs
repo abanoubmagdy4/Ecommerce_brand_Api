@@ -40,11 +40,14 @@ namespace Ecommerce_brand_Api.Services
                 var cartRepo = _unitofwork.GetBaseRepository<Cart>();
 
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
-                    c => c.UserId == _currentUserService.UserId,
-                    include: q => q
-                        .Include(c => c.CartItems)
-                            .ThenInclude(ci => ci.Product)
-                );
+                     c => c.UserId == _currentUserService.UserId,
+            include: q => q
+                .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                        .ThenInclude(p => p.ProductImagesPaths)
+                .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.ProductSize)
+        );
 
                 if (cart == null)
                 {
@@ -52,6 +55,18 @@ namespace Ecommerce_brand_Api.Services
                 }
 
                 var cartDto = mapper.Map<CartDto>(cart);
+
+                var cartItemDtosById = cartDto.CartItems.ToDictionary(ci => ci.Id);
+
+                foreach (var cartItem in cart.CartItems)
+                {
+                    if (cartItemDtosById.TryGetValue(cartItem.Id, out var cartItemDto))
+                    {
+                        cartItemDto.ProductImageUrl = cartItem.Product.ProductImagesPaths.FirstOrDefault()?.ImagePath ?? string.Empty;
+                        cartItemDto.ProductSizeName = cartItem.ProductSize?.Size ?? "غير محدد";
+                    }
+                }
+
 
                 var discount = await _unitofwork.GetBaseRepository<Discount>().GetFirstOrDefaultAsync();
 

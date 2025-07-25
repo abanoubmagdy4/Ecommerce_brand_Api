@@ -25,6 +25,8 @@
         public bool IsDeleted { get; set; } = false;
         public bool isNewArrival { get; set; } = false;
 
+        public bool IsPublished { get; set; } = false;
+        public DateTime? PublishAt { get; set; }
 
     }
 }

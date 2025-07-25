@@ -26,6 +26,7 @@ namespace Ecommerce_brand_Api
                 {
                     policy
                         .WithOrigins("http://localhost:4200") // Angular origin
+                        .WithOrigins("http://localhost:50775")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials(); // ✨ ضروري لو Angular بيبعت JWT
