@@ -168,5 +168,6 @@ namespace Ecommerce_brand_Api.Controllers
                 return StatusCode(500, new ApiErrorResponse(StatusCodes.Status500InternalServerError, $"Server error: {ex.Message}"));
             }
         }
+
     }
 }

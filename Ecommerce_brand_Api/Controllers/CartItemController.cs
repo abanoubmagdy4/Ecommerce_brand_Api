@@ -16,28 +16,6 @@ namespace Ecommerce_brand_Api.Controllers
         }
 
         /// <summary>
-        /// إضافة منتج إلى الكارت
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> AddToCart([FromBody] CartItemDto cartItemDto)
-        {
-            var result = await _cartItemService.AddCartItemToCurrentCart(cartItemDto);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// إضافة منتج إلى الكارت
-        /// </summary>
-
-        [HttpPost("AddCartItems")]
-        public async Task<IActionResult> AddToCart([FromBody] List<CartItemDto> cartItemDtos)
-        {
-            var result = await _cartItemService.AddCartItemsToCurrentCart(cartItemDtos);
-            return Ok(result);
-        }
-
-
-        /// <summary>
         /// تعديل الكمية أو بيانات عنصر في الكارت
         /// </summary>
         [HttpPut]
@@ -54,6 +32,28 @@ namespace Ecommerce_brand_Api.Controllers
         public async Task<IActionResult> DeleteCartItem(int cartItemId)
         {
             var result = await _cartItemService.DeleteCartItemFromCart(cartItemId);
+            return Ok(result);
+        }
+
+        // <summary>
+        /// إضافة منتج إلى الكارت
+        /// </summary>
+        
+        [HttpPost("add-single")]
+        public async Task<IActionResult> AddToCart([FromBody] CartItemDto cartItemDto)
+        {
+            var result = await _cartItemService.AddCartItemToCurrentCart(cartItemDto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// إضافة منتج إلى الكارت
+        /// </summary>
+
+        [HttpPost("add-multiple")]
+        public async Task<IActionResult> AddToCartItems([FromBody] List<CartItemDto> cartItemDtos)
+        {
+            var result = await _cartItemService.AddCartItemsToCurrentCart(cartItemDtos);
             return Ok(result);
         }
     }

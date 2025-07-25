@@ -109,103 +109,6 @@ namespace Ecommerce_brand_Api.Services
         }
 
 
-        public async Task<CartItemDto> AddCartItemsToCurrentCart(List<CartItemDto> cartItemDtos)
-        {
-            if (cartItemDtos == null || !cartItemDtos.Any())
-                throw new ArgumentException("Cart items cannot be null or empty.");
-
-            var cartRepo = _unitofwork.GetBaseRepository<Cart>();
-            var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
-            var userId = _currentUserService.UserId;
-
-            var discount = await _db.Discounts.FirstOrDefaultAsync();
-            var discountValue = discount?.DicountValue ?? 0;
-
-            var cart = await _cartService.GetCurrentUserCartAsync();
-
-            if (cart == null)
-            {
-                var newCart = new Cart
-                {
-                    UserId = userId,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                    TotalBasePrice = 0,
-                    TotalAmount = 0,
-                    CartItems = new List<CartItem>()
-                };
-
-                await cartRepo.AddAsync(newCart);
-                await _unitofwork.SaveChangesAsync();
-
-                cart = _mapper.Map<CartDto>(newCart);
-            }
-
-            var cartWithItems = await cartRepo.GetFirstOrDefaultAsync(
-                c => c.Id == cart.Id,
-                include: q => q.Include(c => c.CartItems)
-                               .ThenInclude(ci => ci.Product)
-                               .ThenInclude(p => p.Category)
-            );
-
-            decimal totalNewItemsPrice = 0;
-
-            foreach (var itemDto in cartItemDtos)
-            {
-                var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(
-                    ps => ps.Id == itemDto.ProductSizeId,
-                    include: q => q.Include(ps => ps.Product)
-                );
-
-                if (productSize == null || productSize.Product == null)
-                    throw new Exception("Product size or linked product not found");
-
-                if (productSize.StockQuantity < itemDto.Quantity)
-                    throw new Exception($"Insufficient quantity for product {productSize.Product.Name}");
-
-                var unitPrice = productSize.Product.PriceAfterDiscount;
-                var itemTotal = unitPrice * itemDto.Quantity;
-                totalNewItemsPrice += itemTotal;
-
-                var existingItem = cartWithItems.CartItems.FirstOrDefault(ci =>
-                    ci.ProductId == itemDto.ProductId &&
-                    ci.ProductSizeId == itemDto.ProductSizeId);
-
-                if (existingItem != null)
-                {
-                    existingItem.Quantity += itemDto.Quantity;
-                    existingItem.TotalPriceForOneItemType = unitPrice * existingItem.Quantity;
-                    await cartItemRepo.UpdateAsync(existingItem);
-                }
-                else
-                {
-                    itemDto.UnitPrice = unitPrice;
-                    itemDto.TotalPriceForOneItemType = unitPrice * itemDto.Quantity;
-
-                    var newCartItem = _mapper.Map<CartItem>(itemDto);
-                    newCartItem.CartId = cart.Id;
-                    await cartItemRepo.AddAsync(newCartItem);
-                }
-            }
-
-            cartWithItems.TotalBasePrice += totalNewItemsPrice;
-            cartWithItems.TotalAmount = cartWithItems.TotalBasePrice - discountValue;
-            cartWithItems.UpdatedAt = DateTime.Now;
-
-            await cartRepo.UpdateAsync(cartWithItems);
-            await _unitofwork.SaveChangesAsync();
-
-            var finalItems = await cartItemRepo.GetQueryable()
-                .Where(i => i.CartId == cart.Id &&
-                            cartItemDtos.Select(dto => dto.ProductId).Contains(i.ProductId) &&
-                            cartItemDtos.Select(dto => dto.ProductSizeId).Contains(i.ProductSizeId))
-                .ToListAsync();
-
-            return _mapper.Map<List<CartItemDto>>(finalItems).FirstOrDefault() ?? throw new InvalidOperationException("No cart items were added.");
-        }
-
-
-
         public async Task<CartItemDto> UpdateCartItem(CartItemDto cartItemDto)
         {
             var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
@@ -296,6 +199,108 @@ namespace Ecommerce_brand_Api.Services
             await _unitofwork.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<List<CartItemDto>> AddCartItemsToCurrentCart(List<CartItemDto> cartItemDtos)
+        {
+            if (cartItemDtos == null || !cartItemDtos.Any())
+                throw new ArgumentException("Cart items cannot be null or empty.");
+
+            var cartRepo = _unitofwork.GetBaseRepository<Cart>();
+            var cartItemRepo = _unitofwork.GetBaseRepository<CartItem>();
+            var userId = _currentUserService.UserId;
+
+            var discount = await _db.Discounts.FirstOrDefaultAsync();
+            var discountValue = discount?.DicountValue ?? 0;
+
+            var cart = await _cartService.GetCurrentUserCartAsync();
+
+            if (cart == null)
+            {
+                var newCart = new Cart
+                {
+                    UserId = userId,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    TotalBasePrice = 0,
+                    TotalAmount = 0,
+                    CartItems = new List<CartItem>()
+                };
+
+                await cartRepo.AddAsync(newCart);
+                await _unitofwork.SaveChangesAsync();
+
+                cart = _mapper.Map<CartDto>(newCart);
+            }
+
+            var cartWithItems = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.Id == cart.Id,
+                include: q => q.Include(c => c.CartItems)
+                               .ThenInclude(ci => ci.Product)
+                               .ThenInclude(p => p.Category)
+            );
+
+            decimal totalNewItemsPrice = 0;
+
+            foreach (var itemDto in cartItemDtos)
+            {
+                var productSize = await _productSizesRepository.GetFirstOrDefaultAsync(
+                    ps => ps.Id == itemDto.ProductSizeId,
+                    include: q => q.Include(ps => ps.Product)
+                );
+
+                if (productSize == null || productSize.Product == null)
+                    throw new Exception("Product size or linked product not found");
+
+                if (productSize.StockQuantity < itemDto.Quantity)
+                {
+                    itemDto.Quantity = productSize.StockQuantity;
+                    // ممكن تسجله في لوج داخلي لو حبيت تتابع مين بيتطلب أكتر من اللي موجود
+                    if (itemDto.Quantity == 0)
+                        continue; // مفيش أي كمية متاحة، اسكبه خالص
+                }
+
+                var unitPrice = productSize.Product.PriceAfterDiscount;
+                var itemTotal = unitPrice * itemDto.Quantity;
+                totalNewItemsPrice += itemTotal;
+
+                var existingItem = cartWithItems.CartItems.FirstOrDefault(ci =>
+                    ci.ProductId == itemDto.ProductId &&
+                    ci.ProductSizeId == itemDto.ProductSizeId);
+
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += itemDto.Quantity;
+                    existingItem.TotalPriceForOneItemType = unitPrice * existingItem.Quantity;
+                    await cartItemRepo.UpdateAsync(existingItem);
+                }
+                else
+                {
+                    itemDto.UnitPrice = unitPrice;
+                    itemDto.TotalPriceForOneItemType = unitPrice * itemDto.Quantity;
+
+                    var newCartItem = _mapper.Map<CartItem>(itemDto);
+                    newCartItem.CartId = cart.Id;
+                    await cartItemRepo.AddAsync(newCartItem);
+                }
+            }
+
+            cartWithItems.TotalBasePrice += totalNewItemsPrice;
+            cartWithItems.TotalAmount = cartWithItems.TotalBasePrice - discountValue;
+            cartWithItems.UpdatedAt = DateTime.Now;
+
+            await cartRepo.UpdateAsync(cartWithItems);
+            await _unitofwork.SaveChangesAsync();
+
+            var finalItems = await cartItemRepo.GetQueryable()
+                .Where(i => i.CartId == cart.Id &&
+                            cartItemDtos.Select(dto => dto.ProductId).Contains(i.ProductId) &&
+                            cartItemDtos.Select(dto => dto.ProductSizeId).Contains(i.ProductSizeId))
+                .ToListAsync();
+
+            if (!finalItems.Any())
+                throw new InvalidOperationException("No cart items were added.");
+            return _mapper.Map<List<CartItemDto>>(finalItems);
         }
 
     }
