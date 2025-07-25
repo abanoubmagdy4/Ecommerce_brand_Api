@@ -4,8 +4,8 @@
     {
         public int Id { get; set; }
 
-        [Required]
-        public int CartId { get; set; }
+
+        public int? CartId { get; set; }
 
         [Required]
         public int ProductId { get; set; }

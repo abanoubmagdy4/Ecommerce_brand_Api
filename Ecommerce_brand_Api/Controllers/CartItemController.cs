@@ -41,7 +41,7 @@ namespace Ecommerce_brand_Api.Controllers
         
         [HttpPost("add-single")]
         public async Task<IActionResult> AddToCart([FromBody] CartItemDto cartItemDto)
-        {
+            {
             var result = await _cartItemService.AddCartItemToCurrentCart(cartItemDto);
             return Ok(result);
         }
