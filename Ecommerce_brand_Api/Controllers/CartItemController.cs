@@ -38,7 +38,6 @@ namespace Ecommerce_brand_Api.Controllers
         // <summary>
         /// إضافة منتج إلى الكارت
         /// </summary>
-        
         [HttpPost("add-single")]
         public async Task<IActionResult> AddToCart([FromBody] CartItemDto cartItemDto)
             {
@@ -49,7 +48,6 @@ namespace Ecommerce_brand_Api.Controllers
         /// <summary>
         /// إضافة منتج إلى الكارت
         /// </summary>
-
         [HttpPost("add-multiple")]
         public async Task<IActionResult> AddToCartItems([FromBody] List<CartItemDto> cartItemDtos)
         {

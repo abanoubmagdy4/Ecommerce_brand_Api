@@ -1,6 +1,8 @@
 ﻿using AutoMapper.QueryableExtensions;
+using Ecommerce_brand_Api.Helpers.BackgroundServices;
 using Ecommerce_brand_Api.Models.Dtos;
 using Ecommerce_brand_Api.Models.Entities.Pagination;
+using Hangfire;
 
 namespace Ecommerce_brand_Api.Services
 {
@@ -23,33 +25,40 @@ namespace Ecommerce_brand_Api.Services
                 throw new Exception("Product not found");
             }
 
-            product.isNewArrival = true;
-            await _unitofwork.Products.UpdateAsync(product);
-
-            // Check if the product is already a new arrival
+            // Check if the product is already a new arrival BEFORE updating anything
             var existingNewArrival = await _unitofwork.NewArrivals.IsProductNewArrivalAsync(productId);
             if (existingNewArrival)
             {
                 throw new Exception("Product is already a new arrival");
             }
 
+            // Now mark as new arrival
+            product.isNewArrival = true;
+            await _unitofwork.Products.UpdateAsync(product);
+
             var newArrival = new NewArrivals
             {
                 ProductId = productId,
             };
 
-            // Map the product to ProductDto
+            await _unitofwork.NewArrivals.AddAsync(newArrival);
+            await _unitofwork.SaveChangesAsync();
+
             var productDto = _mapper.Map<ProductDtoResponse>(product);
 
-            // تحويل توقيت PublishAt لتوقيت مصر لو موجود
             if (productDto.PublishAt.HasValue)
             {
                 var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
                 productDto.PublishAt = TimeZoneInfo.ConvertTimeFromUtc(productDto.PublishAt.Value, egyptTimeZone);
             }
 
-            await _unitofwork.NewArrivals.AddAsync(newArrival);
-            await _unitofwork.SaveChangesAsync();
+            var delay = product.PublishAt - DateTime.UtcNow;
+            if (delay < TimeSpan.Zero)
+                delay = TimeSpan.Zero;
+
+            BackgroundJob.Schedule<ProductPublisherJob>(
+                job => job.PublishProduct(product.Id),
+                delay.Value);
 
             return productDto;
         }
@@ -77,9 +86,11 @@ namespace Ecommerce_brand_Api.Services
 
             var query = newArrivalsRepo.GetQueryable()
                 .Include(na => na.Product)
-                .Where(na => na.Product != null && !na.Product.IsDeleted)
+                .Where(na => na.Product != null
+                             && !na.Product.IsDeleted
+                             && na.Product.IsPublished)
                 .Select(na => na.Product)
-                .OrderBy(p => p.Id);
+                .OrderByDescending(p => p.CreatedAt);
 
             var pagedResult = await query
                 .ProjectTo<ProductDtoResponse>(_mapper.ConfigurationProvider)
