@@ -157,7 +157,8 @@ namespace Ecommerce_brand_Api.Repositories
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                         .ThenInclude(p => p.ProductImagesPaths)
-                .AsNoTracking() 
+                        .OrderByDescending(p=>p.CreatedAt)
+                        .AsNoTracking() 
                 .Select(o => new PreviousOrderDto
                 {
                     OrderId = o.OrderId,
