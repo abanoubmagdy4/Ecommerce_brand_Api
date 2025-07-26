@@ -18,7 +18,7 @@ namespace Ecommerce_brand_Api.Helpers.Builders
                 OrderAddressInfo = order.OrderAddressInfo,
                 PaymentStatus = payment?.PaymentStatus,
                 PaidAmount = payment?.PaidAmountCents / 100m,
-                PaymentMethod = payment?.PaymentMethod,
+                PaymentMethod = order.paymentMethod.ToString(),
                 ShippingCost = order.ShippingCost,
                 TotalOrderPrice = order.TotalOrderPrice,
                 DiscountValue = order.DiscountValue,

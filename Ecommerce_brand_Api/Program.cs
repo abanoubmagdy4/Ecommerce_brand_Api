@@ -26,7 +26,7 @@ namespace Ecommerce_brand_Api
                 {
                     policy
                         .WithOrigins("http://localhost:4200") // Angular origin
-                        .WithOrigins("http://localhost:50800")
+                        .WithOrigins("http://localhost:50518")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials(); 

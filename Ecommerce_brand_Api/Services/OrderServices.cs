@@ -129,7 +129,7 @@ namespace Ecommerce_brand_Api.Services
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     PhoneNumber = user.PhoneNumber,
-
+                    paymentMethod = orderDto.paymentMethod,
                     // Navigation properties
                     Customer = user,
                     ShippingAddress = address,

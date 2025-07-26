@@ -274,11 +274,13 @@ namespace Ecommerce_brand_Api.Services
                     if (order.OrderStatus != newStatus)
                     {
                         order.OrderStatus = newStatus;
+                        order.paymentMethod = Enum.Parse<PaymentMethods>(payment.SourceType);
                         await _unitOfWork.GetOrderRepository().UpdateAsync(order);
                     }
                     payment.OrderId = order.OrderId;
 
                 }
+                order.paymentMethod = Enum.Parse<PaymentMethods>(payment.SourceType);
                 await _paymentRepository.AddAsync(payment);
             }
             else {
@@ -290,6 +292,8 @@ namespace Ecommerce_brand_Api.Services
 
                 if (order != null)
                 {
+                    order.paymentMethod = Enum.Parse<PaymentMethods>(payment.SourceType);
+
                     var newStatus = GetOrderStatusFromPayment(existingPayment.Status);
                     if (order.OrderStatus != newStatus)
                     {

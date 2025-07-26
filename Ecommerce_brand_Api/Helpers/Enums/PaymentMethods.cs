@@ -4,8 +4,8 @@
     {
         Online = 0,
         COD = 1,
-        OnlineCard= 2,  
-        Wallet=3,
+        card = 2,
+        wallet = 3,
 
     }
 }
