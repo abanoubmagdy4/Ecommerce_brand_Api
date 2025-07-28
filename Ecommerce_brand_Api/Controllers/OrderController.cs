@@ -293,8 +293,8 @@ namespace Ecommerce_brand_Api.Controllers
             }
         }
 
-        [HttpPut("update-shipping-cost")]
-        public async Task<IActionResult> UpdateShippingCost([FromBody] UpdateShippingStatusDto dto)
+        [HttpPut("update-shipping-order-status")]
+        public async Task<IActionResult> UpdateShippingAndOrderStatus([FromBody] UpdateShippingStatusDto dto)
         {
             var result = await _orderService.UpdateOrderWithShippingStatus(dto);
 

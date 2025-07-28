@@ -372,14 +372,14 @@ namespace Ecommerce_brand_Api.Services
 
             if (order == null)
                 return ServiceResult.Fail("Order not found.");
+            order.OrderStatus = dto.NewOrderStatus;
 
-         
+
             if (!CanUpdateShippingStatus(order.OrderStatus))
                 return ServiceResult.Fail("Cannot update shipping status for the current order state.");
 
             order.ShippingStatus = dto.NewShippingStatus;
-
-
+            
             await _unitofwork.SaveChangesAsync();
 
             return ServiceResult.OkWithData(order);

@@ -222,12 +222,6 @@ namespace Ecommerce_brand_Api.Services
             return ServiceResult.Fail("Fialing during registeration");
         }
 
-
-
-
-
-
-
         // Reset Paasword //
 
         public bool RequestPasswordReset(string email)

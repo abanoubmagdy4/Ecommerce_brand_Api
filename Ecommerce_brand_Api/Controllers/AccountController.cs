@@ -24,7 +24,6 @@ namespace Ecommerce_brand_Api.Controllers
             //   _mapper = mapper;
         }
 
-
         [HttpPost("CreateRole")]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto dto)
         {
@@ -42,10 +41,8 @@ namespace Ecommerce_brand_Api.Controllers
             return Ok($"Role '{dto.RoleName}' created successfully.");
         }
 
-
         [HttpPost("Login")]
         [Consumes("multipart/form-data")]
-
         public async Task<ActionResult> Login([FromForm] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -84,7 +81,6 @@ namespace Ecommerce_brand_Api.Controllers
 
 
         [HttpPost("CustomerAccountLogin")]
-
         public async Task<ActionResult> CustomerAccountLogin([FromBody] CustomerLoginDto customerLoginDto)
         {
 

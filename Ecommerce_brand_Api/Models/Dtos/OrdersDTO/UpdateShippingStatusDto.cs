@@ -4,5 +4,7 @@
     {
         public int OrderId { get; set; }
         public ShippingStatus NewShippingStatus { get; set; }
+        public OrderStatus NewOrderStatus { get; set; }
+
     }
 }

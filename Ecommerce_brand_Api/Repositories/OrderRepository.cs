@@ -47,11 +47,9 @@ namespace Ecommerce_brand_Api.Repositories
                     CreatedAt = o.Order.CreatedAt,
                     TotalPrice = o.TotalPrice,
                     Quantity = o.Quantity
-                    
-                })
-                .FirstOrDefaultAsync();
-        }
 
+                }).FirstOrDefaultAsync();
+        }
 
         public async Task<Order?> GetOrderByPaymobOrderIdAsync(int paymobOrderId)
         {
@@ -67,7 +65,7 @@ namespace Ecommerce_brand_Api.Repositories
                 .Include(o => o.Payment)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
-        
+
         public async Task<Order?> GetOrderByTransactionIdAsync(long transactionId)
         {
             return await _context.Orders
@@ -117,7 +115,7 @@ namespace Ecommerce_brand_Api.Repositories
                         CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                         DeliveredAt = reader.IsDBNull(reader.GetOrdinal("DeliveredAt")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("DeliveredAt")),
                         OrderAddressInfo = reader.IsDBNull(reader.GetOrdinal("OrderAddressInfo")) ? null : reader.GetString(reader.GetOrdinal("OrderAddressInfo")),
-                        TransactionId = reader.IsDBNull(reader.GetOrdinal("TransactionId"))? (long?)null: reader.GetInt64(reader.GetOrdinal("TransactionId")),
+                        TransactionId = reader.IsDBNull(reader.GetOrdinal("TransactionId")) ? (long?)null : reader.GetInt64(reader.GetOrdinal("TransactionId")),
 
                         PaymentStatus = reader.IsDBNull(reader.GetOrdinal("PaymentStatus")) ? null : reader.GetString(reader.GetOrdinal("PaymentStatus")),
                         PaidAmount = reader.IsDBNull(reader.GetOrdinal("PaidAmount")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("PaidAmount")),
@@ -157,8 +155,8 @@ namespace Ecommerce_brand_Api.Repositories
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                         .ThenInclude(p => p.ProductImagesPaths)
-                        .OrderByDescending(p=>p.CreatedAt)
-                        .AsNoTracking() 
+                        .OrderByDescending(p => p.CreatedAt)
+                        .AsNoTracking()
                 .Select(o => new PreviousOrderDto
                 {
                     OrderId = o.OrderId,
@@ -193,7 +191,7 @@ namespace Ecommerce_brand_Api.Repositories
                 })
                 .ToListAsync();
 
-       
+
             return orders;
         }
 
